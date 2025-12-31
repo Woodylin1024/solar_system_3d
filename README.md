@@ -3,8 +3,9 @@
 🎬 點此查看線上選Demo
 https://woodylin1024.github.io/solar_system_3d/
 
-✨ 核心特色  ✨🔭 雙重尺度切換 (View Mode Toggle)
-．藝術模式 (Artistic Mode)：縮小星際距離並放大行星體積，方便觀測模型細節與運作規律。
+✨ 核心特色  
+🔭 雙重尺度切換 (View Mode Toggle)  
+．藝術模式 (Artistic Mode)：縮小星際距離並放大行星體積，方便觀測模型細節與運作規律。  
 ．真實比例模式 (Real Scale)：還原物理世界的真實比例與空間距離，感受地球在太陽面前的渺小與星際空間的深邃。
 
 📱 全平台適應 UI/UX
