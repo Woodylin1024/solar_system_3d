@@ -1,3 +1,6 @@
+import * as THREE from 'three';
+import { solarSystemData } from '../data/solarSystemData.js';
+
 export function createSolarSystem(scene) {
     const bodies = [];
     const textureLoader = new THREE.TextureLoader();

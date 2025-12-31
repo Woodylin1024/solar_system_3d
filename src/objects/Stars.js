@@ -5,9 +5,9 @@ export function createStars(scene, count = 2000) {
     const vertices = [];
 
     for (let i = 0; i < count; i++) {
-        const x = (Math.random() - 0.5) * 500;
-        const y = (Math.random() - 0.5) * 500;
-        const z = (Math.random() - 0.5) * 500;
+        const x = (Math.random() - 0.5) * 20000;
+        const y = (Math.random() - 0.5) * 20000;
+        const z = (Math.random() - 0.5) * 20000;
         vertices.push(x, y, z);
     }
 
