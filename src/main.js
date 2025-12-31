@@ -9,8 +9,8 @@ const scene = new THREE.Scene();
 // Add Stars
 createStars(scene);
 
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 100, 180);
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 40000); // Massive boost for real scale
+camera.position.set(0, 150, 250);
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -29,6 +29,7 @@ controls.mouseButtons = {
   MIDDLE: THREE.MOUSE.DOLLY,
   RIGHT: THREE.MOUSE.PAN
 };
+controls.maxDistance = 15000; // Increased to see the edge of the real solar system
 
 // Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.15); // Reduced to make shadows deeper
@@ -253,6 +254,24 @@ function updateSpeed() {
     pauseIconContainer.innerHTML = PAUSE_SVG;
   }
 }
+
+// View Mode Toggle logic
+const modeArtisticBtn = document.getElementById('mode-artistic');
+const modeRealBtn = document.getElementById('mode-real');
+
+modeArtisticBtn.addEventListener('click', () => {
+  if (modeArtisticBtn.classList.contains('active')) return;
+  modeArtisticBtn.classList.add('active');
+  modeRealBtn.classList.remove('active');
+  solarSystem.setViewMode(false);
+});
+
+modeRealBtn.addEventListener('click', () => {
+  if (modeRealBtn.classList.contains('active')) return;
+  modeRealBtn.classList.add('active');
+  modeArtisticBtn.classList.remove('active');
+  solarSystem.setViewMode(true);
+});
 
 // Handle Resize
 window.addEventListener('resize', () => {

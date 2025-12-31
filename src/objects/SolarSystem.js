@@ -1,15 +1,12 @@
-import * as THREE from 'three';
-import { solarSystemData } from '../data/solarSystemData.js';
-
 export function createSolarSystem(scene) {
     const bodies = [];
     const textureLoader = new THREE.TextureLoader();
+    let isRealScale = false;
 
     solarSystemData.forEach(data => {
-        // Create Geometry
-        const geometry = new THREE.SphereGeometry(data.radius, 32, 32);
+        // We initialize with radius 1 and use mesh.scale for the actual sizes
+        const geometry = new THREE.SphereGeometry(1, 64, 64);
 
-        // Define Material
         let material;
         if (data.texture) {
             const texture = textureLoader.load(`textures/${data.texture}`);
@@ -31,37 +28,47 @@ export function createSolarSystem(scene) {
         mesh.userData = data;
         mesh.name = data.name;
 
+        // Initial scale
+        mesh.scale.setScalar(data.radius);
+
         const body = {
             name: data.name,
+            data: data,
             mesh: mesh,
             distance: data.distance,
             speed: data.speed,
             angle: Math.random() * Math.PI * 2,
             rotationSpeed: 0.005,
-            satellites: []
+            satellites: [],
+            orbitLine: null,
+            ringMesh: null
         };
 
         // Orbit Line
         if (data.name !== 'Sun') {
             const curve = new THREE.EllipseCurve(0, 0, data.distance, data.distance, 0, 2 * Math.PI, false, 0);
-            const points = curve.getPoints(128);
+            const points = curve.getPoints(256);
             const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
             lineGeometry.rotateX(Math.PI / 2);
             const lineMaterial = new THREE.LineBasicMaterial({ color: 0x444444, transparent: true, opacity: 0.5 });
             const orbitLine = new THREE.LineLoop(lineGeometry, lineMaterial);
             scene.add(orbitLine);
+            body.orbitLine = orbitLine;
         }
 
         // Saturn Rings
         if (data.ring) {
-            const ringGeo = new THREE.RingGeometry(data.ring.innerRadius, data.ring.outerRadius, 128);
+            // Rings use local scale usually, but here we add it to the planet mesh
+            const ringGeo = new THREE.RingGeometry(data.ring.innerRadius / data.radius, data.ring.outerRadius / data.radius, 128);
             const pos = ringGeo.attributes.position;
             const uv = ringGeo.attributes.uv;
             for (let i = 0; i < pos.count; i++) {
                 const x = pos.getX(i);
                 const y = pos.getY(i);
-                const distance = Math.sqrt(x * x + y * y);
-                const radialRatio = (distance - data.ring.innerRadius) / (data.ring.outerRadius - data.ring.innerRadius);
+                const d = Math.sqrt(x * x + y * y);
+                const inner = data.ring.innerRadius / data.radius;
+                const outer = data.ring.outerRadius / data.radius;
+                const radialRatio = (d - inner) / (outer - inner);
                 uv.setXY(i, 0.5, radialRatio);
             }
             const ringTex = textureLoader.load('textures/saturn_ring_v3.png');
@@ -74,12 +81,13 @@ export function createSolarSystem(scene) {
             const ringMesh = new THREE.Mesh(ringGeo, ringMat);
             ringMesh.rotation.x = Math.PI / 2;
             mesh.add(ringMesh);
+            body.ringMesh = ringMesh;
         }
 
         // Satellites
         if (data.satellites) {
             data.satellites.forEach(satData => {
-                const satGeo = new THREE.SphereGeometry(satData.radius, 64, 64);
+                const satGeo = new THREE.SphereGeometry(1, 64, 64);
                 let satMat;
                 if (satData.texture) {
                     satMat = new THREE.MeshStandardMaterial({
@@ -89,6 +97,7 @@ export function createSolarSystem(scene) {
                     satMat = new THREE.MeshStandardMaterial({ color: satData.color });
                 }
                 const satMesh = new THREE.Mesh(satGeo, satMat);
+                satMesh.scale.setScalar(satData.radius);
                 scene.add(satMesh);
 
                 const satellite = {
@@ -113,6 +122,57 @@ export function createSolarSystem(scene) {
         setSpeedMultiplier: (multiplier) => {
             speedMultiplier = multiplier;
         },
+        setViewMode: (real) => {
+            isRealScale = real;
+            bodies.forEach(body => {
+                const d = body.data;
+                const targetRadius = isRealScale ? d.realScaleRadius : d.radius;
+                const targetDistance = isRealScale ? d.realScaleDistance : d.distance;
+
+                // Update mesh scale
+                body.mesh.scale.setScalar(targetRadius);
+                body.distance = targetDistance;
+
+                // Update Orbit Line
+                if (body.orbitLine) {
+                    const curve = new THREE.EllipseCurve(0, 0, targetDistance, targetDistance, 0, 2 * Math.PI, false, 0);
+                    const points = curve.getPoints(256);
+                    body.orbitLine.geometry.setFromPoints(points);
+                }
+
+                // Update Saturn Ring geometry
+                if (body.ringMesh) {
+                    const r = body.data.ring;
+                    const inner = isRealScale ? r.realInner : r.innerRadius;
+                    const outer = isRealScale ? r.realOuter : r.outerRadius;
+
+                    // We need a NEW geometry to avoid uv issues or scale appropriately
+                    // Simple way: recreate geometry since it's just one object
+                    body.ringMesh.geometry.dispose();
+                    body.ringMesh.geometry = new THREE.RingGeometry(inner / targetRadius, outer / targetRadius, 128);
+
+                    const pos = body.ringMesh.geometry.attributes.position;
+                    const uv = body.ringMesh.geometry.attributes.uv;
+                    const localInner = inner / targetRadius;
+                    const localOuter = outer / targetRadius;
+                    for (let i = 0; i < pos.count; i++) {
+                        const x = pos.getX(i);
+                        const y = pos.getY(i);
+                        const dist = Math.sqrt(x * x + y * y);
+                        const radialRatio = (dist - localInner) / (localOuter - localInner);
+                        uv.setXY(i, 0.5, radialRatio);
+                    }
+                }
+
+                // Update Satellites
+                body.satellites.forEach(sat => {
+                    const s = sat.data;
+                    const sRadius = isRealScale ? (s.realScaleRadius || s.radius) : s.radius;
+                    sat.mesh.scale.setScalar(sRadius);
+                    sat.distance = isRealScale ? (s.realScaleDistance || s.distance) : s.data.distance;
+                });
+            });
+        },
         getBodies: () => bodies,
         update: () => {
             bodies.forEach(body => {
@@ -124,10 +184,11 @@ export function createSolarSystem(scene) {
                 body.mesh.rotation.y += body.rotationSpeed * speedMultiplier;
 
                 body.satellites.forEach(sat => {
+                    const sDist = sat.distance || sat.data.distance;
                     sat.angle += sat.data.speed * speedMultiplier;
-                    sat.mesh.position.x = body.mesh.position.x + Math.cos(sat.angle) * sat.data.distance;
+                    sat.mesh.position.x = body.mesh.position.x + Math.cos(sat.angle) * sDist;
                     sat.mesh.position.y = body.mesh.position.y;
-                    sat.mesh.position.z = body.mesh.position.z + Math.sin(sat.angle) * sat.data.distance;
+                    sat.mesh.position.z = body.mesh.position.z + Math.sin(sat.angle) * sDist;
                     sat.mesh.rotation.y += 0.01 * speedMultiplier;
                 });
             });
