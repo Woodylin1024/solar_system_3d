@@ -62,6 +62,7 @@ const infoTitle = document.getElementById('info-title');
 const infoDesc = document.getElementById('info-description');
 const infoDetails = document.getElementById('info-details');
 const closeInfoBtn = document.getElementById('close-info');
+const resetViewBtn = document.getElementById('reset-view');
 
 // Interaction variables
 let isMouseDown = false;
@@ -170,7 +171,16 @@ function hideInfo() {
   // allowing the camera to continue tracking the planet even after UI is hidden.
 }
 
-closeInfoBtn.addEventListener('click', hideInfo);
+closeInfoBtn.addEventListener('click', () => {
+  hideInfo();
+});
+
+resetViewBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (selectedTarget) {
+    shouldAutoZoom = true;
+  }
+});
 
 function showInfo(data) {
   // Update Title: English Name   Chinese Name

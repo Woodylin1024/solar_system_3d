@@ -91,6 +91,30 @@ button:active {
   color: white;
 }
 
+#reset-view {
+  position: absolute;
+  top: 15px;
+  right: 50px;
+  /* Positioned to the left of close button */
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, transform 0.2s;
+}
+
+#reset-view:hover {
+  color: #00d2ff;
+}
+
+#reset-view:active {
+  transform: scale(1.1);
+}
+
 #info-title {
   margin-top: 0;
   margin-bottom: 15px;
