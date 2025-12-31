@@ -226,8 +226,8 @@ let savedSpeedBeforePause = 0.1;
 const pauseBtn = document.getElementById('pause');
 const pauseIconContainer = document.getElementById('pause-icon');
 
-// Refined BOLD icons with better spacing to avoid "blocky" look on mobile
-const PAUSE_SVG = '<svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="3" fill="none"><path d="M9 17V7M15 17V7"/></svg>';
+// Refined BOLD icons with better vertical centering (adjusted path y coordinates)
+const PAUSE_SVG = '<svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="3" fill="none"><path d="M9 18V8M15 18V8"/></svg>';
 const PLAY_SVG = '<svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 9-14 9V3z"/></svg>';
 
 pauseBtn.addEventListener('click', () => {
