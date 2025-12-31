@@ -150,37 +150,39 @@ button:active {
   transform: scale(1.1);
 }
 
-/* Mobile Responsive */
-@media (max-width: 768px) {
+/* Mobile & Tablet Responsive (Drawer Mode) */
+@media (max-width: 1100px) {
   #info-panel {
     top: auto;
-    right: 10px;
-    left: 10px;
-    bottom: 10px;
+    right: 15px;
+    left: 15px;
+    bottom: 15px;
     width: auto;
     padding: 20px;
     border-radius: 24px 24px 20px 20px;
   }
 
   #info-panel.hidden {
-    transform: translateY(110%);
+    transform: translateY(120%);
+    opacity: 0;
   }
 
   #info-scroll-container {
-    max-height: 40vh;
+    max-height: 35vh;
+    /* Further reduced to avoid blocking Sun/Planets */
   }
 
   #controls {
     top: 10px;
     left: 10px;
-    padding: 6px 10px;
+    padding: 6px 8px;
   }
 }
 
 #info-title {
   margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 24px;
+  margin-bottom: 12px;
+  font-size: 22px;
   background: linear-gradient(90deg, #fff, #aaa);
   -webkit-background-clip: text;
   background-clip: text;

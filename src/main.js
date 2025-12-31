@@ -226,8 +226,9 @@ let savedSpeedBeforePause = 0.1;
 const pauseBtn = document.getElementById('pause');
 const pauseIconContainer = document.getElementById('pause-icon');
 
-const PAUSE_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M10 15V9M14 15V9"/></svg>';
-const PLAY_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M5 3l14 9-14 9V3z"/></svg>';
+// More visible Pause and Play icons
+const PAUSE_SVG = '<svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="3" fill="none"><path d="M8 18V6M16 18V6"/></svg>';
+const PLAY_SVG = '<svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 9-14 9V3z"/></svg>';
 
 pauseBtn.addEventListener('click', () => {
   if (!isPaused) {
@@ -296,7 +297,16 @@ function animate() {
       camera.position.add(deltaMovement);
 
       // Update controls target
-      controls.target.copy(currentWorldPos);
+      // SHIFT logic: on mobile/tablet, we want the planet to stay in the upper part of screen
+      const visualTarget = currentWorldPos.clone();
+      if (window.innerWidth <= 1100) {
+        // If panel is open on small screen, offset the planet "upwards" in screen space
+        // by moving the camera focus point slightly "below" the actual planet center
+        const up = new THREE.Vector3(0, 1, 0);
+        // Scale offset relative to target radius
+        visualTarget.sub(up.multiplyScalar(selectedTarget.userData.radius * 2.5));
+      }
+      controls.target.copy(visualTarget);
 
       // Initial auto-zoom approach
       if (shouldAutoZoom) {
