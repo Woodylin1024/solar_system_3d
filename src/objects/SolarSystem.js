@@ -134,6 +134,7 @@ export function createSolarSystem(scene) {
 
                 // Update mesh scale
                 body.mesh.scale.setScalar(targetRadius);
+                body.mesh.updateMatrix();
                 body.distance = targetDistance;
 
                 // Update Orbit Line
@@ -142,6 +143,7 @@ export function createSolarSystem(scene) {
                     const points = curve.getPoints(256);
                     body.orbitLine.geometry.setFromPoints(points);
                     body.orbitLine.geometry.rotateX(Math.PI / 2); // FIX: Lay it flat again!
+                    body.orbitLine.geometry.computeBoundingSphere();
                 }
 
                 // Update Saturn Ring geometry
