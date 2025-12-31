@@ -141,6 +141,7 @@ export function createSolarSystem(scene) {
                     const curve = new THREE.EllipseCurve(0, 0, targetDistance, targetDistance, 0, 2 * Math.PI, false, 0);
                     const points = curve.getPoints(256);
                     body.orbitLine.geometry.setFromPoints(points);
+                    body.orbitLine.geometry.rotateX(Math.PI / 2); // FIX: Lay it flat again!
                 }
 
                 // Update Saturn Ring geometry
