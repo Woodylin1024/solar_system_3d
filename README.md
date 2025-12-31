@@ -27,23 +27,23 @@ https://woodylin1024.github.io/solar_system_3d/
 ．部署環境：GitHub Pages  
 ．語言：JavaScript (ES6+), CSS3 (Vanilla), HTML5
 
-🚀 快速上手  
-．本地開發
-# 複製專案
+🚀 本地開發
+．複製專案
 git clone https://github.com/Woodylin1024/solar_system_3d.git
 
-# 進入資料夾
+．進入資料夾
 cd solar_system_3d
 
-# 安裝依賴
+．安裝依賴
 npm install
 
-# 啟動開發伺服器
+．啟動開發伺服器
 npm run dev
 
 ．部署至 GitHub Pages
 bash
 npm run deploy
+
 
 📸 畫面預覽  
 ．PC 介面：側邊資訊欄提供完整天體數據，支持縮放與 360 度旋轉。  
