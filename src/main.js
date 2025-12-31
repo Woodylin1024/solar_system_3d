@@ -224,29 +224,32 @@ document.getElementById('fast').addEventListener('click', () => {
 let isPaused = false;
 let savedSpeedBeforePause = 0.1;
 const pauseBtn = document.getElementById('pause');
+const pauseIconContainer = document.getElementById('pause-icon');
+
+const PAUSE_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M10 15V9M14 15V9"/></svg>';
+const PLAY_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M5 3l14 9-14 9V3z"/></svg>';
 
 pauseBtn.addEventListener('click', () => {
   if (!isPaused) {
     savedSpeedBeforePause = currentSpeed;
     currentSpeed = 0;
     isPaused = true;
-    pauseBtn.innerText = '繼續 (Resume)';
+    pauseIconContainer.innerHTML = PLAY_SVG;
   } else {
     currentSpeed = savedSpeedBeforePause === 0 ? 0.1 : savedSpeedBeforePause;
     isPaused = false;
-    pauseBtn.innerText = '暫停 (Pause)';
+    pauseIconContainer.innerHTML = PAUSE_SVG;
   }
   updateSpeed();
 });
 
 function updateSpeed() {
   solarSystem.setSpeedMultiplier(currentSpeed);
-  speedDisplay.innerText = `速度: ${currentSpeed.toFixed(1)}x`;
+  speedDisplay.innerText = `${currentSpeed.toFixed(1)}x`;
 
-  // If speed is adjusted while paused, resume automatically
   if (currentSpeed > 0 && isPaused) {
     isPaused = false;
-    pauseBtn.innerText = '暫停 (Pause)';
+    pauseIconContainer.innerHTML = PAUSE_SVG;
   }
 }
 
