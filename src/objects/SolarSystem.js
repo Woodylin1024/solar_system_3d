@@ -174,11 +174,14 @@ export function createSolarSystem(scene) {
                 body.satellites.forEach(sat => {
                     const s = sat.data;
                     const sRadius = isRealScale ? (s.realScaleRadius || s.radius) : s.radius;
+                    const sDist = isRealScale ? (s.realScaleDistance || s.distance) : s.data.distance;
                     sat.mesh.scale.setScalar(sRadius);
-                    sat.distance = isRealScale ? (s.realScaleDistance || s.distance) : s.data.distance;
+                    sat.mesh.updateMatrix();
+                    sat.distance = sDist;
                 });
             });
         },
+        isRealScale: () => isRealScale,
         getBodies: () => bodies,
         update: () => {
             bodies.forEach(body => {

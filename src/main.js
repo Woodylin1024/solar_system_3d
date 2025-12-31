@@ -264,6 +264,7 @@ modeArtisticBtn.addEventListener('click', () => {
   modeArtisticBtn.classList.add('active');
   modeRealBtn.classList.remove('active');
   solarSystem.setViewMode(false);
+  if (selectedTarget) shouldAutoZoom = true; // Refocus to new scale
 });
 
 modeRealBtn.addEventListener('click', () => {
@@ -271,6 +272,7 @@ modeRealBtn.addEventListener('click', () => {
   modeRealBtn.classList.add('active');
   modeArtisticBtn.classList.remove('active');
   solarSystem.setViewMode(true);
+  if (selectedTarget) shouldAutoZoom = true; // Refocus to new scale
 });
 
 // Handle Resize
@@ -329,16 +331,19 @@ function animate() {
 
       // Initial auto-zoom approach
       if (shouldAutoZoom) {
-        // Mobile/Tablet needs to be further away to avoid UI coverage
+        // Target dynamic radius based on current mode
+        const isReal = solarSystem.isRealScale();
+        const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
+
         const multiplier = window.innerWidth <= 1100 ? 10 : 6;
-        const zoomDist = (selectedTarget.userData.radius || 1) * multiplier;
+        const zoomDist = currentRadius * multiplier;
         const currentDist = camera.position.distanceTo(currentWorldPos);
         const newDist = THREE.MathUtils.lerp(currentDist, zoomDist, 0.05);
 
         const direction = camera.position.clone().sub(currentWorldPos).normalize();
         camera.position.copy(currentWorldPos.clone().add(direction.multiplyScalar(newDist)));
 
-        if (Math.abs(currentDist - zoomDist) < 0.01) {
+        if (Math.abs(currentDist - zoomDist) < (currentRadius * 0.1)) {
           shouldAutoZoom = false;
         }
       }
