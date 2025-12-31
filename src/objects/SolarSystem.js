@@ -12,7 +12,7 @@ export function createSolarSystem(scene) {
         // Define Material
         let material;
         if (data.texture) {
-            const texture = textureLoader.load(`/textures/${data.texture}`);
+            const texture = textureLoader.load(`textures/${data.texture}`);
             material = new THREE.MeshStandardMaterial({
                 map: texture,
                 emissive: data.type === 'star' ? 0xffffff : 0x000000,
@@ -64,7 +64,7 @@ export function createSolarSystem(scene) {
                 const radialRatio = (distance - data.ring.innerRadius) / (data.ring.outerRadius - data.ring.innerRadius);
                 uv.setXY(i, 0.5, radialRatio);
             }
-            const ringTex = textureLoader.load('/textures/saturn_ring_v3.png');
+            const ringTex = textureLoader.load('textures/saturn_ring_v3.png');
             const ringMat = new THREE.MeshStandardMaterial({
                 map: ringTex,
                 side: THREE.DoubleSide,
@@ -83,7 +83,7 @@ export function createSolarSystem(scene) {
                 let satMat;
                 if (satData.texture) {
                     satMat = new THREE.MeshStandardMaterial({
-                        map: textureLoader.load(`/textures/${satData.texture}`)
+                        map: textureLoader.load(`textures/${satData.texture}`)
                     });
                 } else {
                     satMat = new THREE.MeshStandardMaterial({ color: satData.color });
