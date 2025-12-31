@@ -264,7 +264,14 @@ modeArtisticBtn.addEventListener('click', () => {
   modeArtisticBtn.classList.add('active');
   modeRealBtn.classList.remove('active');
   solarSystem.setViewMode(false);
-  if (selectedTarget) shouldAutoZoom = true; // Refocus to new scale
+
+  if (selectedTarget) {
+    shouldAutoZoom = true;
+  } else {
+    // Reset to default overview position
+    camera.position.set(0, 150, 250);
+    camera.lookAt(0, 0, 0);
+  }
 });
 
 modeRealBtn.addEventListener('click', () => {
@@ -272,7 +279,10 @@ modeRealBtn.addEventListener('click', () => {
   modeRealBtn.classList.add('active');
   modeArtisticBtn.classList.remove('active');
   solarSystem.setViewMode(true);
-  if (selectedTarget) shouldAutoZoom = true; // Refocus to new scale
+
+  if (selectedTarget) {
+    shouldAutoZoom = true;
+  }
 });
 
 // Handle Resize

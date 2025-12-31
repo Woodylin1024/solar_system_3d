@@ -52,9 +52,9 @@ export function createSolarSystem(scene) {
             const curve = new THREE.EllipseCurve(0, 0, data.distance, data.distance, 0, 2 * Math.PI, false, 0);
             const points = curve.getPoints(256);
             const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-            lineGeometry.rotateX(Math.PI / 2);
             const lineMaterial = new THREE.LineBasicMaterial({ color: 0x444444, transparent: true, opacity: 0.5 });
             const orbitLine = new THREE.LineLoop(lineGeometry, lineMaterial);
+            orbitLine.rotation.x = Math.PI / 2; // Rotate the MESH once
             scene.add(orbitLine);
             body.orbitLine = orbitLine;
         }
@@ -142,7 +142,6 @@ export function createSolarSystem(scene) {
                     const curve = new THREE.EllipseCurve(0, 0, targetDistance, targetDistance, 0, 2 * Math.PI, false, 0);
                     const points = curve.getPoints(256);
                     body.orbitLine.geometry.setFromPoints(points);
-                    body.orbitLine.geometry.rotateX(Math.PI / 2); // FIX: Lay it flat again!
                     body.orbitLine.geometry.computeBoundingSphere();
                 }
 
