@@ -226,9 +226,9 @@ let savedSpeedBeforePause = 0.1;
 const pauseBtn = document.getElementById('pause');
 const pauseIconContainer = document.getElementById('pause-icon');
 
-// More visible Pause and Play icons
-const PAUSE_SVG = '<svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="3" fill="none"><path d="M8 18V6M16 18V6"/></svg>';
-const PLAY_SVG = '<svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 9-14 9V3z"/></svg>';
+// High-visibility BOLD icons to match the arrow buttons
+const PAUSE_SVG = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="4" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+const PLAY_SVG = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>';
 
 pauseBtn.addEventListener('click', () => {
   if (!isPaused) {
