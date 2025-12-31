@@ -142,6 +142,9 @@ export function createSolarSystem(scene) {
                     const curve = new THREE.EllipseCurve(0, 0, targetDistance, targetDistance, 0, 2 * Math.PI, false, 0);
                     const points = curve.getPoints(256);
                     body.orbitLine.geometry.setFromPoints(points);
+                    if (body.orbitLine.geometry.attributes.position) {
+                        body.orbitLine.geometry.attributes.position.needsUpdate = true;
+                    }
                     body.orbitLine.geometry.computeBoundingSphere();
                 }
 
@@ -173,7 +176,7 @@ export function createSolarSystem(scene) {
                 body.satellites.forEach(sat => {
                     const s = sat.data;
                     const sRadius = isRealScale ? (s.realScaleRadius || s.radius) : s.radius;
-                    const sDist = isRealScale ? (s.realScaleDistance || s.distance) : s.data.distance;
+                    const sDist = isRealScale ? (s.realScaleDistance || s.distance) : s.distance; // Use .distance consistently
                     sat.mesh.scale.setScalar(sRadius);
                     sat.mesh.updateMatrix();
                     sat.distance = sDist;

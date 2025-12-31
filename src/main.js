@@ -320,6 +320,24 @@ function animate() {
     const currentWorldPos = new THREE.Vector3();
     selectedTarget.getWorldPosition(currentWorldPos);
 
+    // Initial auto-zoom approach (works when panel is open OR closed as long as target exists)
+    if (shouldAutoZoom) {
+      const isReal = solarSystem.isRealScale();
+      const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
+
+      const multiplier = window.innerWidth <= 1100 ? 10 : 6;
+      const zoomDist = currentRadius * multiplier;
+      const currentDist = camera.position.distanceTo(currentWorldPos);
+      const newDist = THREE.MathUtils.lerp(currentDist, zoomDist, 0.05);
+
+      const direction = camera.position.clone().sub(currentWorldPos).normalize();
+      camera.position.copy(currentWorldPos.clone().add(direction.multiplyScalar(newDist)));
+
+      if (Math.abs(currentDist - zoomDist) < (currentRadius * 0.1)) {
+        shouldAutoZoom = false;
+      }
+    }
+
     if (isInfoPanelOpen) {
       // Calculate how much the target moved since the last frame
       const deltaMovement = currentWorldPos.clone().sub(lastTargetPos);
@@ -338,25 +356,6 @@ function animate() {
         visualTarget.sub(up.multiplyScalar(selectedTarget.userData.radius * 2.5));
       }
       controls.target.copy(visualTarget);
-
-      // Initial auto-zoom approach
-      if (shouldAutoZoom) {
-        // Target dynamic radius based on current mode
-        const isReal = solarSystem.isRealScale();
-        const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
-
-        const multiplier = window.innerWidth <= 1100 ? 10 : 6;
-        const zoomDist = currentRadius * multiplier;
-        const currentDist = camera.position.distanceTo(currentWorldPos);
-        const newDist = THREE.MathUtils.lerp(currentDist, zoomDist, 0.05);
-
-        const direction = camera.position.clone().sub(currentWorldPos).normalize();
-        camera.position.copy(currentWorldPos.clone().add(direction.multiplyScalar(newDist)));
-
-        if (Math.abs(currentDist - zoomDist) < (currentRadius * 0.1)) {
-          shouldAutoZoom = false;
-        }
-      }
     } else if (!isUserInteracting) {
       // Smooth follow when panel is closed
       controls.target.lerp(currentWorldPos, 0.1);
