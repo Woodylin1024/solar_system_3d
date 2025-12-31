@@ -1,0 +1,126 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: #000;
+  color: #fff;
+  font-family: sans-serif;
+}
+
+canvas {
+  display: block;
+}
+
+#controls {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  z-index: 100;
+  backdrop-filter: blur(5px);
+}
+
+button {
+  background: #333;
+  color: white;
+  border: 1px solid #555;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+button:hover {
+  background: #555;
+  border-color: #888;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+#speed-display {
+  margin-left: 10px;
+  font-weight: bold;
+  color: #00d2ff;
+  min-width: 80px;
+}
+
+/* Info Panel Styles */
+#info-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 320px;
+  background: rgba(15, 15, 25, 0.85);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 25px;
+  z-index: 1000;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+#info-panel.hidden {
+  opacity: 0;
+  transform: translateX(360px);
+  pointer-events: none;
+}
+
+#close-info {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+#close-info:hover {
+  color: white;
+}
+
+#info-title {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 24px;
+  background: linear-gradient(90deg, #fff, #aaa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+#info-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #ccc;
+  margin-bottom: 20px;
+}
+
+.info-detail-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+}
+
+.info-detail-label {
+  color: #888;
+}
+
+.info-detail-value {
+  color: #00d2ff;
+  font-weight: bold;
+}

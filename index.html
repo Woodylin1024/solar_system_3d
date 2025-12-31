@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Solar System</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+  <div id="controls">
+    <button id="slow">減速 (Slower)</button>
+    <button id="reset">正常 (Normal)</button>
+    <button id="fast">加速 (Faster)</button>
+    <button id="pause">暫停 (Pause)</button>
+    <div id="speed-display">速度: 1.0x</div>
+  </div>
+
+  <div id="info-panel" class="hidden">
+    <button id="close-info">×</button>
+    <h2 id="info-title">天體名稱</h2>
+    <p id="info-description">天體介紹描述...</p>
+    <div id="info-details">
+      <!-- 詳情列表會由 JavaScript 動態生成 -->
+    </div>
+  </div>
+
+  <div id="app"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
