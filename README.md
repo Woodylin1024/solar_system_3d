@@ -27,7 +27,7 @@ https://woodylin1024.github.io/solar_system_3d/
 ．部署環境：GitHub Pages  
 ．語言：JavaScript (ES6+), CSS3 (Vanilla), HTML5
 
-🚀 本地開發
+🚀 本地開發  
 ．複製專案
 git clone https://github.com/Woodylin1024/solar_system_3d.git
 
