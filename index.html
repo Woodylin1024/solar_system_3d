@@ -6,33 +6,52 @@
   <link rel="icon" type="image/svg+xml" href="/solar_system_3d/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Solar System</title>
-  <script type="module" crossorigin src="/solar_system_3d/assets/index-qn61FxMd.js"></script>
-  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-BcnwCLNs.css">
+  <script type="module" crossorigin src="/solar_system_3d/assets/index-DSOPB98Y.js"></script>
+  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-CROCVIuD.css">
 </head>
 
 <body>
   <div id="controls">
-    <button id="slow">減速 (Slower)</button>
-    <button id="reset">正常 (Normal)</button>
-    <button id="fast">加速 (Faster)</button>
-    <button id="pause">暫停 (Pause)</button>
-    <div id="speed-display">速度: 1.0x</div>
+    <button id="slow" title="減速">
+      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+        <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" />
+      </svg>
+    </button>
+    <button id="reset" title="正常速度">
+      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 8v8M8 12h8" />
+      </svg>
+    </button>
+    <button id="fast" title="加速">
+      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+        <path d="M13 17l5-5-5-5M6 17l5-5-5-5" />
+      </svg>
+    </button>
+    <button id="pause" title="暫停/繼續">
+      <span id="pause-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+          <path d="M10 15V9M14 15V9" />
+        </svg>
+      </span>
+    </button>
+    <div id="speed-display">1.0x</div>
   </div>
 
   <div id="info-panel" class="hidden">
-    <button id="reset-view" title="重置視角">
+    <div id="reset-view" title="重置視角">
       <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"
         stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <circle cx="12" cy="12" r="3"></circle>
-        <path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path>
+        <circle cx="12" cy="12" r="10" />
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
       </svg>
-    </button>
+    </div>
     <button id="close-info">×</button>
-    <h2 id="info-title">天體名稱</h2>
-    <p id="info-description">天體介紹描述...</p>
-    <div id="info-details">
-      <!-- 詳情列表會由 JavaScript 動態生成 -->
+    <div id="info-scroll-container">
+      <h2 id="info-title">天體名稱</h2>
+      <p id="info-description">天體介紹描述...</p>
+      <div id="info-details"></div>
     </div>
   </div>
 
