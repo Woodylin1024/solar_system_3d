@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 
-export function createStars(scene, count = 5000) { // Reduced count for realism
+export function createStars(scene, count = 8000) {
     const group = new THREE.Group();
 
-    // 1. Better Procedural Stars (Fainter and more varied)
-    const createStarLayer = (starCount, size, opacity, brightnessVar) => {
+    // 1. Procedural Stars with Exponential Brightness Distribution
+    const createStarLayer = (starCount, size, baseOpacity) => {
         const geometry = new THREE.BufferGeometry();
         const vertices = [];
         const colors = [];
@@ -21,12 +21,14 @@ export function createStars(scene, count = 5000) { // Reduced count for realism
 
             vertices.push(x, y, z);
 
-            // Varied brightness: most stars should be quite faint
-            const brightness = Math.random() * brightnessVar;
+            // Natural star brightness variety
+            const b = Math.pow(Math.random(), 3); // Most stars are faint, few are bright
+            const brightness = 0.2 + b * 0.8;
+
             const type = Math.random();
-            if (type > 0.98) color.setHSL(0.6, 0.2, brightness * 1.2); // Faint Blue
-            else if (type > 0.95) color.setHSL(0.1, 0.2, brightness * 1.1); // Faint Yellow
-            else color.setHSL(0, 0, brightness); // Pure white/grey
+            if (type > 0.96) color.setHSL(0.6, 0.2, brightness); // Pale Blue
+            else if (type > 0.92) color.setHSL(0.1, 0.3, brightness); // Pale Amber
+            else color.setHSL(0, 0, brightness); // Neutral White
 
             colors.push(color.r, color.g, color.b);
         }
@@ -38,22 +40,20 @@ export function createStars(scene, count = 5000) { // Reduced count for realism
             size: size,
             vertexColors: true,
             transparent: true,
-            opacity: opacity,
+            opacity: baseOpacity,
             sizeAttenuation: false
         });
         return new THREE.Points(geometry, material);
     };
 
-    const distantStars = new THREE.Group();
-    // Vast majority are very small and faint
-    distantStars.add(createStarLayer(count * 0.9, 0.6, 0.5, 0.6));
-    // Only a few are "bright" stars
-    distantStars.add(createStarLayer(count * 0.1, 1.2, 0.8, 1.0));
-    group.add(distantStars);
+    // Blend of fine background stars and distinct nearby ones
+    group.add(createStarLayer(count * 0.85, 0.7, 0.8)); // Subtle backdrop
+    group.add(createStarLayer(count * 0.15, 1.4, 0.9)); // Bright distinct stars
 
-    // 2. ESO Milky Way Background (Subtle)
+    // 2. ESO Milky Way with Enhanced Dynamic Range
     const textureLoader = new THREE.TextureLoader();
-    const nebulaTexture = textureLoader.load('textures/milky_way_eso.jpg?v=10', (tex) => {
+    // Cache buster v11
+    const nebulaTexture = textureLoader.load('textures/milky_way_eso.jpg?v=11', (tex) => {
         tex.wrapS = THREE.RepeatWrapping;
         tex.minFilter = THREE.LinearFilter;
     });
@@ -64,8 +64,9 @@ export function createStars(scene, count = 5000) { // Reduced count for realism
         side: THREE.BackSide,
         depthWrite: false,
         transparent: true,
-        opacity: 0.15, // DRASTICALLY reduced to feel like a "night sky" instead of a photo
-        color: 0x888888 // Darken the texture further
+        opacity: 0.35, // Balanced: Visible but doesn't wash out foreground
+        blending: THREE.AdditiveBlending, // Allows the Galactic Center to glow naturally
+        color: 0xcccccc // Slightly muted but still has range
     });
 
     const skySphere = new THREE.Mesh(skyGeo, skyMat);
