@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createSolarSystem } from './objects/SolarSystem.js';
 import { createStars } from './objects/Stars.js';
+import { createSpaceship } from './objects/Spaceship.js';
 
 const scene = new THREE.Scene();
 // ... (camera setup)
@@ -9,9 +10,13 @@ const scene = new THREE.Scene();
 // Add Stars
 const stars = createStars(scene);
 
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 300000); // Massive boost for 8K backdrop depth
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 300000);
 camera.position.set(0, 150, 250);
 camera.lookAt(0, 0, 0);
+
+// Add Ship
+const ship = createSpaceship(scene);
+ship.mesh.visible = false; // Hide until pilot mode enabled
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -306,6 +311,88 @@ modeRealBtn.addEventListener('click', () => {
   }
 });
 
+// Pilot Mode Variable and Listeners
+let isPilotMode = false;
+const togglePilotBtn = document.getElementById('toggle-pilot');
+const flightHud = document.getElementById('flight-hud');
+
+togglePilotBtn.addEventListener('click', () => {
+  isPilotMode = !isPilotMode;
+  togglePilotBtn.classList.toggle('active', isPilotMode);
+  ship.mesh.visible = isPilotMode;
+  flightHud.classList.toggle('hidden', !isPilotMode);
+
+  if (isPilotMode) {
+    controls.enabled = false;
+    // Position ship near current lookAt to make it seamless
+    if (selectedTarget) {
+      const targetPos = planets[selectedTarget].position;
+      ship.mesh.position.copy(targetPos).add(new THREE.Vector3(0, 5, 20));
+    }
+  } else {
+    controls.enabled = true;
+  }
+});
+
+// Controls logic (Desktop & Mobile)
+const keys = {};
+window.addEventListener('keydown', (e) => keys[e.code] = true);
+window.addEventListener('keyup', (e) => keys[e.code] = false);
+
+// Joystick Logic
+const joystickStick = document.getElementById('joystick-stick');
+const joystickBase = document.getElementById('joystick-base');
+const thrustBtn = document.getElementById('thrust-up');
+let joystickDelta = { x: 0, y: 0 };
+let isThrusting = false;
+
+joystickBase.addEventListener('touchstart', handleJoystickMove);
+joystickBase.addEventListener('touchmove', handleJoystickMove);
+joystickBase.addEventListener('touchend', () => {
+  joystickStick.style.transform = 'translate(-50%, -50%)';
+  joystickDelta = { x: 0, y: 0 };
+});
+
+function handleJoystickMove(e) {
+  const touch = e.touches[0];
+  const rect = joystickBase.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const dx = touch.clientX - centerX;
+  const dy = touch.clientY - centerY;
+  const dist = Math.min(Math.sqrt(dx * dx + dy * dy), 50);
+  const angle = Math.atan2(dy, dx);
+
+  const moveX = Math.cos(angle) * dist;
+  const moveY = Math.sin(angle) * dist;
+
+  joystickStick.style.transform = `translate(calc(-50% + ${moveX}px), calc(-50% + ${moveY}px))`;
+  joystickDelta = { x: moveX / 50, y: moveY / 50 };
+}
+
+thrustBtn.addEventListener('mousedown', () => isThrusting = true);
+thrustBtn.addEventListener('mouseup', () => isThrusting = false);
+thrustBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isThrusting = true; });
+thrustBtn.addEventListener('touchend', () => isThrusting = false);
+
+function handleFlightInputs() {
+  if (!isPilotMode) return;
+
+  // Steering
+  if (keys['KeyA'] || joystickDelta.x < -0.3) ship.rotationVelocity.y += 0.002;
+  if (keys['KeyD'] || joystickDelta.x > 0.3) ship.rotationVelocity.y -= 0.002;
+  if (keys['KeyW'] || joystickDelta.y < -0.3) ship.rotationVelocity.x += 0.002;
+  if (keys['KeyS'] || joystickDelta.y > 0.3) ship.rotationVelocity.x -= 0.002;
+  if (keys['KeyQ']) ship.rotationVelocity.z += 0.002;
+  if (keys['KeyE']) ship.rotationVelocity.z -= 0.002;
+
+  // Thrust
+  if (keys['Space'] || isThrusting) {
+    const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(ship.mesh.quaternion);
+    ship.velocity.add(direction.multiplyScalar(ship.thrust));
+  }
+}
+
 // Handle Resize
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -320,6 +407,18 @@ function animate() {
   // 1. Move all celestial bodies (Planets then Satellites)
   if (solarSystem) {
     solarSystem.update();
+  }
+
+  // Handle Space Flight
+  if (isPilotMode) {
+    handleFlightInputs();
+    ship.update();
+
+    // Smooth camera follow
+    const offset = new THREE.Vector3(0, 2, -10).applyQuaternion(ship.mesh.quaternion);
+    const idealCameraPos = ship.mesh.position.clone().add(offset);
+    camera.position.lerp(idealCameraPos, 0.1);
+    camera.lookAt(ship.mesh.position.clone().add(new THREE.Vector3(0, 0, 10).applyQuaternion(ship.mesh.quaternion)));
   }
 
   // Update background to follow camera (infinite depth)
