@@ -1,17 +1,16 @@
 import * as THREE from 'three';
 
-export function createStars(scene, count = 12000) {
+export function createStars(scene, count = 5000) { // Reduced count for realism
     const group = new THREE.Group();
 
-    // 1. High-Density Procedural Stars (Distant)
-    const createStarLayer = (starCount, size, opacity) => {
+    // 1. Better Procedural Stars (Fainter and more varied)
+    const createStarLayer = (starCount, size, opacity, brightnessVar) => {
         const geometry = new THREE.BufferGeometry();
         const vertices = [];
         const colors = [];
         const color = new THREE.Color();
 
         for (let i = 0; i < starCount; i++) {
-            // Distribute stars on a very large sphere shell
             const r = 30000;
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.acos(2 * Math.random() - 1);
@@ -22,10 +21,12 @@ export function createStars(scene, count = 12000) {
 
             vertices.push(x, y, z);
 
+            // Varied brightness: most stars should be quite faint
+            const brightness = Math.random() * brightnessVar;
             const type = Math.random();
-            if (type > 0.95) color.setHSL(0.6, 0.4, 0.95); // Class B star (Blue)
-            else if (type > 0.85) color.setHSL(0.1, 0.5, 0.95); // Class K star (Yellow/Orange)
-            else color.setHSL(0, 0, 1); // White
+            if (type > 0.98) color.setHSL(0.6, 0.2, brightness * 1.2); // Faint Blue
+            else if (type > 0.95) color.setHSL(0.1, 0.2, brightness * 1.1); // Faint Yellow
+            else color.setHSL(0, 0, brightness); // Pure white/grey
 
             colors.push(color.r, color.g, color.b);
         }
@@ -38,39 +39,38 @@ export function createStars(scene, count = 12000) {
             vertexColors: true,
             transparent: true,
             opacity: opacity,
-            sizeAttenuation: false // Keep stars sharp regardless of distance
+            sizeAttenuation: false
         });
         return new THREE.Points(geometry, material);
     };
 
     const distantStars = new THREE.Group();
-    distantStars.add(createStarLayer(count * 0.8, 1.2, 0.9));
-    distantStars.add(createStarLayer(count * 0.2, 2.0, 0.6));
+    // Vast majority are very small and faint
+    distantStars.add(createStarLayer(count * 0.9, 0.6, 0.5, 0.6));
+    // Only a few are "bright" stars
+    distantStars.add(createStarLayer(count * 0.1, 1.2, 0.8, 1.0));
     group.add(distantStars);
 
-    // 2. ESO High-Res Milky Way Background
+    // 2. ESO Milky Way Background (Subtle)
     const textureLoader = new THREE.TextureLoader();
-    // Cache buster v9
-    const nebulaTexture = textureLoader.load('textures/milky_way_eso.jpg?v=9', (tex) => {
-        tex.wrapS = THREE.RepeatWrapping; // Essential for seamless circular mapping
+    const nebulaTexture = textureLoader.load('textures/milky_way_eso.jpg?v=10', (tex) => {
+        tex.wrapS = THREE.RepeatWrapping;
         tex.minFilter = THREE.LinearFilter;
-        tex.magFilter = THREE.LinearFilter;
     });
 
-    const skyGeo = new THREE.SphereGeometry(32000, 128, 128);
+    const skyGeo = new THREE.SphereGeometry(32000, 64, 64);
     const skyMat = new THREE.MeshBasicMaterial({
         map: nebulaTexture,
         side: THREE.BackSide,
-        depthWrite: false, // Don't block other objects in depth buffer
+        depthWrite: false,
         transparent: true,
-        opacity: 0.8
+        opacity: 0.15, // DRASTICALLY reduced to feel like a "night sky" instead of a photo
+        color: 0x888888 // Darken the texture further
     });
 
     const skySphere = new THREE.Mesh(skyGeo, skyMat);
 
-    // Rotate to match ESO/Galactic orientation roughly
-    // The ESO panorama has the galactic center in the middle (0 degrees)
-    skySphere.rotation.y = Math.PI; // Adjust wrap point
+    // Galactic orientation
     skySphere.rotation.x = THREE.MathUtils.degToRad(-63);
     skySphere.rotation.z = THREE.MathUtils.degToRad(45);
 
@@ -81,7 +81,6 @@ export function createStars(scene, count = 12000) {
         starGroup: group,
         skySphere: skySphere,
         update: (cameraPosition) => {
-            // Locks the background to the camera so it's always "infinite"
             group.position.copy(cameraPosition);
         }
     };
