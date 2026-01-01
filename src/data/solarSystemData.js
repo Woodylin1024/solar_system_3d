@@ -145,7 +145,77 @@ export const solarSystemData = [
             "光度": "N/A",
             "核心溫度": "N/A",
             "表面溫度": "-110 °C"
-        }
+        },
+        satellites: [
+            {
+                name: "Io",
+                nameCH: "木衛一 (伊娥)",
+                radius: 0.28,
+                realScaleRadius: 0.285,
+                color: 0xfff000,
+                distance: 5,
+                realScaleDistance: 13,
+                speed: 0.04,
+                description: "太陽系中最活躍的火山天體。",
+                details: {
+                    "質量": "8.932 × 10²² kg",
+                    "體積": "2.531 × 10¹⁰ km³",
+                    "直徑": "3,643 km",
+                    "表面溫度": "-143 °C"
+                }
+            },
+            {
+                name: "Europa",
+                nameCH: "木衛二 (歐羅巴)",
+                radius: 0.24,
+                realScaleRadius: 0.245,
+                color: 0xe0e0e0,
+                distance: 6,
+                realScaleDistance: 21,
+                speed: 0.03,
+                description: "表面被冰層覆蓋，下方可能隱藏著液態海洋。",
+                details: {
+                    "質量": "4.80 × 10²² kg",
+                    "體積": "1.593 × 10¹⁰ km³",
+                    "直徑": "3,122 km",
+                    "表面溫度": "-160 °C"
+                }
+            },
+            {
+                name: "Ganymede",
+                nameCH: "木衛三 (蓋尼米德)",
+                radius: 0.41,
+                realScaleRadius: 0.413,
+                color: 0xa0a0a0,
+                distance: 7.5,
+                realScaleDistance: 33,
+                speed: 0.02,
+                description: "太陽系中最大的衛星，甚至比水星還要大。",
+                details: {
+                    "質量": "1.482 × 10²³ kg",
+                    "體積": "7.66 × 10¹⁰ km³",
+                    "直徑": "5,268 km",
+                    "表面溫度": "-163 °C"
+                }
+            },
+            {
+                name: "Callisto",
+                nameCH: "木衛四 (卡利斯托)",
+                radius: 0.38,
+                realScaleRadius: 0.378,
+                color: 0x606060,
+                distance: 9,
+                realScaleDistance: 50,
+                speed: 0.012,
+                description: "太陽系中隕石坑最密集的天體之一。",
+                details: {
+                    "質量": "1.076 × 10²³ kg",
+                    "體積": "5.88 × 10¹⁰ km³",
+                    "直徑": "4,821 km",
+                    "表面溫度": "-139 °C"
+                }
+            }
+        ]
     },
     {
         name: "Saturn",
