@@ -6,8 +6,8 @@
   <link rel="icon" type="image/svg+xml" href="/solar_system_3d/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Solar System</title>
-  <script type="module" crossorigin src="/solar_system_3d/assets/index-D2JTKUf2.js"></script>
-  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-CcwsjRwt.css">
+  <script type="module" crossorigin src="/solar_system_3d/assets/index-Dp0psQFs.js"></script>
+  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-C59hdXsh.css">
 </head>
 
 <body>
@@ -76,6 +76,15 @@
           </svg>
           <span>顯示軌道線</span>
         </button>
+
+        <button id="toggle-pilot" class="menu-item" title="進入駕駛模式">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+            <path d="M12 22V12"></path>
+            <path d="M22 7l-10 5-10-5"></path>
+          </svg>
+          <span>艦艇駕駛模式</span>
+        </button>
       </div>
     </div>
   </div>
@@ -97,8 +106,21 @@
     </div>
   </div>
 
+  <!-- Flight Control HUD (Hidden by default) -->
+  <div id="flight-hud" class="hidden">
+    <div id="joystick-container">
+      <div id="joystick-base">
+        <div id="joystick-stick"></div>
+      </div>
+    </div>
+    <div id="throttle-controls">
+      <button id="thrust-up">THRUST</button>
+      <div class="hud-label">飛行控制 (WASD / 空白鍵)</div>
+    </div>
+  </div>
+
   <div id="app"></div>
-  <div id="version-tag">Build: 2026.01.01.1630 v1.4.2</div>
+  <div id="version-tag">Build: 2026.01.01.1645 v1.5.0</div>
 </body>
 
 </html>
