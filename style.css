@@ -69,11 +69,103 @@ button:active {
   padding-right: 5px;
 }
 
+#menu-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+#sub-menu {
+  position: absolute;
+  top: calc(100% + 15px);
+  right: -10px;
+  background: rgba(15, 15, 25, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 15px;
+  width: 200px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  z-index: 2000;
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+  transform-origin: top right;
+}
+
+#sub-menu.hidden {
+  opacity: 0;
+  transform: scale(0.9) translateY(-10px);
+  pointer-events: none;
+}
+
+.menu-label {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  margin-left: 5px;
+}
+
+.menu-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.menu-row button {
+  flex: 1;
+  flex-direction: column;
+  height: auto !important;
+  padding: 10px 5px !important;
+  font-size: 10px !important;
+  gap: 6px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.menu-row button.active {
+  background: rgba(0, 210, 255, 0.15) !important;
+  border-color: rgba(0, 210, 255, 0.3) !important;
+  color: #00d2ff !important;
+}
+
+.divider-horizontal {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 15px 0;
+}
+
+.menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  transition: all 0.2s !important;
+}
+
+.menu-item.active {
+  color: #00d2ff !important;
+  background: rgba(0, 210, 255, 0.1) !important;
+}
+
+@media (max-width: 1100px) {
+  #sub-menu {
+    top: auto;
+    bottom: calc(100% + 15px);
+    right: 0;
+    transform-origin: bottom right;
+  }
+}
+
 .divider {
   width: 1px;
-  height: 20px;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 0 5px;
+  height: 24px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 0 10px;
 }
 
 #view-toggle {

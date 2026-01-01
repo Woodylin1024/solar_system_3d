@@ -255,9 +255,31 @@ function updateSpeed() {
   }
 }
 
-// View Mode Toggle logic
+// View Mode & Menu Toggle logic
+const menuToggle = document.getElementById('menu-toggle');
+const subMenu = document.getElementById('sub-menu');
 const modeArtisticBtn = document.getElementById('mode-artistic');
 const modeRealBtn = document.getElementById('mode-real');
+const toggleOrbitsBtn = document.getElementById('toggle-orbits');
+
+menuToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  subMenu.classList.toggle('hidden');
+});
+
+// Close sub-menu when clicking outside
+window.addEventListener('click', (e) => {
+  if (!subMenu.classList.contains('hidden') && !subMenu.contains(e.target) && e.target !== menuToggle) {
+    subMenu.classList.add('hidden');
+  }
+});
+
+let orbitsVisible = true;
+toggleOrbitsBtn.addEventListener('click', () => {
+  orbitsVisible = !orbitsVisible;
+  solarSystem.setOrbitsVisible(orbitsVisible);
+  toggleOrbitsBtn.classList.toggle('active', orbitsVisible);
+});
 
 modeArtisticBtn.addEventListener('click', () => {
   if (modeArtisticBtn.classList.contains('active')) return;
@@ -268,7 +290,6 @@ modeArtisticBtn.addEventListener('click', () => {
   if (selectedTarget) {
     shouldAutoZoom = true;
   } else {
-    // Reset to default overview position
     camera.position.set(0, 150, 250);
     camera.lookAt(0, 0, 0);
   }
