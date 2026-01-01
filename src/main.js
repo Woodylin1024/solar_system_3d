@@ -7,7 +7,7 @@ const scene = new THREE.Scene();
 // ... (camera setup)
 
 // Add Stars
-createStars(scene);
+const stars = createStars(scene);
 
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 40000); // Massive boost for real scale
 camera.position.set(0, 150, 250);
@@ -299,6 +299,11 @@ function animate() {
   // 1. Move all celestial bodies (Planets then Satellites)
   if (solarSystem) {
     solarSystem.update();
+  }
+
+  // Update background to follow camera (infinite depth)
+  if (stars && stars.update) {
+    stars.update(camera.position);
   }
 
   // 2. Determine tracking state
