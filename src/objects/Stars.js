@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 
-export function createStars(scene, count = 10000) {
+export function createStars(scene, count = 2000) { // Drastically reduced count for a cleaner look
     const group = new THREE.Group();
 
-    // 1. High-Density Procedural Stars (Parallax Layer)
-    // These stars move with the camera to provide depth against the static background
+    // 1. Sparse Procedural Stars (Parallax Layer)
+    // Fewer stars to keep the view clean and focused on planets
     const createStarLayer = (starCount, size, baseOpacity) => {
         const geometry = new THREE.BufferGeometry();
         const vertices = [];
@@ -12,7 +12,7 @@ export function createStars(scene, count = 10000) {
         const color = new THREE.Color();
 
         for (let i = 0; i < starCount; i++) {
-            const r = 40000; // Place them between planets and background
+            const r = 40000;
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.acos(2 * Math.random() - 1);
 
@@ -22,8 +22,9 @@ export function createStars(scene, count = 10000) {
 
             vertices.push(x, y, z);
 
-            const b = Math.pow(Math.random(), 3);
-            const brightness = 0.2 + b * 0.8;
+            // Varied brightness but mostly subtle
+            const b = Math.pow(Math.random(), 4);
+            const brightness = 0.15 + b * 0.85;
             color.setHSL(0, 0, brightness);
             colors.push(color.r, color.g, color.b);
         }
@@ -41,32 +42,31 @@ export function createStars(scene, count = 10000) {
         return new THREE.Points(geometry, material);
     };
 
-    group.add(createStarLayer(count, 0.6, 0.7));
+    group.add(createStarLayer(count, 0.5, 0.6));
 
-    // 2. NASA 8K Ultra-High-Resolution Background
+    // 2. NASA 8K Background (Dimmed for Subtlety)
     const textureLoader = new THREE.TextureLoader();
-    // Cache buster v13
-    const starmapTexture = textureLoader.load('textures/starmap_8k.jpg?v=13', (tex) => {
+    // Cache buster v14
+    const starmapTexture = textureLoader.load('textures/starmap_8k.jpg?v=14', (tex) => {
         tex.wrapS = THREE.RepeatWrapping;
         tex.minFilter = THREE.LinearFilter;
         tex.magFilter = THREE.LinearFilter;
         tex.anisotropy = 16;
-        tex.generateMipmaps = false; // Prevents blur at distance for such a large texture
+        tex.generateMipmaps = false;
     });
 
-    // Use a massive distance for the ultimate skybox
     const skyGeo = new THREE.SphereGeometry(120000, 128, 128);
     const skyMat = new THREE.MeshBasicMaterial({
         map: starmapTexture,
         side: THREE.BackSide,
-        depthWrite: false, // Essential for infinite background feel
-        color: 0xffffff // Maintain full dynamic range
+        depthWrite: false,
+        transparent: true,
+        opacity: 0.3, // Dimmed significantly to reduce visual noise
+        color: 0xaaaaaa // Darken the texture further
     });
 
     const skySphere = new THREE.Mesh(skyGeo, skyMat);
 
-    // Galactic orientation (NASA maps are usually already aligned to celestial J2000)
-    // We adjust to match our scene's ecliptic roughly
     skySphere.rotation.x = THREE.MathUtils.degToRad(-63);
     skySphere.rotation.z = THREE.MathUtils.degToRad(45);
 
@@ -77,7 +77,6 @@ export function createStars(scene, count = 10000) {
         starGroup: group,
         skySphere: skySphere,
         update: (cameraPosition) => {
-            // Locks the background to the camera
             group.position.copy(cameraPosition);
         }
     };
