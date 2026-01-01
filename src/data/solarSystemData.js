@@ -207,6 +207,7 @@ export const solarSystemData = [
                 radius: 0.38,
                 realScaleRadius: 0.378,
                 color: 0x606060,
+                texture: "callisto.png",
                 distance: 9,
                 realScaleDistance: 50,
                 speed: 0.012,
