@@ -329,8 +329,19 @@ togglePilotBtn.addEventListener('click', () => {
     controls.enabled = false;
     // Position ship near current lookAt to make it seamless
     if (selectedTarget) {
-      const targetPos = planets[selectedTarget].position;
-      ship.mesh.position.copy(targetPos).add(new THREE.Vector3(0, 5, 20));
+      const targetPos = new THREE.Vector3();
+      selectedTarget.getWorldPosition(targetPos);
+      ship.mesh.position.copy(targetPos).add(new THREE.Vector3(0, 10, 30));
+
+      // Snap camera once to avoid long lerp
+      const offset = new THREE.Vector3(0, 5, -30).applyQuaternion(ship.mesh.quaternion);
+      camera.position.copy(ship.mesh.position).add(offset);
+      camera.lookAt(ship.mesh.position);
+    } else {
+      // Default position if nothing selected
+      ship.mesh.position.set(0, 10, 100);
+      camera.position.set(0, 15, 80);
+      camera.lookAt(0, 10, 100);
     }
   } else {
     controls.enabled = true;
