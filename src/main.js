@@ -321,6 +321,7 @@ togglePilotBtn.addEventListener('click', () => {
   togglePilotBtn.classList.toggle('active', isPilotMode);
   ship.mesh.visible = isPilotMode;
   flightHud.classList.toggle('hidden', !isPilotMode);
+  document.getElementById('pilot-controls-extra').classList.toggle('active', isPilotMode);
 
   // Close the menu automatically
   subMenu.classList.add('hidden');
@@ -404,7 +405,12 @@ thrustBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isThrustin
 thrustBtn.addEventListener('touchend', () => isThrusting = false);
 
 // Mouse Rotation Logic
-let mouseSensitivity = 0.002;
+let mouseSensitivity = 0.0005; // Drastically lowered base sensitivity as requested
+const sensitivityRange = document.getElementById('sensitivity-range');
+sensitivityRange.addEventListener('input', (e) => {
+  mouseSensitivity = parseFloat(e.target.value) * 0.001;
+});
+
 window.addEventListener('mousemove', (e) => {
   if (isPilotMode && document.pointerLockElement === renderer.domElement) {
     // Pitch (X) and Yaw (Y)
@@ -430,14 +436,13 @@ function handleFlightInputs() {
   const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(ship.mesh.quaternion);
   const right = new THREE.Vector3(-1, 0, 0).applyQuaternion(ship.mesh.quaternion);
 
-  // W: Forward
-  if (keys['KeyW'] || isThrusting) {
-    ship.velocity.add(forward.clone().multiplyScalar(ship.thrust));
-  }
+  // W Forward / S Backward Merge
+  let moveZ = 0;
+  if (keys['KeyW'] || isThrusting) moveZ += 1;
+  if (keys['KeyS']) moveZ -= 1;
 
-  // S: Brake (Enhanced friction)
-  if (keys['KeyS']) {
-    ship.velocity.multiplyScalar(0.92);
+  if (moveZ !== 0) {
+    ship.velocity.add(forward.clone().multiplyScalar(ship.thrust * moveZ));
   }
 
   // A/D: Strafe Left/Right
@@ -509,7 +514,7 @@ function animate() {
       const currentWorldPos = new THREE.Vector3();
       selectedTarget.getWorldPosition(currentWorldPos);
 
-      // Initial auto-zoom approach (works when panel is open OR closed as long as target exists)
+      // Initial auto-zoom approach
       if (shouldAutoZoom) {
         const isReal = solarSystem.isRealScale();
         const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
@@ -535,13 +540,9 @@ function animate() {
         camera.position.add(deltaMovement);
 
         // Update controls target
-        // SHIFT logic: on mobile/tablet, we want the planet to stay in the upper part of screen
         const visualTarget = currentWorldPos.clone();
         if (window.innerWidth <= 1100) {
-          // If panel is open on small screen, offset the planet "upwards" in screen space
-          // by moving the camera focus point slightly "below" the actual planet center
           const up = new THREE.Vector3(0, 1, 0);
-          // Scale offset relative to target radius
           visualTarget.sub(up.multiplyScalar(selectedTarget.userData.radius * 2.5));
         }
         controls.target.copy(visualTarget);
@@ -553,12 +554,15 @@ function animate() {
       // Always update last known position for the next frame
       lastTargetPos.copy(currentWorldPos);
     }
+  }
 
-    // 4. Update the controls to match the target and camera position
-    const prevTarget = controls.target.clone();
-    controls.update();
+  // 4. Update the controls to match the target and camera position
+  const prevTarget = controls.target.clone();
+  controls.update();
 
-    // 5. If panel is closed and user panned away, stop tracking
+  // 5. If panel is closed and user panned away, stop tracking
+  if (!isPilotMode) {
+    const isInfoPanelOpen = infoPanel && !infoPanel.classList.contains('hidden');
     if (!isInfoPanelOpen && isUserInteracting) {
       if (controls.target.distanceTo(prevTarget) > 0.01) {
         selectedTarget = null;
