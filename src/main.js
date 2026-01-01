@@ -321,7 +321,6 @@ togglePilotBtn.addEventListener('click', () => {
   togglePilotBtn.classList.toggle('active', isPilotMode);
   ship.mesh.visible = isPilotMode;
   flightHud.classList.toggle('hidden', !isPilotMode);
-  document.getElementById('pilot-controls-extra').classList.toggle('active', isPilotMode);
 
   // Close the menu automatically
   subMenu.classList.add('hidden');
@@ -404,10 +403,11 @@ thrustBtn.addEventListener('mouseup', () => isThrusting = false);
 thrustBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isThrusting = true; });
 thrustBtn.addEventListener('touchend', () => isThrusting = false);
 
-// Mouse Rotation Logic
-let mouseSensitivity = 0.0005; // Drastically lowered base sensitivity as requested
+// Mouse Rotation Logic (Camera Movement Speed)
+let mouseSensitivity = 0.0005;
 const sensitivityRange = document.getElementById('sensitivity-range');
 sensitivityRange.addEventListener('input', (e) => {
+  // Mapping 0.1 - 2.0 to 0.0001 - 0.002
   mouseSensitivity = parseFloat(e.target.value) * 0.001;
 });
 

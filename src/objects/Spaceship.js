@@ -67,8 +67,13 @@ export function createSpaceship(scene) {
     glowR.position.set(0.4, -0.1, -1.7);
     shipGroup.add(glowR);
 
-    shipGroup.scale.set(0.5, 0.5, 0.5);
-    shipGroup.position.set(0, 155, 260); // Start near Earth/Sun view
+    shipGroup.scale.set(1.5, 1.5, 1.5); // Slightly larger
+    shipGroup.position.set(0, 155, 260);
+
+    // Add a dedicated light to the ship so it's always visible
+    const shipLight = new THREE.PointLight(0xffffff, 5, 20);
+    shipLight.position.set(0, 1, 0);
+    shipGroup.add(shipLight);
 
     scene.add(shipGroup);
 
