@@ -348,8 +348,10 @@ button:active {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  padding: 80px 80px 100px 80px;
+  padding: 60px 100px 120px 100px;
   /* Top, Right, Bottom, Left */
+  box-sizing: border-box;
+  /* Crucial: padding won't push width beyond 100% */
   transition: opacity 0.5s;
 }
 

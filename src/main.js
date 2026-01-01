@@ -443,77 +443,79 @@ function animate() {
   }
 
   // 2. Determine tracking state
-  const isInfoPanelOpen = infoPanel && !infoPanel.classList.contains('hidden');
+  if (!isPilotMode) {
+    const isInfoPanelOpen = infoPanel && !infoPanel.classList.contains('hidden');
 
-  // When focused (info panel open), we disable Panning and make Right click = Rotate
-  // to ensure the celestial body stays centered no matter what.
-  if (isInfoPanelOpen) {
-    controls.enablePan = false;
-    controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
-  } else {
-    controls.enablePan = true;
-    controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
-  }
-
-  // 3. Absolute Tracking Logic with Delta Movement
-  if (selectedTarget) {
-    selectedTarget.updateMatrixWorld(true);
-    const currentWorldPos = new THREE.Vector3();
-    selectedTarget.getWorldPosition(currentWorldPos);
-
-    // Initial auto-zoom approach (works when panel is open OR closed as long as target exists)
-    if (shouldAutoZoom) {
-      const isReal = solarSystem.isRealScale();
-      const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
-
-      const multiplier = window.innerWidth <= 1100 ? 10 : 6;
-      const zoomDist = currentRadius * multiplier;
-      const currentDist = camera.position.distanceTo(currentWorldPos);
-      const newDist = THREE.MathUtils.lerp(currentDist, zoomDist, 0.05);
-
-      const direction = camera.position.clone().sub(currentWorldPos).normalize();
-      camera.position.copy(currentWorldPos.clone().add(direction.multiplyScalar(newDist)));
-
-      if (Math.abs(currentDist - zoomDist) < (currentRadius * 0.1)) {
-        shouldAutoZoom = false;
-      }
-    }
-
+    // When focused (info panel open), we disable Panning and make Right click = Rotate
+    // to ensure the celestial body stays centered no matter what.
     if (isInfoPanelOpen) {
-      // Calculate how much the target moved since the last frame
-      const deltaMovement = currentWorldPos.clone().sub(lastTargetPos);
-
-      // Move the camera by the SAME amount to stay synchronized
-      camera.position.add(deltaMovement);
-
-      // Update controls target
-      // SHIFT logic: on mobile/tablet, we want the planet to stay in the upper part of screen
-      const visualTarget = currentWorldPos.clone();
-      if (window.innerWidth <= 1100) {
-        // If panel is open on small screen, offset the planet "upwards" in screen space
-        // by moving the camera focus point slightly "below" the actual planet center
-        const up = new THREE.Vector3(0, 1, 0);
-        // Scale offset relative to target radius
-        visualTarget.sub(up.multiplyScalar(selectedTarget.userData.radius * 2.5));
-      }
-      controls.target.copy(visualTarget);
-    } else if (!isUserInteracting) {
-      // Smooth follow when panel is closed
-      controls.target.lerp(currentWorldPos, 0.1);
+      controls.enablePan = false;
+      controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
+    } else {
+      controls.enablePan = true;
+      controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
     }
 
-    // Always update last known position for the next frame
-    lastTargetPos.copy(currentWorldPos);
-  }
+    // 3. Absolute Tracking Logic with Delta Movement
+    if (selectedTarget) {
+      selectedTarget.updateMatrixWorld(true);
+      const currentWorldPos = new THREE.Vector3();
+      selectedTarget.getWorldPosition(currentWorldPos);
 
-  // 4. Update the controls to match the target and camera position
-  const prevTarget = controls.target.clone();
-  controls.update();
+      // Initial auto-zoom approach (works when panel is open OR closed as long as target exists)
+      if (shouldAutoZoom) {
+        const isReal = solarSystem.isRealScale();
+        const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
 
-  // 5. If panel is closed and user panned away, stop tracking
-  if (!isInfoPanelOpen && isUserInteracting) {
-    if (controls.target.distanceTo(prevTarget) > 0.01) {
-      selectedTarget = null;
+        const multiplier = window.innerWidth <= 1100 ? 10 : 6;
+        const zoomDist = currentRadius * multiplier;
+        const currentDist = camera.position.distanceTo(currentWorldPos);
+        const newDist = THREE.MathUtils.lerp(currentDist, zoomDist, 0.05);
+
+        const direction = camera.position.clone().sub(currentWorldPos).normalize();
+        camera.position.copy(currentWorldPos.clone().add(direction.multiplyScalar(newDist)));
+
+        if (Math.abs(currentDist - zoomDist) < (currentRadius * 0.1)) {
+          shouldAutoZoom = false;
+        }
+      }
+
+      if (isInfoPanelOpen) {
+        // Calculate how much the target moved since the last frame
+        const deltaMovement = currentWorldPos.clone().sub(lastTargetPos);
+
+        // Move the camera by the SAME amount to stay synchronized
+        camera.position.add(deltaMovement);
+
+        // Update controls target
+        // SHIFT logic: on mobile/tablet, we want the planet to stay in the upper part of screen
+        const visualTarget = currentWorldPos.clone();
+        if (window.innerWidth <= 1100) {
+          // If panel is open on small screen, offset the planet "upwards" in screen space
+          // by moving the camera focus point slightly "below" the actual planet center
+          const up = new THREE.Vector3(0, 1, 0);
+          // Scale offset relative to target radius
+          visualTarget.sub(up.multiplyScalar(selectedTarget.userData.radius * 2.5));
+        }
+        controls.target.copy(visualTarget);
+      } else if (!isUserInteracting) {
+        // Smooth follow when panel is closed
+        controls.target.lerp(currentWorldPos, 0.1);
+      }
+
+      // Always update last known position for the next frame
+      lastTargetPos.copy(currentWorldPos);
+    }
+
+    // 4. Update the controls to match the target and camera position
+    const prevTarget = controls.target.clone();
+    controls.update();
+
+    // 5. If panel is closed and user panned away, stop tracking
+    if (!isInfoPanelOpen && isUserInteracting) {
+      if (controls.target.distanceTo(prevTarget) > 0.01) {
+        selectedTarget = null;
+      }
     }
   }
 
