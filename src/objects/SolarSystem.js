@@ -12,7 +12,7 @@ export function createSolarSystem(scene) {
 
         let material;
         if (data.texture) {
-            const texture = textureLoader.load(`textures/${data.texture}`);
+            const texture = textureLoader.load(`textures/${data.texture}?v=3`);
             material = new THREE.MeshStandardMaterial({
                 map: texture,
                 emissive: data.type === 'star' ? 0xffffff : 0x000000,
@@ -94,7 +94,7 @@ export function createSolarSystem(scene) {
                 let satMat;
                 if (satData.texture) {
                     satMat = new THREE.MeshStandardMaterial({
-                        map: textureLoader.load(`textures/${satData.texture}`)
+                        map: textureLoader.load(`textures/${satData.texture}?v=3`)
                     });
                 } else {
                     satMat = new THREE.MeshStandardMaterial({ color: satData.color });

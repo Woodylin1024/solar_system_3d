@@ -36,7 +36,7 @@ const ambientLight = new THREE.AmbientLight(0xffffff, 0.15); // Reduced to make 
 scene.add(ambientLight);
 
 // Sun Light (Point Light)
-const pointLight = new THREE.PointLight(0xffffff, 200, 500, 0.6); // Reduced intensity to avoid "washout"
+const pointLight = new THREE.PointLight(0xffffff, 300, 15000, 1.2); // Massive boost for real scale
 pointLight.position.set(0, 0, 0);
 scene.add(pointLight);
 

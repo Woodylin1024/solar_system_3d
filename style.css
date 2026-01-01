@@ -230,3 +230,15 @@ button:active {
   color: #00d2ff;
   font-weight: bold;
 }
+
+#version-tag {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 10px;
+  font-family: inherit;
+  pointer-events: none;
+  z-index: 1000;
+  letter-spacing: 1px;
+}

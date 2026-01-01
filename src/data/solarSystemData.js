@@ -153,7 +153,7 @@ export const solarSystemData = [
                 radius: 0.28,
                 realScaleRadius: 0.285,
                 color: 0xfff000,
-                texture: "io.png",
+                texture: "io_fixed.jpg",
                 distance: 5,
                 realScaleDistance: 13,
                 speed: 0.04,
