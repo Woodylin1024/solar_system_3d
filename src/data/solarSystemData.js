@@ -171,6 +171,7 @@ export const solarSystemData = [
                 radius: 0.24,
                 realScaleRadius: 0.245,
                 color: 0xe0e0e0,
+                texture: "europa.png",
                 distance: 6,
                 realScaleDistance: 21,
                 speed: 0.03,
