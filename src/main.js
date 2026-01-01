@@ -9,7 +9,7 @@ const scene = new THREE.Scene();
 // Add Stars
 const stars = createStars(scene);
 
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 40000); // Massive boost for real scale
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 300000); // Massive boost for 8K backdrop depth
 camera.position.set(0, 150, 250);
 camera.lookAt(0, 0, 0);
 
@@ -29,7 +29,7 @@ controls.mouseButtons = {
   MIDDLE: THREE.MOUSE.DOLLY,
   RIGHT: THREE.MOUSE.PAN
 };
-controls.maxDistance = 15000; // Increased to see the edge of the real solar system
+controls.maxDistance = 100000; // Increased to allow deep exploration of the system
 
 // Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.15); // Reduced to make shadows deeper

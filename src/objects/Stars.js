@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 
-export function createStars(scene, count = 8000) {
+export function createStars(scene, count = 10000) {
     const group = new THREE.Group();
 
-    // 1. Procedural Stars (High Precision)
+    // 1. High-Density Procedural Stars (Parallax Layer)
+    // These stars move with the camera to provide depth against the static background
     const createStarLayer = (starCount, size, baseOpacity) => {
         const geometry = new THREE.BufferGeometry();
         const vertices = [];
@@ -11,7 +12,7 @@ export function createStars(scene, count = 8000) {
         const color = new THREE.Color();
 
         for (let i = 0; i < starCount; i++) {
-            const r = 30000;
+            const r = 40000; // Place them between planets and background
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.acos(2 * Math.random() - 1);
 
@@ -22,13 +23,8 @@ export function createStars(scene, count = 8000) {
             vertices.push(x, y, z);
 
             const b = Math.pow(Math.random(), 3);
-            const brightness = 0.3 + b * 0.7;
-
-            const type = Math.random();
-            if (type > 0.96) color.setHSL(0.6, 0.1, brightness);
-            else if (type > 0.92) color.setHSL(0.1, 0.2, brightness);
-            else color.setHSL(0, 0, brightness);
-
+            const brightness = 0.2 + b * 0.8;
+            color.setHSL(0, 0, brightness);
             colors.push(color.r, color.g, color.b);
         }
 
@@ -45,33 +41,32 @@ export function createStars(scene, count = 8000) {
         return new THREE.Points(geometry, material);
     };
 
-    group.add(createStarLayer(count * 0.8, 0.8, 0.8));
-    group.add(createStarLayer(count * 0.2, 1.5, 0.9));
+    group.add(createStarLayer(count, 0.6, 0.7));
 
-    // 2. Custom Epic Milky Way Panorama
+    // 2. NASA 8K Ultra-High-Resolution Background
     const textureLoader = new THREE.TextureLoader();
-    // Cache buster v12
-    const nebulaTexture = textureLoader.load('textures/milky_way_custom.png?v=12', (tex) => {
+    // Cache buster v13
+    const starmapTexture = textureLoader.load('textures/starmap_8k.jpg?v=13', (tex) => {
         tex.wrapS = THREE.RepeatWrapping;
         tex.minFilter = THREE.LinearFilter;
         tex.magFilter = THREE.LinearFilter;
-        tex.anisotropy = 16; // Maximum sharpness
+        tex.anisotropy = 16;
+        tex.generateMipmaps = false; // Prevents blur at distance for such a large texture
     });
 
-    const skyGeo = new THREE.SphereGeometry(32000, 128, 128); // High detail mesh
+    // Use a massive distance for the ultimate skybox
+    const skyGeo = new THREE.SphereGeometry(120000, 128, 128);
     const skyMat = new THREE.MeshBasicMaterial({
-        map: nebulaTexture,
+        map: starmapTexture,
         side: THREE.BackSide,
-        depthWrite: false,
-        transparent: true,
-        opacity: 0.45, // Slightly higher to showcase the custom art
-        blending: THREE.AdditiveBlending, // Makes the galactic core glow and spill naturally
-        color: 0xeeeeee
+        depthWrite: false, // Essential for infinite background feel
+        color: 0xffffff // Maintain full dynamic range
     });
 
     const skySphere = new THREE.Mesh(skyGeo, skyMat);
 
-    // Galactic orientation (keeping the tilted realistic look)
+    // Galactic orientation (NASA maps are usually already aligned to celestial J2000)
+    // We adjust to match our scene's ecliptic roughly
     skySphere.rotation.x = THREE.MathUtils.degToRad(-63);
     skySphere.rotation.z = THREE.MathUtils.degToRad(45);
 
@@ -82,6 +77,7 @@ export function createStars(scene, count = 8000) {
         starGroup: group,
         skySphere: skySphere,
         update: (cameraPosition) => {
+            // Locks the background to the camera
             group.position.copy(cameraPosition);
         }
     };
