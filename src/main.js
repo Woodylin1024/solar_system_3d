@@ -327,7 +327,11 @@ togglePilotBtn.addEventListener('click', () => {
 
   if (isPilotMode) {
     controls.enabled = false;
-    // Position ship near current lookAt to make it seamless
+    // Enter Pointer Lock on Desktop for better control
+    if (!('ontouchstart' in window)) {
+      renderer.domElement.requestPointerLock();
+    }
+
     if (selectedTarget) {
       const targetPos = new THREE.Vector3();
       selectedTarget.getWorldPosition(targetPos);
@@ -345,6 +349,16 @@ togglePilotBtn.addEventListener('click', () => {
     }
   } else {
     controls.enabled = true;
+    if (document.pointerLockElement === renderer.domElement) {
+      document.exitPointerLock();
+    }
+  }
+});
+
+// Cursor lock click handler
+renderer.domElement.addEventListener('click', () => {
+  if (isPilotMode && !('ontouchstart' in window)) {
+    renderer.domElement.requestPointerLock();
   }
 });
 
@@ -389,21 +403,54 @@ thrustBtn.addEventListener('mouseup', () => isThrusting = false);
 thrustBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isThrusting = true; });
 thrustBtn.addEventListener('touchend', () => isThrusting = false);
 
+// Mouse Rotation Logic
+let mouseSensitivity = 0.002;
+window.addEventListener('mousemove', (e) => {
+  if (isPilotMode && document.pointerLockElement === renderer.domElement) {
+    // Pitch (X) and Yaw (Y)
+    ship.rotationVelocity.y -= e.movementX * mouseSensitivity;
+    ship.rotationVelocity.x -= e.movementY * mouseSensitivity;
+  }
+});
+
 function handleFlightInputs() {
   if (!isPilotMode) return;
 
-  // Steering
-  if (keys['KeyA'] || joystickDelta.x < -0.3) ship.rotationVelocity.y += 0.002;
-  if (keys['KeyD'] || joystickDelta.x > 0.3) ship.rotationVelocity.y -= 0.002;
-  if (keys['KeyW'] || joystickDelta.y < -0.3) ship.rotationVelocity.x += 0.002;
-  if (keys['KeyS'] || joystickDelta.y > 0.3) ship.rotationVelocity.x -= 0.002;
-  if (keys['KeyQ']) ship.rotationVelocity.z += 0.002;
-  if (keys['KeyE']) ship.rotationVelocity.z -= 0.002;
+  // 1. Rotation (WASD replaced by Mouse, but we can keep Q/E for Roll)
+  if (keys['KeyQ']) ship.rotationVelocity.z += 0.005;
+  if (keys['KeyE']) ship.rotationVelocity.z -= 0.005;
 
-  // Thrust
-  if (keys['Space'] || isThrusting) {
-    const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(ship.mesh.quaternion);
-    ship.velocity.add(direction.multiplyScalar(ship.thrust));
+  // Mobile Joytick Mapping to Rotation
+  if (joystickDelta.x !== 0 || joystickDelta.y !== 0) {
+    ship.rotationVelocity.y -= joystickDelta.x * 0.02;
+    ship.rotationVelocity.x -= joystickDelta.y * 0.02;
+  }
+
+  // 2. Linear Movement (WASD)
+  const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(ship.mesh.quaternion);
+  const right = new THREE.Vector3(-1, 0, 0).applyQuaternion(ship.mesh.quaternion);
+
+  // W: Forward
+  if (keys['KeyW'] || isThrusting) {
+    ship.velocity.add(forward.clone().multiplyScalar(ship.thrust));
+  }
+
+  // S: Brake (Enhanced friction)
+  if (keys['KeyS']) {
+    ship.velocity.multiplyScalar(0.92);
+  }
+
+  // A/D: Strafe Left/Right
+  if (keys['KeyA']) {
+    ship.velocity.add(right.clone().multiplyScalar(ship.thrust * 0.5));
+  }
+  if (keys['KeyD']) {
+    ship.velocity.add(right.clone().multiplyScalar(-ship.thrust * 0.5));
+  }
+
+  // Space: Emergency Thrust (Turbo)
+  if (keys['Space']) {
+    ship.velocity.add(forward.clone().multiplyScalar(ship.thrust * 2));
   }
 }
 
