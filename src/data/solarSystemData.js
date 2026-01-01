@@ -189,6 +189,7 @@ export const solarSystemData = [
                 radius: 0.41,
                 realScaleRadius: 0.413,
                 color: 0xa0a0a0,
+                texture: "ganymede.png",
                 distance: 7.5,
                 realScaleDistance: 33,
                 speed: 0.02,
