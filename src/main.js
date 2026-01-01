@@ -322,6 +322,9 @@ togglePilotBtn.addEventListener('click', () => {
   ship.mesh.visible = isPilotMode;
   flightHud.classList.toggle('hidden', !isPilotMode);
 
+  // Close the menu automatically
+  subMenu.classList.add('hidden');
+
   if (isPilotMode) {
     controls.enabled = false;
     // Position ship near current lookAt to make it seamless
@@ -414,11 +417,13 @@ function animate() {
     handleFlightInputs();
     ship.update();
 
-    // Smooth camera follow
-    const offset = new THREE.Vector3(0, 2, -10).applyQuaternion(ship.mesh.quaternion);
+    // Smooth camera follow - Refined for Central Third Person View
+    const offset = new THREE.Vector3(0, 1.5, -12).applyQuaternion(ship.mesh.quaternion);
     const idealCameraPos = ship.mesh.position.clone().add(offset);
     camera.position.lerp(idealCameraPos, 0.1);
-    camera.lookAt(ship.mesh.position.clone().add(new THREE.Vector3(0, 0, 10).applyQuaternion(ship.mesh.quaternion)));
+
+    // Look directly at the ship to keep it central
+    camera.lookAt(ship.mesh.position);
   }
 
   // Update background to follow camera (infinite depth)
