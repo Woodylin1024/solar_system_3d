@@ -3,7 +3,7 @@ import * as THREE from 'three';
 export function createStars(scene, count = 8000) {
     const group = new THREE.Group();
 
-    // 1. Procedural Stars with Exponential Brightness Distribution
+    // 1. Procedural Stars (High Precision)
     const createStarLayer = (starCount, size, baseOpacity) => {
         const geometry = new THREE.BufferGeometry();
         const vertices = [];
@@ -21,14 +21,13 @@ export function createStars(scene, count = 8000) {
 
             vertices.push(x, y, z);
 
-            // Natural star brightness variety
-            const b = Math.pow(Math.random(), 3); // Most stars are faint, few are bright
-            const brightness = 0.2 + b * 0.8;
+            const b = Math.pow(Math.random(), 3);
+            const brightness = 0.3 + b * 0.7;
 
             const type = Math.random();
-            if (type > 0.96) color.setHSL(0.6, 0.2, brightness); // Pale Blue
-            else if (type > 0.92) color.setHSL(0.1, 0.3, brightness); // Pale Amber
-            else color.setHSL(0, 0, brightness); // Neutral White
+            if (type > 0.96) color.setHSL(0.6, 0.1, brightness);
+            else if (type > 0.92) color.setHSL(0.1, 0.2, brightness);
+            else color.setHSL(0, 0, brightness);
 
             colors.push(color.r, color.g, color.b);
         }
@@ -46,32 +45,33 @@ export function createStars(scene, count = 8000) {
         return new THREE.Points(geometry, material);
     };
 
-    // Blend of fine background stars and distinct nearby ones
-    group.add(createStarLayer(count * 0.85, 0.7, 0.8)); // Subtle backdrop
-    group.add(createStarLayer(count * 0.15, 1.4, 0.9)); // Bright distinct stars
+    group.add(createStarLayer(count * 0.8, 0.8, 0.8));
+    group.add(createStarLayer(count * 0.2, 1.5, 0.9));
 
-    // 2. ESO Milky Way with Enhanced Dynamic Range
+    // 2. Custom Epic Milky Way Panorama
     const textureLoader = new THREE.TextureLoader();
-    // Cache buster v11
-    const nebulaTexture = textureLoader.load('textures/milky_way_eso.jpg?v=11', (tex) => {
+    // Cache buster v12
+    const nebulaTexture = textureLoader.load('textures/milky_way_custom.png?v=12', (tex) => {
         tex.wrapS = THREE.RepeatWrapping;
         tex.minFilter = THREE.LinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        tex.anisotropy = 16; // Maximum sharpness
     });
 
-    const skyGeo = new THREE.SphereGeometry(32000, 64, 64);
+    const skyGeo = new THREE.SphereGeometry(32000, 128, 128); // High detail mesh
     const skyMat = new THREE.MeshBasicMaterial({
         map: nebulaTexture,
         side: THREE.BackSide,
         depthWrite: false,
         transparent: true,
-        opacity: 0.35, // Balanced: Visible but doesn't wash out foreground
-        blending: THREE.AdditiveBlending, // Allows the Galactic Center to glow naturally
-        color: 0xcccccc // Slightly muted but still has range
+        opacity: 0.45, // Slightly higher to showcase the custom art
+        blending: THREE.AdditiveBlending, // Makes the galactic core glow and spill naturally
+        color: 0xeeeeee
     });
 
     const skySphere = new THREE.Mesh(skyGeo, skyMat);
 
-    // Galactic orientation
+    // Galactic orientation (keeping the tilted realistic look)
     skySphere.rotation.x = THREE.MathUtils.degToRad(-63);
     skySphere.rotation.z = THREE.MathUtils.degToRad(45);
 
