@@ -6,8 +6,8 @@
   <link rel="icon" type="image/svg+xml" href="/solar_system_3d/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Solar System</title>
-  <script type="module" crossorigin src="/solar_system_3d/assets/index-Dpp40cnm.js"></script>
-  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-R1CTbsKh.css">
+  <script type="module" crossorigin src="/solar_system_3d/assets/index-CCxww0fV.js"></script>
+  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-Py_HWt18.css">
 </head>
 
 <body>
@@ -40,66 +40,73 @@
 
     <div id="menu-container">
       <button id="menu-toggle" title="更多設定">
-        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none">
+        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none"
+          stroke-linecap="round" stroke-linejoin="round">
           <line x1="3" y1="12" x2="21" y2="12"></line>
           <line x1="3" y1="6" x2="21" y2="6"></line>
           <line x1="3" y1="18" x2="21" y2="18"></line>
         </svg>
       </button>
+    </div>
 
-      <div id="sub-menu" class="hidden">
-        <div class="menu-label">顯示比例</div>
-        <div class="menu-row">
-          <button id="mode-artistic" class="active" title="藝術比例">
-            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-            <span>藝術模式</span>
-          </button>
-          <button id="mode-real" title="真實比例">
-            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+    <div id="sub-menu" class="hidden">
+      <div class="menu-label">顯示比例</div>
+      <div class="menu-row">
+        <button id="mode-artistic" class="active">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+            <path d="M2 2l7.5 1.5"></path>
+            <path d="M14.5 3.5l7.5 1.5"></path>
+          </svg>
+          <span>藝術模式</span>
+        </button>
+        <button id="mode-real">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="4"></circle>
+            <line x1="12" y1="2" x2="12" y2="4"></line>
+            <line x1="12" y1="20" x2="12" y2="22"></line>
+            <line x1="2" y1="12" x2="4" y2="12"></line>
+            <line x1="20" y1="12" x2="22" y2="12"></line>
+          </svg>
+          <span>實際比例</span>
+        </button>
+      </div>
+
+      <div class="divider-horizontal"></div>
+
+      <div class="menu-label">視覺選項</div>
+      <button id="toggle-orbits" class="menu-item active">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 3v18M3 12h18"></path>
+        </svg>
+        <span>顯示行星軌道</span>
+      </button>
+
+      <div class="divider-horizontal"></div>
+
+      <div class="menu-label">飛行設定</div>
+      <button id="toggle-pilot" class="menu-item">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+          <path
+            d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z">
+          </path>
+        </svg>
+        <span>開始駕駛模式</span>
+      </button>
+
+      <div id="pilot-controls-extra" class="pilot-settings-section">
+        <div class="slider-container">
+          <div class="slider-label">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
               <circle cx="12" cy="12" r="10"></circle>
-              <circle cx="12" cy="12" r="4"></circle>
-              <path d="M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93"></path>
+              <path d="M12 8v8M8 12h8"></path>
             </svg>
-            <span>真實比例</span>
-          </button>
-        </div>
-
-        <div class="divider-horizontal"></div>
-
-        <div class="menu-label">視覺選項</div>
-        <button id="toggle-orbits" class="menu-item active" title="顯示軌道">
-          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
-            <circle cx="12" cy="12" r="9"></circle>
-            <path d="M12 3v18M3 12h18"></path>
-          </svg>
-          <span>顯示軌道線</span>
-        </button>
-
-        <div class="divider-horizontal"></div>
-
-        <div class="menu-label">飛行設定</div>
-        <button id="toggle-pilot" class="menu-item" title="進入駕駛模式">
-          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-            <path d="M12 22V12"></path>
-            <path d="M22 7l-10 5-10-5"></path>
-          </svg>
-          <span>開始駕駛模式</span>
-        </button>
-
-        <div id="pilot-controls-extra" class="pilot-settings-section">
-          <div class="slider-container">
-            <div class="slider-label">
-              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M12 8v8M8 12h8"></path>
-              </svg>
-              <span>視角移動速度</span>
-            </div>
-            <input type="range" id="sensitivity-range" min="0.1" max="2.0" step="0.1" value="1.0">
+            <span>視角移動速度</span>
           </div>
+          <input type="range" id="sensitivity-range" min="0.1" max="2.0" step="0.1" value="1.0">
         </div>
       </div>
     </div>
@@ -136,7 +143,7 @@
   </div>
 
   <div id="app"></div>
-  <div id="version-tag">Build: 2026.01.01.2000 v1.7.6</div>
+  <div id="version-tag">Build: 2026.01.02.0730 v1.7.7</div>
 </body>
 
 </html>
