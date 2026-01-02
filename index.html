@@ -6,41 +6,34 @@
   <link rel="icon" type="image/svg+xml" href="/solar_system_3d/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Solar System</title>
-  <script type="module" crossorigin src="/solar_system_3d/assets/index-tacGbNdP.js"></script>
-  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-BJ50Luti.css">
+  <script type="module" crossorigin src="/solar_system_3d/assets/index-D_sylaZM.js"></script>
+  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-BGS5Cx4x.css">
 </head>
 
 <body>
   <div id="controls">
-    <button id="slow" title="減速">
-      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
-        <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" />
-      </svg>
+    <button id="slow" title="減速">-</button>
+    <div id="speed-display">0.1x</div>
+    <button id="fast" title="加速">+</button>
+    <button id="pause" title="暫停/啟動">
+      <span id="pause-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="3" fill="none">
+          <path d="M9 18V8M15 18V8" />
+        </svg>
+      </span>
     </button>
-    <button id="reset" title="正常速度">
-      <div id="speed-display">速度: 0.1x</div>
-      <button id="slow" title="減速">-</button>
-      <button id="reset" title="重置為 1x">1x</button>
-      <button id="fast" title="加速">+</button>
-      <button id="pause" title="暫停/啟動">
-        <span id="pause-icon">
-          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="3" fill="none">
-            <path d="M9 18V8M15 18V8" />
-          </svg>
-        </span>
-      </button>
-      <div class="divider"></div>
+    <div class="divider"></div>
 
-      <div id="menu-container">
-        <button id="menu-toggle" title="更多設定">
-          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none"
-            stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-      </div>
+    <div id="menu-container">
+      <button id="menu-toggle" title="更多設定">
+        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <!-- Sub-menu moved to body root to avoid any parent clipping -->
@@ -137,7 +130,7 @@
   </div>
 
   <div id="app"></div>
-  <div id="version-tag">Build: 2026.01.02.1300 v1.8.1</div>
+  <div id="version-tag">Build: 2026.01.02.1315 v1.8.2</div>
 </body>
 
 </html>
