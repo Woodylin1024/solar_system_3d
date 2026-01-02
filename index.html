@@ -6,8 +6,8 @@
   <link rel="icon" type="image/svg+xml" href="/solar_system_3d/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Solar System</title>
-  <script type="module" crossorigin src="/solar_system_3d/assets/index-BnDiK9-a.js"></script>
-  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-Dp-8RFdS.css">
+  <script type="module" crossorigin src="/solar_system_3d/assets/index-B9Tzz4ie.js"></script>
+  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-DPGOOb_6.css">
 </head>
 
 <body>
@@ -15,52 +15,48 @@
     <div class="control-top-row">
       <button id="slow" title="減速">-</button>
       <div id="speed-display">0.1x</div>
-      <button id="fast" title="加速">+</button>
-      <button id="pause" title="暫停/啟動">
-        <span id="pause-icon">
-          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="3" fill="none">
-            <path d="M9 18V8M15 18V8" />
-          </svg>
-        </span>
-      </button>
-      <div class="divider"></div>
-      <button id="reset-to-sun" title="回到太陽">
-        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"
-          stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="5"></circle>
-          <line x1="12" y1="1" x2="12" y2="3"></line>
-          <line x1="12" y1="21" x2="12" y2="23"></line>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-          <line x1="1" y1="12" x2="3" y2="12"></line>
-          <line x1="21" y1="12" x2="23" y2="12"></line>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      <button id="fast" title="Faster (Hold for Auto)">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 18L16 12L6 6V18Z" />
         </svg>
       </button>
-      <div id="menu-container">
-        <button id="menu-toggle" title="更多設定">
-          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none"
-            stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-      </div>
+      <button id="pause" title="Pause/Play">
+        <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 19H10V5H6V19ZM14 5V19H18V5H14Z" />
+        </svg>
+      </button>
+      <div class="divider"></div>
+      <button id="reset-to-sun" title="Reset to Sun (快速回航)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5" />
+          <path
+            d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        </svg>
+      </button>
+      <button id="menu-toggle" title="Settings (圖層)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
     </div>
 
+    <!-- Search UI -->
     <div id="search-container">
       <div class="search-input-wrapper">
-        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
         <input type="text" id="planet-search" placeholder="搜尋天體 (Search)..." autocomplete="off">
-        <button id="clear-search" class="hidden">×</button>
+        <button id="clear-search" class="hidden">&times;</button>
       </div>
       <div id="search-results" class="hidden"></div>
     </div>
+
+    <div id="version-tag">v2.1.47</div>
   </div>
 
   <!-- Sub-menu moved to body root to avoid any parent clipping -->
@@ -184,8 +180,6 @@
     </div>
   </div>
 
-  <div id="app"></div>
-  <div id="version-tag">Build: 2026.01.03.2045 v2.1.46</div>
 </body>
 
 </html>
