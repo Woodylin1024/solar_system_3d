@@ -6,33 +6,46 @@
   <link rel="icon" type="image/svg+xml" href="/solar_system_3d/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Solar System</title>
-  <script type="module" crossorigin src="/solar_system_3d/assets/index-C_j4Lqb2.js"></script>
-  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-B8rbY-W4.css">
+  <script type="module" crossorigin src="/solar_system_3d/assets/index-KiZcVmmG.js"></script>
+  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-D_fa9JvU.css">
 </head>
 
 <body>
   <div id="controls">
-    <button id="slow" title="減速">-</button>
-    <div id="speed-display">0.1x</div>
-    <button id="fast" title="加速">+</button>
-    <button id="pause" title="暫停/啟動">
-      <span id="pause-icon">
-        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="3" fill="none">
-          <path d="M9 18V8M15 18V8" />
-        </svg>
-      </span>
-    </button>
-    <div class="divider"></div>
-
-    <div id="menu-container">
-      <button id="menu-toggle" title="更多設定">
-        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none"
-          stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
+    <div class="control-top-row">
+      <button id="slow" title="減速">-</button>
+      <div id="speed-display">0.1x</div>
+      <button id="fast" title="加速">+</button>
+      <button id="pause" title="暫停/啟動">
+        <span id="pause-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="3" fill="none">
+            <path d="M9 18V8M15 18V8" />
+          </svg>
+        </span>
       </button>
+      <div class="divider"></div>
+      <div id="menu-container">
+        <button id="menu-toggle" title="更多設定">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="search-container">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="planet-search" placeholder="搜尋天體 (Search)..." autocomplete="off">
+        <button id="clear-search" class="hidden">×</button>
+      </div>
+      <div id="search-results" class="hidden"></div>
     </div>
   </div>
 
