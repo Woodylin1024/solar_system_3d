@@ -6,14 +6,20 @@
   <link rel="icon" type="image/svg+xml" href="/solar_system_3d/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Solar System</title>
-  <script type="module" crossorigin src="/solar_system_3d/assets/index-B9Tzz4ie.js"></script>
-  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-DPGOOb_6.css">
+  <script type="module" crossorigin src="/solar_system_3d/assets/index-DKPNw3QP.js"></script>
+  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-BzWp0XGZ.css">
 </head>
 
 <body>
+  <div id="app"></div>
+
   <div id="controls">
     <div class="control-top-row">
-      <button id="slow" title="減速">-</button>
+      <button id="slow" title="Slower (Hold for Auto)">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 6L9 12L19 18V6Z" />
+        </svg>
+      </button>
       <div id="speed-display">0.1x</div>
       <button id="fast" title="Faster (Hold for Auto)">
         <svg viewBox="0 0 24 24" fill="currentColor">
@@ -56,7 +62,7 @@
       <div id="search-results" class="hidden"></div>
     </div>
 
-    <div id="version-tag">v2.1.47</div>
+    <div id="version-tag">v2.1.48</div>
   </div>
 
   <!-- Sub-menu moved to body root to avoid any parent clipping -->
@@ -158,7 +164,7 @@
           <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
         </svg>
       </div>
-      <button id="close-info">×</button>
+      <button id="close-info">&times;</button>
     </div>
     <div id="info-scroll-container">
       <h2 id="info-title">天體名稱</h2>
