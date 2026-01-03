@@ -6,8 +6,8 @@
   <link rel="icon" type="image/svg+xml" href="/solar_system_3d/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Solar System</title>
-  <script type="module" crossorigin src="/solar_system_3d/assets/index-10HVwqWb.js"></script>
-  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-WVJvP5hZ.css">
+  <script type="module" crossorigin src="/solar_system_3d/assets/index-CYTXq6ow.js"></script>
+  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-cYWfL9EI.css">
 </head>
 
 <body>
@@ -63,7 +63,7 @@
     </div>
   </div>
 
-  <div id="version-tag">v2.2.4</div>
+  <div id="version-tag">v2.2.5</div>
 
   <!-- Sub-menu moved to body root to avoid any parent clipping -->
   <div id="sub-menu" class="hidden">
@@ -153,7 +153,15 @@
 
     <div class="divider-horizontal"></div>
 
-    <div class="menu-label">飛行設定</div>
+    <div class="menu-label-container">
+      <div class="menu-label" style="margin-bottom: 0;">飛行設定</div>
+      <div class="under-construction-badge">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+          <path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V8h2v4z" />
+        </svg>
+        <span>施工中</span>
+      </div>
+    </div>
     <button id="toggle-pilot" class="menu-item">
       <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
         <path
