@@ -3,108 +3,139 @@ import * as THREE from 'three';
 export function createSpaceship(scene) {
     const shipGroup = new THREE.Group();
 
-    // 1. Simple Sleek Sci-Fi Design
-    // Main Body
-    const bodyGeo = new THREE.BoxGeometry(1, 0.4, 3);
-    const bodyMat = new THREE.MeshStandardMaterial({
-        color: 0xcccccc,
-        metalness: 0.8,
-        roughness: 0.2
+    // 1. Materials
+    const hullMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        metalness: 0.3,
+        roughness: 0.5,
     });
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    shipGroup.add(body);
 
-    // Cocpkit
-    const cockpitGeo = new THREE.BoxGeometry(0.6, 0.3, 1);
-    const cockpitMat = new THREE.MeshStandardMaterial({
-        color: 0x00d2ff,
-        emissive: 0x00d2ff,
-        emissiveIntensity: 0.5,
+    const secondaryHullMat = new THREE.MeshStandardMaterial({
+        color: 0x888888,
+        metalness: 0.6,
+        roughness: 0.3
+    });
+
+    const windowMat = new THREE.MeshStandardMaterial({
+        color: 0xffaa00,
+        emissive: 0xff5500,
+        emissiveIntensity: 2
+    });
+
+    const engineGlowMat = new THREE.MeshBasicMaterial({
+        color: 0xff8800,
         transparent: true,
         opacity: 0.8
     });
-    const cockpit = new THREE.Mesh(cockpitGeo, cockpitMat);
-    cockpit.position.set(0, 0.3, 0.5);
-    shipGroup.add(cockpit);
 
-    // Wings
-    const wingGeo = new THREE.BufferGeometry();
-    const wingVertices = new Float32Array([
-        0, 0, 1,    // Forward center
-        2, 0, -1,   // Right back
-        0, 0, -0.5, // Center back
-        0, 0, 1,    // Forward center
-        -2, 0, -1,  // Left back
-        0, 0, -0.5  // Center back
-    ]);
-    wingGeo.setAttribute('position', new THREE.BufferAttribute(wingVertices, 3));
-    const wingMat = new THREE.MeshStandardMaterial({ color: 0x999999, side: THREE.DoubleSide });
-    const wings = new THREE.Mesh(wingGeo, wingMat);
+    // 2. Main Hull - Arrowhead / Diamond shape
+    const mainHullGeo = new THREE.ConeGeometry(1, 4, 4);
+    const mainHull = new THREE.Mesh(mainHullGeo, hullMat);
+    mainHull.rotation.x = Math.PI / 2;
+    mainHull.scale.set(1.5, 1, 0.4); // Flatten it
+    shipGroup.add(mainHull);
+
+    // 3. Side Wings / Extensions
+    const wingGeo = new THREE.BoxGeometry(2.5, 0.1, 1.5);
+    const wings = new THREE.Mesh(wingGeo, hullMat);
+    wings.position.set(0, 0, -0.5);
     shipGroup.add(wings);
 
-    // Engines
-    const engineGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.5, 8);
-    const engineMat = new THREE.MeshStandardMaterial({ color: 0x444444 });
+    // 4. Top Bridge / Structure
+    const bridgeGeo = new THREE.BoxGeometry(0.4, 0.3, 1.2);
+    const bridge = new THREE.Mesh(bridgeGeo, secondaryHullMat);
+    bridge.position.set(0, 0.2, -0.2);
+    shipGroup.add(bridge);
 
-    const engineL = new THREE.Mesh(engineGeo, engineMat);
-    engineL.rotation.x = Math.PI / 2;
-    engineL.position.set(-0.4, -0.1, -1.5);
-    shipGroup.add(engineL);
+    // 5. "Greebles" and Windows (Adding details)
+    const detailGeo = new THREE.BoxGeometry(0.1, 0.1, 0.1);
 
-    const engineR = engineL.clone();
-    engineR.position.set(0.4, -0.1, -1.5);
-    shipGroup.add(engineR);
+    // Distribute windows and small mechanical parts
+    for (let i = 0; i < 40; i++) {
+        const side = Math.random() > 0.5 ? 1 : -1;
+        const zPos = (Math.random() - 0.5) * 3;
+        const xPos = (Math.random() * 0.8 + 0.2) * side;
+        const yOffset = (Math.random() - 0.5) * 0.15;
 
-    // Engine Glow
-    const glowGeo = new THREE.SphereGeometry(0.15, 8, 8);
-    const glowMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff });
+        // Use window material for some, hull for others
+        const isWindow = Math.random() > 0.4;
+        const detail = new THREE.Mesh(detailGeo, isWindow ? windowMat : secondaryHullMat);
+        detail.position.set(xPos, yOffset, zPos);
+        detail.scale.set(Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 2);
+        shipGroup.add(detail);
+    }
 
-    const glowL = new THREE.Mesh(glowGeo, glowMat);
-    glowL.position.set(-0.4, -0.1, -1.7);
-    shipGroup.add(glowL);
+    // 6. Engine Cluster (Rear)
+    const engineBlockGeo = new THREE.BoxGeometry(0.8, 0.3, 0.5);
+    const engineBlock = new THREE.Mesh(engineBlockGeo, secondaryHullMat);
+    engineBlock.position.set(0, 0, -2);
+    shipGroup.add(engineBlock);
 
-    const glowR = glowL.clone();
-    glowR.position.set(0.4, -0.1, -1.7);
-    shipGroup.add(glowR);
+    const thrusterGeo = new THREE.CylinderGeometry(0.15, 0.1, 0.3, 8);
+    const engineGlows = [];
 
-    shipGroup.scale.set(1.5, 1.5, 1.5); // Slightly larger
-    shipGroup.position.set(0, 155, 260);
+    const enginePos = [
+        { x: -0.25, y: 0 }, { x: 0.25, y: 0 }, { x: 0, y: 0.1 }
+    ];
 
-    // Add a dedicated light to the ship so it's always visible
-    const shipLight = new THREE.PointLight(0xffffff, 5, 20);
-    shipLight.position.set(0, 1, 0);
-    shipGroup.add(shipLight);
+    enginePos.forEach(p => {
+        const t = new THREE.Mesh(thrusterGeo, secondaryHullMat);
+        t.rotation.x = Math.PI / 2;
+        t.position.set(p.x, p.y, -2.2);
+        shipGroup.add(t);
 
+        const glow = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), engineGlowMat);
+        glow.position.set(p.x, p.y, -2.3);
+        shipGroup.add(glow);
+        engineGlows.push(glow);
+    });
+
+    // 7. Sensory Needles (Tips)
+    const needleGeo = new THREE.CylinderGeometry(0.01, 0.01, 1, 8);
+    const n1 = new THREE.Mesh(needleGeo, secondaryHullMat);
+    n1.rotation.x = Math.PI / 2;
+    n1.position.set(0, 0, 2);
+    shipGroup.add(n1);
+
+    // 8. Lights
+    const shipTopLight = new THREE.PointLight(0xffaa00, 15, 50);
+    shipTopLight.position.set(0, 2, 0);
+    shipGroup.add(shipTopLight);
+
+    const headlight = new THREE.SpotLight(0xffffff, 40, 300, Math.PI / 8, 0.5);
+    headlight.position.set(0, 0, 2);
+    headlight.target.position.set(0, 0, 10);
+    shipGroup.add(headlight);
+    shipGroup.add(headlight.target);
+
+    shipGroup.scale.set(4, 4, 4); // Slightly larger for detail
+    shipGroup.name = "AdvancedExplorer";
     scene.add(shipGroup);
 
     // Physics state
     const velocity = new THREE.Vector3();
-    const rotationVelocity = new THREE.Euler(0, 0, 0);
-    const thrust = 0.05;
+    const thrust = 0.08;
     const friction = 0.98;
 
     return {
         mesh: shipGroup,
         velocity: velocity,
-        rotationVelocity: rotationVelocity,
         thrust: thrust,
         friction: friction,
         update: () => {
             // Apply velocities
             shipGroup.position.add(velocity);
-            shipGroup.rotation.x += rotationVelocity.x;
-            shipGroup.rotation.y += rotationVelocity.y;
-            shipGroup.rotation.z += rotationVelocity.z;
 
-            // Simple inertia
+            // Inertia
             velocity.multiplyScalar(friction);
-            rotationVelocity.x *= friction;
-            rotationVelocity.y *= friction;
-            rotationVelocity.z *= friction;
 
-            // Limit engine glow intensity based on speed (visual feedback)
+            // Engine pulsing with warm colors
             const speed = velocity.length();
-            glowMat.color.setHSL(0.5, 1, 0.5 + Math.min(speed * 2, 0.5));
+            engineGlows.forEach(glow => {
+                const scale = 0.8 + Math.random() * 0.4 + (speed * 4);
+                glow.scale.set(scale, scale, scale);
+                glow.material.opacity = 0.6 + Math.min(speed * 3, 0.4);
+            });
         }
     };
 }

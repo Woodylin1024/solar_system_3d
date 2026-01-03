@@ -10,14 +10,58 @@ export function createSolarSystem(scene) {
         // We initialize with radius 1 and use mesh.scale for the actual sizes
         const geometry = new THREE.SphereGeometry(1, 64, 64);
 
+        // Apply irregularity/deformation if specified (e.g., for "potato" shaped asteroids)
+        if (data.isIrregular) {
+            const pos = geometry.attributes.position;
+            const v = new THREE.Vector3();
+            for (let i = 0; i < pos.count; i++) {
+                v.fromBufferAttribute(pos, i);
+
+                // Aggressive Jagged Organic Noise (high amplitude, jagged frequencies)
+                const noise =
+                    Math.sin(v.x * 2.5 + v.y * 1.8) * 0.35 +
+                    Math.cos(v.z * 2.2 + v.x * 1.5) * 0.25 +
+                    Math.sin(v.y * 4.0 + v.z * 2.5) * 0.20;
+
+                // Deep Peanut/Bone Logic: 
+                // Quadratic formula forces the center (v.x=0) to be thinner and ends (v.x=±1) to bulge.
+                const peanutScale = 0.7 + Math.pow(v.x, 2) * 0.8;
+
+                // 3D Compound Twisting Bend
+                const bendY = Math.cos(v.x * 1.4) * 0.30;
+                const bendZ = Math.sin(v.x * 1.6) * 0.25;
+
+                v.y += bendY;
+                v.z += bendZ;
+
+                // Break circular symmetry (Warping the cross-section)
+                const crossSectionWarp = 1.0 + Math.sin(Math.atan2(v.y, v.z) * 3.0) * 0.15;
+
+                // Targeted Localized Collapse (The "Saddle" or big crater area)
+                // We target a specific region to create a deep depression
+                let craterEffect = 0;
+                const craterDist = Math.sqrt(Math.pow(v.x + 0.6, 2) + Math.pow(v.z - 0.5, 2));
+                if (craterDist < 0.8) {
+                    craterEffect = (1.0 - Math.pow(craterDist / 0.8, 2)) * 0.45;
+                }
+
+                v.multiplyScalar(1.0 + noise * 0.7 - craterEffect);
+                v.y *= peanutScale * crossSectionWarp;
+                v.z *= peanutScale * (crossSectionWarp * 0.9); // Slightly flattened on one side
+
+                pos.setXYZ(i, v.x, v.y, v.z);
+            }
+            geometry.computeVertexNormals();
+        }
+
         let material;
         if (data.texture) {
-            const texture = textureLoader.load(`textures/${data.texture}?v=6`);
+            const texture = textureLoader.load(`textures/${data.texture}?v=22`);
             material = new THREE.MeshStandardMaterial({
                 map: texture,
-                emissive: data.type === 'star' ? 0xffffff : 0x000000,
-                emissiveMap: data.type === 'star' ? texture : null,
-                emissiveIntensity: data.type === 'star' ? 1 : 0
+                emissive: data.isComet ? 0x4488ff : (data.type === 'star' ? 0xffffff : 0x222222),
+                emissiveMap: data.type === 'star' ? texture : (data.isComet ? texture : null),
+                emissiveIntensity: data.isComet ? 0.8 : (data.type === 'star' ? 1 : 0.05)
             });
         } else {
             material = new THREE.MeshStandardMaterial({
@@ -32,7 +76,18 @@ export function createSolarSystem(scene) {
         mesh.name = data.name;
 
         // Initial scale
-        mesh.scale.setScalar(data.radius);
+        if (data.geometryScale) {
+            mesh.scale.set(
+                data.radius * data.geometryScale[0],
+                data.radius * data.geometryScale[1],
+                data.radius * data.geometryScale[2]
+            );
+        } else {
+            mesh.scale.setScalar(data.radius);
+        }
+
+        // Apply Axial Tilt (Obliquity) to the mesh
+        mesh.rotation.z = THREE.MathUtils.degToRad(data.obliquity || 0);
 
         const body = {
             name: data.name,
@@ -41,32 +96,61 @@ export function createSolarSystem(scene) {
             distance: data.distance,
             speed: data.speed,
             angle: Math.random() * Math.PI * 2,
-            rotationSpeed: 0.005,
+            rotationSpeed: data.rotationSpeed || 0.005,
             satellites: [],
             orbitLine: null,
-            ringMesh: null
+            ringMesh: null,
+            obliquity: THREE.MathUtils.degToRad(data.obliquity || 0)
         };
 
         // Orbit Line
         if (data.name !== 'Sun') {
-            const curve = new THREE.EllipseCurve(0, 0, data.distance, data.distance, 0, 2 * Math.PI, false, 0);
-            const points = curve.getPoints(256);
-            const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+            let orbitLine;
+            let orbitColor = 0x00d2ff; // Planet blue
+
+            if (data.type === 'dwarf_planet') {
+                orbitColor = 0xffaa00; // Dwarf planet amber
+            } else if (data.type === 'dwarf_planet_candidate') {
+                orbitColor = 0xcc66ff; // Candidate purple
+            } else if (data.type === 'interstellar') {
+                orbitColor = 0xff3333; // Interstellar red
+            } else if (data.type === 'asteroid') {
+                orbitColor = 0x84ff00; // Asteroid bright lime green
+            }
+
             const lineMaterial = new THREE.LineBasicMaterial({
-                color: 0x00d2ff,
+                color: orbitColor,
                 transparent: true,
                 opacity: 0.35,
                 blending: THREE.AdditiveBlending
             });
-            const orbitLine = new THREE.LineLoop(lineGeometry, lineMaterial);
-            orbitLine.rotation.x = Math.PI / 2; // Rotate the MESH once
+
+            if (data.type === 'interstellar' && data.pathPoints) {
+                // Interstellar: Path-based non-closed orbit
+                const pts = data.pathPoints.map(p => new THREE.Vector3(p[0], p[1], p[2]));
+                const curve = new THREE.CatmullRomCurve3(pts);
+                const points = curve.getPoints(200);
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                orbitLine = new THREE.Line(lineGeometry, lineMaterial);
+                body.orbitCurve = curve;
+                body.progress = Math.random(); // Start at random progress
+            } else {
+                // Standard: Circular closed orbit
+                const curve = new THREE.EllipseCurve(0, 0, data.distance, data.distance, 0, 2 * Math.PI, false, 0);
+                const points = curve.getPoints(256);
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                orbitLine = new THREE.LineLoop(lineGeometry, lineMaterial);
+
+                // Apply Inclination for standard orbits
+                orbitLine.rotation.x = Math.PI / 2 + THREE.MathUtils.degToRad(data.inclination || 0);
+            }
+
             scene.add(orbitLine);
             body.orbitLine = orbitLine;
         }
 
         // Saturn Rings
         if (data.ring) {
-            // Rings use local scale usually, but here we add it to the planet mesh
             const ringGeo = new THREE.RingGeometry(data.ring.innerRadius / data.radius, data.ring.outerRadius / data.radius, 128);
             const pos = ringGeo.attributes.position;
             const uv = ringGeo.attributes.uv;
@@ -95,29 +179,200 @@ export function createSolarSystem(scene) {
         // Satellites
         if (data.satellites) {
             data.satellites.forEach(satData => {
-                const satGeo = new THREE.SphereGeometry(1, 64, 64);
-                let satMat;
-                if (satData.texture) {
-                    satMat = new THREE.MeshStandardMaterial({
-                        map: textureLoader.load(`textures/${satData.texture}?v=6`)
+                let satMesh;
+
+                if (satData.type === 'space_station') {
+                    const stationGroup = new THREE.Group();
+
+                    const coreMat = new THREE.MeshStandardMaterial({
+                        color: 0xdddddd,
+                        metalness: 0.5,
+                        roughness: 0.4
+                    });
+
+                    const panelMat = new THREE.MeshStandardMaterial({
+                        color: 0x1e3a5f, // Photovoltaic dark blue
+                        metalness: 0.8,
+                        roughness: 0.2,
+                        emissive: 0x001122,
+                        emissiveIntensity: 0.2,
+                        side: THREE.DoubleSide
+                    });
+
+                    const goldPanelMat = new THREE.MeshStandardMaterial({
+                        color: 0xffaa00,
+                        metalness: 0.9,
+                        roughness: 0.1,
+                        emissive: 0x442200,
+                        emissiveIntensity: 0.2,
+                        side: THREE.DoubleSide
+                    });
+
+                    if (satData.name === 'ISS') {
+                        // --- ISS Structure (Truss based) ---
+                        // 1. Central Truss (Extra long)
+                        const truss = new THREE.Mesh(new THREE.BoxGeometry(10, 0.15, 0.15), coreMat);
+                        stationGroup.add(truss);
+
+                        // 2. Main Modules (Concentrated in center)
+                        const modules = new THREE.Group();
+                        const core1 = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.8, 12), coreMat);
+                        core1.rotation.z = Math.PI / 2;
+                        modules.add(core1);
+
+                        const core2 = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.2, 12), coreMat);
+                        core2.position.set(0, 0.6, 0.1);
+                        modules.add(core2);
+
+                        stationGroup.add(modules);
+
+                        // 3. Huge Solar Arrays (8 Main Wings)
+                        const endPositions = [-4.6, -3.8, 3.8, 4.6];
+                        endPositions.forEach(xPos => {
+                            // Upper Panel
+                            const pUp = new THREE.Mesh(new THREE.BoxGeometry(0.04, 4, 1.3), goldPanelMat);
+                            pUp.position.set(xPos, 2.2, 0);
+                            stationGroup.add(pUp);
+                            // Lower Panel
+                            const pDown = new THREE.Mesh(new THREE.BoxGeometry(0.04, 4, 1.3), goldPanelMat);
+                            pDown.position.set(xPos, -2.2, 0);
+                            stationGroup.add(pDown);
+                        });
+
+                        // 4. Smaller Radiators (White/Silver)
+                        const radMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.2, roughness: 0.8 });
+                        const r1 = new THREE.Mesh(new THREE.BoxGeometry(0.02, 1.5, 2), radMat);
+                        r1.position.set(-1, -0.8, 0);
+                        stationGroup.add(r1);
+
+                    } else if (satData.name === 'CSS') {
+                        // --- Tiangong Space Station (Modular T-shape) ---
+                        // 1. Tianhe Core Module
+                        const tianhe = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 3.2, 16), coreMat);
+                        tianhe.rotation.z = Math.PI / 2;
+                        stationGroup.add(tianhe);
+
+                        // 2. Wentian & Mengtian Experiment Modules
+                        const wentian = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 2.8, 16), coreMat);
+                        wentian.position.set(0.6, 1.4, 0);
+                        stationGroup.add(wentian);
+
+                        const mengtian = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 2.8, 16), coreMat);
+                        mengtian.position.set(0.6, -1.4, 0);
+                        stationGroup.add(mengtian);
+
+                        // 3. Iconic Huge Solar Wings (End of modules)
+                        const wingGeo = new THREE.BoxGeometry(0.03, 1.5, 7);
+                        const wingW = new THREE.Mesh(wingGeo, panelMat);
+                        wingW.position.set(0.6, 3.2, 0);
+                        stationGroup.add(wingW);
+
+                        const wingM = new THREE.Mesh(wingGeo, panelMat);
+                        wingM.position.set(0.6, -3.2, 0);
+                        stationGroup.add(wingM);
+
+                        // 4. Tianhe Core Panels (Smaller)
+                        const coreWing = new THREE.Mesh(new THREE.BoxGeometry(0.03, 5, 0.8), panelMat);
+                        coreWing.position.set(-2, 0, 0);
+                        stationGroup.add(coreWing);
+                    }
+
+                    satMesh = stationGroup;
+                } else {
+                    // Standard Sphere for natural satellites
+                    const satGeo = new THREE.SphereGeometry(1, 64, 64);
+                    let satMat;
+                    if (satData.texture) {
+                        satMat = new THREE.MeshStandardMaterial({
+                            map: textureLoader.load(`textures/${satData.texture}?v=18`),
+                            emissive: 0x222222,
+                            emissiveIntensity: 0.05
+                        });
+                    } else {
+                        satMat = new THREE.MeshStandardMaterial({ color: satData.color });
+                    }
+                    satMesh = new THREE.Mesh(satGeo, satMat);
+                }
+
+                satMesh.scale.setScalar(satData.radius);
+                satMesh.userData = satData;
+                satMesh.name = satData.name;
+                scene.add(satMesh);
+
+                const satCurve = new THREE.EllipseCurve(0, 0, satData.distance, satData.distance, 0, 2 * Math.PI, false, 0);
+                const satPoints = satCurve.getPoints(128);
+                const satOrbitGeo = new THREE.BufferGeometry().setFromPoints(satPoints);
+
+                let satOrbitMat;
+                if (satData.type === 'space_station') {
+                    satOrbitMat = new THREE.LineDashedMaterial({
+                        color: 0xffffff,
+                        transparent: true,
+                        opacity: 0.3,
+                        blending: THREE.AdditiveBlending,
+                        dashSize: 0.5,
+                        gapSize: 0.3
                     });
                 } else {
-                    satMat = new THREE.MeshStandardMaterial({ color: satData.color });
+                    satOrbitMat = new THREE.LineBasicMaterial({
+                        color: 0xffffff,
+                        transparent: true,
+                        opacity: 0.15,
+                        blending: THREE.AdditiveBlending
+                    });
                 }
-                const satMesh = new THREE.Mesh(satGeo, satMat);
-                satMesh.scale.setScalar(satData.radius);
-                scene.add(satMesh);
+
+                const satOrbitLine = new THREE.LineLoop(satOrbitGeo, satOrbitMat);
+                if (satData.type === 'space_station') {
+                    satOrbitLine.computeLineDistances();
+                }
 
                 const satellite = {
                     mesh: satMesh,
                     data: satData,
-                    angle: Math.random() * Math.PI * 2
+                    angle: Math.random() * Math.PI * 2,
+                    orbitLine: satOrbitLine,
+                    distance: satData.distance,
+                    orbitRelativeToEquator: satData.orbitRelativeToEquator !== false
                 };
                 body.satellites.push(satellite);
 
-                satMesh.userData = satData;
-                satMesh.name = satData.name;
+                const parentObliq = body.obliquity;
+                const satIncl = THREE.MathUtils.degToRad(satData.inclination || 0);
+                const worldSatIncl = satellite.orbitRelativeToEquator ? (parentObliq + satIncl) : satIncl;
+                satOrbitLine.rotation.x = Math.PI / 2 + worldSatIncl;
+                scene.add(satOrbitLine);
             });
+        }
+
+        // Comet Effects: Coma and Tail
+        if (data.isComet) {
+            // 1. Coma (Glowing atmosphere) - Larger and softer
+            const comaGeo = new THREE.SphereGeometry(1.8, 32, 32);
+            const comaMat = new THREE.MeshBasicMaterial({
+                color: 0x88ffcc,
+                transparent: true,
+                opacity: 0.15,
+                blending: THREE.AdditiveBlending,
+                side: THREE.BackSide // Glow outwards
+            });
+            const comaMesh = new THREE.Mesh(comaGeo, comaMat);
+            mesh.add(comaMesh);
+
+            // 2. Tail (Directional trail) - More ghostly
+            const tailGeo = new THREE.ConeGeometry(1.2, 25, 32, 1, true);
+            tailGeo.translate(0, 12.5, 0); // Offset so tip is at nucleus
+            tailGeo.rotateX(Math.PI / 2);
+            const tailMat = new THREE.MeshBasicMaterial({
+                color: 0x66ccff,
+                transparent: true,
+                opacity: 0.2,
+                blending: THREE.AdditiveBlending,
+                side: THREE.DoubleSide
+            });
+            const tailMesh = new THREE.Mesh(tailGeo, tailMat);
+            scene.add(tailMesh);
+            body.tailMesh = tailMesh;
         }
 
         bodies.push(body);
@@ -137,81 +392,120 @@ export function createSolarSystem(scene) {
                 const targetRadius = isRealScale ? d.realScaleRadius : d.radius;
                 const targetDistance = isRealScale ? d.realScaleDistance : d.distance;
 
-                // Update mesh scale
-                body.mesh.scale.setScalar(targetRadius);
+                if (d.geometryScale) {
+                    body.mesh.scale.set(targetRadius * d.geometryScale[0], targetRadius * d.geometryScale[1], targetRadius * d.geometryScale[2]);
+                } else {
+                    body.mesh.scale.setScalar(targetRadius);
+                }
                 body.mesh.updateMatrix();
                 body.distance = targetDistance;
 
-                // Update Orbit Line
                 if (body.orbitLine) {
-                    const curve = new THREE.EllipseCurve(0, 0, targetDistance, targetDistance, 0, 2 * Math.PI, false, 0);
-                    const points = curve.getPoints(256);
-                    body.orbitLine.geometry.setFromPoints(points);
-                    if (body.orbitLine.geometry.attributes.position) {
-                        body.orbitLine.geometry.attributes.position.needsUpdate = true;
+                    if (d.type === 'interstellar' && d.pathPoints) {
+                        const scale = isRealScale ? 15 : 1;
+                        const pts = d.pathPoints.map(p => new THREE.Vector3(p[0] * scale, p[1] * scale, p[2] * scale));
+                        const curve = new THREE.CatmullRomCurve3(pts);
+                        const points = curve.getPoints(200);
+                        body.orbitLine.geometry.setFromPoints(points);
+                        body.orbitCurve = curve;
+                    } else {
+                        const curve = new THREE.EllipseCurve(0, 0, targetDistance, targetDistance, 0, 2 * Math.PI, false, 0);
+                        const points = curve.getPoints(256);
+                        body.orbitLine.geometry.setFromPoints(points);
                     }
                     body.orbitLine.geometry.computeBoundingSphere();
                 }
 
-                // Update Saturn Ring geometry
                 if (body.ringMesh) {
                     const r = body.data.ring;
                     const inner = isRealScale ? r.realInner : r.innerRadius;
                     const outer = isRealScale ? r.realOuter : r.outerRadius;
-
-                    // We need a NEW geometry to avoid uv issues or scale appropriately
-                    // Simple way: recreate geometry since it's just one object
                     body.ringMesh.geometry.dispose();
                     body.ringMesh.geometry = new THREE.RingGeometry(inner / targetRadius, outer / targetRadius, 128);
-
                     const pos = body.ringMesh.geometry.attributes.position;
                     const uv = body.ringMesh.geometry.attributes.uv;
                     const localInner = inner / targetRadius;
                     const localOuter = outer / targetRadius;
                     for (let i = 0; i < pos.count; i++) {
-                        const x = pos.getX(i);
-                        const y = pos.getY(i);
-                        const dist = Math.sqrt(x * x + y * y);
-                        const radialRatio = (dist - localInner) / (localOuter - localInner);
-                        uv.setXY(i, 0.5, radialRatio);
+                        const dist = Math.sqrt(pos.getX(i) ** 2 + pos.getY(i) ** 2);
+                        uv.setXY(i, 0.5, (dist - localInner) / (localOuter - localInner));
                     }
                 }
 
-                // Update Satellites
                 body.satellites.forEach(sat => {
                     const s = sat.data;
                     const sRadius = isRealScale ? (s.realScaleRadius || s.radius) : s.radius;
-                    const sDist = isRealScale ? (s.realScaleDistance || s.distance) : s.distance; // Use .distance consistently
+                    const sDist = isRealScale ? (s.realScaleDistance || s.distance) : s.distance;
                     sat.mesh.scale.setScalar(sRadius);
                     sat.mesh.updateMatrix();
                     sat.distance = sDist;
+                    if (sat.orbitLine) {
+                        const sCurve = new THREE.EllipseCurve(0, 0, sDist, sDist, 0, 2 * Math.PI, false, 0);
+                        sat.orbitLine.geometry.setFromPoints(sCurve.getPoints(128));
+                        if (s.type === 'space_station') {
+                            sat.orbitLine.computeLineDistances();
+                        }
+                    }
                 });
             });
         },
         isRealScale: () => isRealScale,
-        setOrbitsVisible: (visible) => {
+        setOrbitsVisibleByType: (type, visible) => {
             bodies.forEach(body => {
-                if (body.orbitLine) body.orbitLine.visible = visible;
+                if (body.data.type === type && body.orbitLine) body.orbitLine.visible = visible;
+            });
+        },
+        setSatOrbitsVisibleByType: (type, visible) => {
+            bodies.forEach(body => {
+                body.satellites.forEach(sat => {
+                    const satType = sat.data.type || 'satellite';
+                    if (satType === type && sat.orbitLine) {
+                        sat.orbitLine.visible = visible;
+                    }
+                });
             });
         },
         getBodies: () => bodies,
-        update: () => {
+        update: (delta) => {
+            const timeStep = delta * 60;
             bodies.forEach(body => {
-                if (body.distance > 0) {
-                    body.angle += body.speed * speedMultiplier;
-                    body.mesh.position.x = Math.cos(body.angle) * body.distance;
-                    body.mesh.position.z = Math.sin(body.angle) * body.distance;
+                if (body.data.type === 'interstellar' && body.orbitCurve) {
+                    body.progress += body.speed * speedMultiplier * timeStep;
+                    if (body.progress > 1) body.progress = 0;
+                    body.mesh.position.copy(body.orbitCurve.getPoint(body.progress));
+                } else if (body.distance > 0) {
+                    body.angle += body.speed * speedMultiplier * timeStep;
+                    const incl = THREE.MathUtils.degToRad(body.data.inclination || 0);
+                    const lx = Math.cos(body.angle) * body.distance;
+                    const lz = Math.sin(body.angle) * body.distance;
+                    body.mesh.position.set(lx, lz * -Math.sin(incl), lz * Math.cos(incl));
                 }
-                body.mesh.rotation.y += body.rotationSpeed * speedMultiplier;
+                body.mesh.rotateY(body.rotationSpeed * speedMultiplier * timeStep);
 
                 body.satellites.forEach(sat => {
                     const sDist = sat.distance || sat.data.distance;
-                    sat.angle += sat.data.speed * speedMultiplier;
-                    sat.mesh.position.x = body.mesh.position.x + Math.cos(sat.angle) * sDist;
-                    sat.mesh.position.y = body.mesh.position.y;
-                    sat.mesh.position.z = body.mesh.position.z + Math.sin(sat.angle) * sDist;
-                    sat.mesh.rotation.y += 0.01 * speedMultiplier;
+                    const parentObliq = body.obliquity;
+                    const satIncl = THREE.MathUtils.degToRad(sat.data.inclination || 0);
+                    const worldSatIncl = sat.orbitRelativeToEquator ? (parentObliq + satIncl) : satIncl;
+                    sat.angle += sat.data.speed * speedMultiplier * timeStep;
+                    const sx = Math.cos(sat.angle) * sDist;
+                    const sz = Math.sin(sat.angle) * sDist;
+                    sat.mesh.position.set(
+                        body.mesh.position.x + sx,
+                        body.mesh.position.y + sz * -Math.sin(worldSatIncl),
+                        body.mesh.position.z + sz * Math.cos(worldSatIncl)
+                    );
+                    sat.mesh.rotateY(0.01 * speedMultiplier * timeStep);
+                    if (sat.orbitLine) sat.orbitLine.position.copy(body.mesh.position);
                 });
+
+                if (body.tailMesh) {
+                    body.tailMesh.position.copy(body.mesh.position);
+                    const dir = new THREE.Vector3().copy(body.mesh.position).normalize();
+                    body.tailMesh.lookAt(new THREE.Vector3().addVectors(body.mesh.position, dir));
+                    const distToSun = body.mesh.position.length();
+                    body.tailMesh.material.opacity = Math.max(0.1, 0.6 - (distToSun / 600));
+                }
             });
         }
     };

@@ -3,30 +3,53 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createSolarSystem } from './objects/SolarSystem.js';
 import { createStars } from './objects/Stars.js';
 import { createSpaceship } from './objects/Spaceship.js';
+import { createAsteroidBelt } from './objects/AsteroidBelt.js';
+import { createKuiperBelt } from './objects/KuiperBelt.js';
 
 const scene = new THREE.Scene();
 // ... (camera setup)
 
 // Add Stars
-const stars = createStars(scene);
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 500000); // Lower FOV to reduce edge distortion
+const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance while keeping sharpness
+document.getElementById('app').appendChild(renderer.domElement);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.8;
 
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 300000);
-camera.position.set(0, 150, 250);
+// Initial camera setup
+camera.position.set(0, 60, 450); // Improved initial angle
 camera.lookAt(0, 0, 0);
+
+// Add Stars
+const stars = createStars(scene);
 
 // Add Ship
 const ship = createSpaceship(scene);
 ship.mesh.visible = false; // Hide until pilot mode enabled
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.8; // Lowered to fix overexposure
-document.body.appendChild(renderer.domElement);
-
-// Controls
+// Controls init first before usage
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
+controls.target.set(0, 0, 0); // Explicitly center Sun
+
+// Handle window resize properly
+const handleResize = () => {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+};
+
+window.addEventListener('resize', handleResize);
+window.addEventListener('orientationchange', () => setTimeout(handleResize, 200));
+
+// Initial correct sizing
+handleResize();
+controls.update(); // Sync everything once after resizetial correct sizing
+
 // Allow Right-click to rotate/pan depending on user preference, 
 // here we keep standard but ensure it's not blocked by our custom logic.
 controls.mouseButtons = {
@@ -56,7 +79,47 @@ const speedDisplay = document.getElementById('speed-display');
 // Solar System
 const solarSystem = createSolarSystem(scene);
 solarSystem.setSpeedMultiplier(currentSpeed); // Now currentSpeed is defined!
-speedDisplay.innerText = `速度: ${currentSpeed.toFixed(1)}x`;
+speedDisplay.innerText = `${currentSpeed.toFixed(1)}x`;
+
+// Asteroid Belt
+const asteroidBelt = createAsteroidBelt(scene);
+
+// Kuiper Belt
+const kuiperBelt = createKuiperBelt(scene);
+
+// Orbit Visibility State & Toggles
+let planetOrbitsVisible = true;
+let satOrbitsVisible = false;
+let manmadeOrbitsVisible = false; // Hidden by default v2.2.1
+let dwarfOrbitsVisible = false;
+let candidateOrbitsVisible = false;
+let interstellarOrbitsVisible = false;
+let asteroidOrbitsVisible = false;
+let beltVisible = true;
+let kuiperVisible = true;
+
+// Function to sync UI and 3D states
+const syncOrbitVisibility = () => {
+  if (solarSystem) {
+    solarSystem.setOrbitsVisibleByType('planet', planetOrbitsVisible);
+    solarSystem.setOrbitsVisibleByType('star', planetOrbitsVisible);
+    solarSystem.setOrbitsVisibleByType('dwarf_planet', dwarfOrbitsVisible);
+    solarSystem.setOrbitsVisibleByType('dwarf_planet_candidate', candidateOrbitsVisible);
+    solarSystem.setOrbitsVisibleByType('interstellar', interstellarOrbitsVisible);
+    solarSystem.setOrbitsVisibleByType('asteroid', asteroidOrbitsVisible);
+    solarSystem.setSatOrbitsVisibleByType('satellite', satOrbitsVisible);
+    solarSystem.setSatOrbitsVisibleByType('space_station', manmadeOrbitsVisible);
+  }
+  if (asteroidBelt) {
+    asteroidBelt.setVisible(beltVisible);
+  }
+  if (kuiperBelt) {
+    kuiperBelt.setVisible(kuiperVisible);
+  }
+};
+
+// Initial sync of orbit visibility settings
+syncOrbitVisibility();
 
 // Interaction & Info Panel
 const raycaster = new THREE.Raycaster();
@@ -78,31 +141,72 @@ let targetDistance = 0;
 let shouldAutoZoom = false;
 let lastTargetPos = new THREE.Vector3(); // Store last frame's target position
 
-// Handle clicks vs drags
-window.addEventListener('mousedown', (event) => {
+// Use Pointer Events for better cross-device (Touch/Mouse) support
+window.addEventListener('pointerdown', (event) => {
   isMouseDown = true;
   mouseDownPos = { x: event.clientX, y: event.clientY };
 });
 
-window.addEventListener('mouseup', (event) => {
+window.addEventListener('pointerup', (event) => {
   if (!isMouseDown) return;
   isMouseDown = false;
 
-  // Calculate movement to distinguish click from drag
   const deltaX = Math.abs(event.clientX - mouseDownPos.x);
   const deltaY = Math.abs(event.clientY - mouseDownPos.y);
-  const isClick = deltaX < 5 && deltaY < 5; // Pixels threshold
 
-  if (!isClick) return; // Ignore drags
+  // Distinguish click from drag
+  const clickThreshold = window.innerWidth <= 1100 ? 15 : 5;
+  if (deltaX > clickThreshold || deltaY > clickThreshold) return;
 
-  // 0: Left, 2: Right
-  if (event.button !== 0 && event.button !== 2) return;
+  // 0: Left, 2: Right, 5: Touch (for pointerType)
+  if (event.pointerType === 'mouse' && event.button !== 0 && event.button !== 2) return;
 
-  // If clicking UI elements, ignore
-  if (infoPanel.contains(event.target) || document.getElementById('controls').contains(event.target)) return;
+  handleInteraction(event.clientX, event.clientY, event.target);
+});
 
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+// Dedicated Touch Support with movement tracking to avoid accidental deselects on mobile
+let touchStartPos = { x: 0, y: 0 };
+window.addEventListener('touchstart', (event) => {
+  if (event.touches.length > 0) {
+    touchStartPos = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  }
+}, { passive: true });
+
+window.addEventListener('touchend', (event) => {
+  if (event.changedTouches.length > 0) {
+    const touch = event.changedTouches[0];
+    const deltaX = Math.abs(touch.clientX - touchStartPos.x);
+    const deltaY = Math.abs(touch.clientY - touchStartPos.y);
+
+    // Only trigger if it's a tap, not a swipe/drag
+    if (deltaX < 20 && deltaY < 20) {
+      handleInteraction(touch.clientX, touch.clientY, event.target);
+    }
+  }
+});
+
+function handleInteraction(clientX, clientY, target) {
+  // Click-through logic: Only block if clicking interactive UI components
+  // We check if the target is a button, input, or inside a known interactive panel
+  const isInteractivePanel = target.closest('#controls') ||
+    target.closest('#sub-menu') ||
+    target.closest('#info-panel') ||
+    target.closest('.search-result-item') ||
+    target.tagName === 'BUTTON' ||
+    target.tagName === 'INPUT' ||
+    target.tagName === 'A';
+
+  if (isInteractivePanel || isSearchSelecting) {
+    if (isSearchSelecting) {
+      // Clear flag once interaction starts to allow the next selection
+      // but only after a buffer to prevent bubble-through deselects
+    }
+    return;
+  }
+
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
   raycaster.setFromCamera(mouse, camera);
 
@@ -117,17 +221,25 @@ window.addEventListener('mouseup', (event) => {
   const intersects = raycaster.intersectObjects(clickableMeshes, true);
 
   if (intersects.length > 0) {
-    const object = intersects[0].object;
-    const data = object.userData;
+    // Find the closest ancestor that has our data (useful for clicking rings)
+    let selectedObject = null;
+    let selectedData = null;
 
-    if (data.description) {
-      selectedTarget = object;
-      shouldAutoZoom = true;
-      showInfo(data);
+    for (let i = 0; i < intersects.length; i++) {
+      let current = intersects[i].object;
+      while (current) {
+        if (current.userData && current.userData.description) {
+          selectedObject = current;
+          selectedData = current.userData;
+          break;
+        }
+        current = current.parent;
+      }
+      if (selectedObject) break;
+    }
 
-      // Initialize tracking position immediately
-      selectedTarget.updateMatrixWorld(true);
-      selectedTarget.getWorldPosition(lastTargetPos);
+    if (selectedData) {
+      selectBody(selectedObject);
     }
   } else {
     // Clicked on blank space
@@ -148,7 +260,7 @@ window.addEventListener('mouseup', (event) => {
       }
     }
   }
-});
+}
 
 controls.addEventListener('start', () => {
   isUserInteracting = true;
@@ -166,8 +278,10 @@ controls.addEventListener('end', () => {
 
 // Context menu prevention
 window.addEventListener('contextmenu', (e) => {
-  if (!document.getElementById('controls').contains(e.target)) {
-    e.preventDefault();
+  if (e.pointerType === 'mouse') { // Only prevent for mouse
+    if (!document.getElementById('controls').contains(e.target) && !document.getElementById('search-results').contains(e.target)) {
+      e.preventDefault();
+    }
   }
 });
 
@@ -212,20 +326,58 @@ function showInfo(data) {
   infoPanel.classList.remove('hidden');
 }
 
-document.getElementById('slow').addEventListener('click', () => {
-  currentSpeed = Math.max(0.1, currentSpeed - 0.5);
-  updateSpeed();
-});
+// Speed Control Long Press Logic
+let speedTimer = null;
+let speedRepeat = null;
 
-document.getElementById('reset').addEventListener('click', () => {
-  currentSpeed = 1.0;
-  updateSpeed();
-});
+const startSpeedChange = (isIncreasing) => {
+  // Clear any existing timers first to prevent accumulation
+  stopSpeedChange();
 
-document.getElementById('fast').addEventListener('click', () => {
-  currentSpeed += 0.5;
-  updateSpeed();
-});
+  const change = () => {
+    if (isIncreasing) {
+      if (currentSpeed < 0.1) currentSpeed = 0.1;
+      else if (currentSpeed < 0.5) currentSpeed = 0.5;
+      else currentSpeed += 0.5;
+    } else {
+      if (currentSpeed > 0.5) currentSpeed -= 0.5;
+      else if (currentSpeed > 0.1) currentSpeed = 0.1;
+      else currentSpeed = 0;
+    }
+    updateSpeed();
+  };
+
+  change(); // Initial click
+
+  speedTimer = setTimeout(() => {
+    speedRepeat = setInterval(change, 100);
+  }, 2000); // 2 seconds delay
+};
+
+const stopSpeedChange = () => {
+  clearTimeout(speedTimer);
+  clearInterval(speedRepeat);
+};
+
+const slowBtn = document.getElementById('slow');
+const fastBtn = document.getElementById('fast');
+
+slowBtn.addEventListener('mousedown', () => startSpeedChange(false));
+fastBtn.addEventListener('mousedown', () => startSpeedChange(true));
+
+slowBtn.addEventListener('mouseup', stopSpeedChange);
+fastBtn.addEventListener('mouseup', stopSpeedChange);
+window.addEventListener('mouseup', stopSpeedChange);
+slowBtn.addEventListener('mouseleave', stopSpeedChange);
+fastBtn.addEventListener('mouseleave', stopSpeedChange);
+
+// Support for Mobile Touch
+slowBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startSpeedChange(false); });
+fastBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startSpeedChange(true); });
+slowBtn.addEventListener('touchend', stopSpeedChange);
+fastBtn.addEventListener('touchend', stopSpeedChange);
+slowBtn.addEventListener('touchcancel', stopSpeedChange);
+fastBtn.addEventListener('touchcancel', stopSpeedChange);
 
 let isPaused = false;
 let savedSpeedBeforePause = 0.1;
@@ -267,10 +419,16 @@ const modeArtisticBtn = document.getElementById('mode-artistic');
 const modeRealBtn = document.getElementById('mode-real');
 const toggleOrbitsBtn = document.getElementById('toggle-orbits');
 
-menuToggle.addEventListener('click', (e) => {
+const handleMenuToggle = (e) => {
   e.stopPropagation();
   subMenu.classList.toggle('hidden');
-});
+};
+
+menuToggle.addEventListener('click', handleMenuToggle);
+menuToggle.addEventListener('touchstart', (e) => {
+  e.preventDefault(); // Prevent ghost clicks
+  handleMenuToggle(e);
+}, { passive: false });
 
 // Close sub-menu when clicking outside
 window.addEventListener('click', (e) => {
@@ -279,18 +437,80 @@ window.addEventListener('click', (e) => {
   }
 });
 
-let orbitsVisible = true;
-toggleOrbitsBtn.addEventListener('click', () => {
-  orbitsVisible = !orbitsVisible;
-  solarSystem.setOrbitsVisible(orbitsVisible);
-  toggleOrbitsBtn.classList.toggle('active', orbitsVisible);
+const toggleManmadeBtn = document.getElementById('toggle-manmade-orbit');
+const togglePlanetBtn = document.getElementById('toggle-planet-orbit');
+const toggleSatBtn = document.getElementById('toggle-sat-orbit');
+const toggleDwarfBtn = document.getElementById('toggle-dwarf-orbit');
+const toggleCandidateBtn = document.getElementById('toggle-candidate-orbit');
+const toggleInterBtn = document.getElementById('toggle-interstellar-orbit');
+const toggleAsteroidBtn = document.getElementById('toggle-asteroid-orbit');
+const toggleBeltBtn = document.getElementById('toggle-belt');
+const toggleKuiperBtn = document.getElementById('toggle-kuiper');
+
+toggleManmadeBtn.addEventListener('click', () => {
+  manmadeOrbitsVisible = !manmadeOrbitsVisible;
+  toggleManmadeBtn.classList.toggle('active', manmadeOrbitsVisible);
+  syncOrbitVisibility();
 });
+
+togglePlanetBtn.addEventListener('click', () => {
+  planetOrbitsVisible = !planetOrbitsVisible;
+  togglePlanetBtn.classList.toggle('active', planetOrbitsVisible);
+  syncOrbitVisibility();
+});
+
+toggleSatBtn.addEventListener('click', () => {
+  satOrbitsVisible = !satOrbitsVisible;
+  toggleSatBtn.classList.toggle('active', satOrbitsVisible);
+  syncOrbitVisibility();
+});
+
+toggleDwarfBtn.addEventListener('click', () => {
+  dwarfOrbitsVisible = !dwarfOrbitsVisible;
+  toggleDwarfBtn.classList.toggle('active', dwarfOrbitsVisible);
+  syncOrbitVisibility();
+});
+
+toggleCandidateBtn.addEventListener('click', () => {
+  candidateOrbitsVisible = !candidateOrbitsVisible;
+  toggleCandidateBtn.classList.toggle('active', candidateOrbitsVisible);
+  syncOrbitVisibility();
+});
+
+toggleInterBtn.addEventListener('click', () => {
+  interstellarOrbitsVisible = !interstellarOrbitsVisible;
+  toggleInterBtn.classList.toggle('active', interstellarOrbitsVisible);
+  syncOrbitVisibility();
+});
+
+toggleAsteroidBtn.addEventListener('click', () => {
+  asteroidOrbitsVisible = !asteroidOrbitsVisible;
+  toggleAsteroidBtn.classList.toggle('active', asteroidOrbitsVisible);
+  syncOrbitVisibility();
+});
+
+toggleBeltBtn.addEventListener('click', () => {
+  beltVisible = !beltVisible;
+  toggleBeltBtn.classList.toggle('active', beltVisible);
+  syncOrbitVisibility();
+});
+
+toggleKuiperBtn.addEventListener('click', () => {
+  kuiperVisible = !kuiperVisible;
+  toggleKuiperBtn.classList.toggle('active', kuiperVisible);
+  syncOrbitVisibility();
+});
+
+// For now, let's ensure the toggle-sat-orbit is not active in HTML (checked)
+
 
 modeArtisticBtn.addEventListener('click', () => {
   if (modeArtisticBtn.classList.contains('active')) return;
   modeArtisticBtn.classList.add('active');
   modeRealBtn.classList.remove('active');
   solarSystem.setViewMode(false);
+  if (asteroidBelt) asteroidBelt.setViewMode(false);
+  if (kuiperBelt) kuiperBelt.setViewMode(false);
 
   if (selectedTarget) {
     shouldAutoZoom = true;
@@ -305,9 +525,151 @@ modeRealBtn.addEventListener('click', () => {
   modeRealBtn.classList.add('active');
   modeArtisticBtn.classList.remove('active');
   solarSystem.setViewMode(true);
+  if (asteroidBelt) asteroidBelt.setViewMode(true);
+  if (kuiperBelt) kuiperBelt.setViewMode(true);
 
   if (selectedTarget) {
     shouldAutoZoom = true;
+  }
+});
+
+// Search functionality
+const searchInput = document.getElementById('planet-search');
+const searchResults = document.getElementById('search-results');
+const clearSearchBtn = document.getElementById('clear-search');
+const resetToSunBtn = document.getElementById('reset-to-sun');
+let isSearchSelecting = false;
+
+const bodyTypeMap = {
+  'planet': '行星',
+  'star': '恆星',
+  'dwarf_planet': '矮行星',
+  'dwarf_planet_candidate': '候選/TNO',
+  'asteroid': '小行星',
+  'interstellar': '星際天體',
+  'satellite': '衛星',
+  'space_station': '人造物體'
+};
+
+function selectBody(bodyMesh, isFromSearch = false) {
+  selectedTarget = bodyMesh;
+  const data = bodyMesh.userData;
+
+  shouldAutoZoom = true;
+  showInfo(data);
+
+  // Initialize tracking
+  selectedTarget.updateMatrixWorld(true);
+  selectedTarget.getWorldPosition(lastTargetPos);
+
+  if (isFromSearch) {
+    searchInput.blur();
+    // Re-trigger auto-zoom after keyboard closes and viewport stabilizes
+    setTimeout(() => {
+      if (selectedTarget === bodyMesh) {
+        shouldAutoZoom = true;
+        handleResize(); // Sync viewport
+      }
+    }, 450);
+  } else if (!selectedTarget || selectedTarget !== bodyMesh) {
+    // Standard click selection - ensure viewport is synced
+    handleResize();
+
+    // Clear search UI if active but not from search selection
+    searchResults.classList.add('hidden');
+    searchResults.innerHTML = '';
+    searchInput.value = '';
+    clearSearchBtn.classList.add('hidden');
+  }
+}
+
+searchInput.addEventListener('input', () => {
+  const query = searchInput.value.trim().toLowerCase();
+  clearSearchBtn.classList.toggle('hidden', query === '');
+
+  if (query.length < 1) {
+    searchResults.innerHTML = '';
+    searchResults.classList.add('hidden');
+    return;
+  }
+
+  const bodies = solarSystem.getBodies();
+  const allTargets = [];
+  bodies.forEach(b => {
+    allTargets.push({ mesh: b.mesh, data: b.data, type: b.data.type });
+    b.satellites.forEach(s => {
+      allTargets.push({ mesh: s.mesh, data: s.data, type: 'satellite' });
+    });
+  });
+
+  const matches = allTargets.filter(t =>
+    t.data.name.toLowerCase().includes(query) ||
+    (t.data.nameCH && t.data.nameCH.includes(query))
+  );
+
+  if (matches.length > 0) {
+    searchResults.innerHTML = matches.map(m => `
+      <div class="search-result-item" data-id="${m.data.name}">
+        <div class="result-name">${m.data.nameCH || m.data.name}</div>
+        <div class="result-type">${bodyTypeMap[m.type] || m.type}</div>
+      </div>
+    `).join('');
+
+    searchResults.classList.remove('hidden');
+
+    // Add click/touch listeners to items
+    searchResults.querySelectorAll('.search-result-item').forEach(item => {
+      const handleSelect = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        isSearchSelecting = true;
+        const targetId = item.getAttribute('data-id');
+        const target = allTargets.find(t => t.data.name === targetId);
+
+        if (target) {
+          selectBody(target.mesh, true);
+        }
+
+        // Delay clearing results to fulfill touch event cycle
+        // and prevent 'handleInteraction' from thinking it clicked on blank space
+        setTimeout(() => {
+          searchResults.classList.add('hidden');
+          searchResults.innerHTML = '';
+          searchInput.value = '';
+          clearSearchBtn.classList.add('hidden');
+          isSearchSelecting = false;
+        }, 800);
+      };
+
+      item.addEventListener('mousedown', handleSelect);
+      item.addEventListener('touchstart', handleSelect, { passive: false });
+    });
+  } else {
+    searchResults.innerHTML = '<div class="search-result-item">無符合天體</div>';
+    searchResults.classList.remove('hidden');
+  }
+});
+
+clearSearchBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  searchInput.value = '';
+  clearSearchBtn.classList.add('hidden');
+  searchResults.innerHTML = '';
+  searchResults.classList.add('hidden');
+});
+
+resetToSunBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const bodies = solarSystem.getBodies();
+  const sunBody = bodies.find(b => b.data.name === 'Sun');
+  if (sunBody) selectBody(sunBody.mesh);
+});
+
+// Close search if clicking elsewhere
+window.addEventListener('mousedown', (e) => {
+  if (!document.getElementById('search-container').contains(e.target)) {
+    searchResults.classList.add('hidden');
   }
 });
 
@@ -335,18 +697,31 @@ togglePilotBtn.addEventListener('click', () => {
     if (selectedTarget) {
       const targetPos = new THREE.Vector3();
       selectedTarget.getWorldPosition(targetPos);
-      ship.mesh.position.copy(targetPos).add(new THREE.Vector3(0, 10, 30));
 
-      // Snap camera once to avoid long lerp
-      const offset = new THREE.Vector3(0, 5, -30).applyQuaternion(ship.mesh.quaternion);
-      camera.position.copy(ship.mesh.position).add(offset);
-      camera.lookAt(ship.mesh.position);
+      // Calculate a safe distance based on target's radius
+      const isReal = solarSystem.isRealScale();
+      const radius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
+      const spawnDist = radius * 2 + 50;
+
+      ship.mesh.position.copy(targetPos).add(new THREE.Vector3(0, radius + 20, spawnDist));
     } else {
-      // Default position if nothing selected
-      ship.mesh.position.set(0, 10, 100);
-      camera.position.set(0, 15, 80);
-      camera.lookAt(0, 10, 100);
+      // Default position if nothing selected - further from sun
+      ship.mesh.position.set(0, 20, 300);
     }
+
+    // Initialize Modern 3D Orbit Camera Values
+    window._camOrbit = {
+      theta: Math.PI, // Start BEHIND the ship (180 degrees)
+      phi: Math.PI / 2.2, // Slightly above horizontal
+      radius: 40
+    };
+
+    // Reset ship state for clean start
+    ship.mesh.quaternion.set(0, 0, 0, 1); // Face standard forward (+Z)
+    ship.velocity.set(0, 0, 0);
+    ship.rotationVelocity.set(0, 0, 0);
+
+    updatePilotCamera();
   } else {
     controls.enabled = true;
     if (document.pointerLockElement === renderer.domElement) {
@@ -404,60 +779,83 @@ thrustBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isThrustin
 thrustBtn.addEventListener('touchend', () => isThrusting = false);
 
 // Mouse Rotation Logic (Camera Movement Speed)
-let mouseSensitivity = 0.0005;
+let mouseSensitivity = 0.000025; // Default matched to slider value 0.1 (0.1 * 0.00025)
 const sensitivityRange = document.getElementById('sensitivity-range');
 sensitivityRange.addEventListener('input', (e) => {
-  // Mapping 0.1 - 2.0 to 0.0001 - 0.002
-  mouseSensitivity = parseFloat(e.target.value) * 0.001;
+  // Mapping 0.1 - 2.0 to 0.000025 - 0.0005
+  mouseSensitivity = parseFloat(e.target.value) * 0.00025;
 });
 
 window.addEventListener('mousemove', (e) => {
   if (isPilotMode && document.pointerLockElement === renderer.domElement) {
-    // Pitch (X) and Yaw (Y)
-    ship.rotationVelocity.y -= e.movementX * mouseSensitivity;
-    ship.rotationVelocity.x -= e.movementY * mouseSensitivity;
+    // 1. Mouse rotates the CAMERA ORBIT, not the ship
+    const sensitivity = mouseSensitivity * 6; // Adjusted for snappy orbiting
+    window._camOrbit.theta -= e.movementX * sensitivity;
+    window._camOrbit.phi -= e.movementY * sensitivity;
+
+    // Clamp vertical angle to avoid flipping over the top
+    window._camOrbit.phi = Math.max(0.1, Math.min(Math.PI - 0.1, window._camOrbit.phi));
   }
 });
 
 function handleFlightInputs() {
   if (!isPilotMode) return;
 
-  // 1. Rotation (WASD replaced by Mouse, but we can keep Q/E for Roll)
-  if (keys['KeyQ']) ship.rotationVelocity.z += 0.005;
-  if (keys['KeyE']) ship.rotationVelocity.z -= 0.005;
+  // Directions relative to orbit camera
+  const camQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(window._camOrbit.phi - Math.PI / 2, window._camOrbit.theta, 0, 'YXZ'));
+  const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(camQuat);
+  const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camQuat);
 
-  // Mobile Joytick Mapping to Rotation
+  // 1. Movement Inputs
+  let moveDir = new THREE.Vector3(0, 0, 0);
+  if (keys['KeyW']) moveDir.add(forward);
+  if (keys['KeyS']) moveDir.sub(forward);
+  if (keys['KeyA']) moveDir.sub(right); // In 3D explorer mode, A/D is usually lateral or turn
+  if (keys['KeyD']) moveDir.add(right);
+
+  // Apply Impulse
+  if (moveDir.length() > 0) {
+    moveDir.normalize();
+    const thrustPower = keys['Space'] ? ship.thrust * 3 : ship.thrust;
+    ship.velocity.add(moveDir.multiplyScalar(thrustPower));
+
+    // 2. Smoothly rotate ship to face MOVEMENT direction
+    // This is the "bow aligns with movement" part
+    const targetQuaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), moveDir);
+    ship.mesh.quaternion.slerp(targetQuaternion, 0.1);
+  }
+
+  // Mobile Joytick Mapping
   if (joystickDelta.x !== 0 || joystickDelta.y !== 0) {
-    ship.rotationVelocity.y -= joystickDelta.x * 0.02;
-    ship.rotationVelocity.x -= joystickDelta.y * 0.02;
+    const joyMove = forward.clone().multiplyScalar(-joystickDelta.y).add(right.clone().multiplyScalar(joystickDelta.x));
+    ship.velocity.add(joyMove.multiplyScalar(ship.thrust));
+
+    if (joyMove.length() > 0) {
+      const targetQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), joyMove.normalize());
+      ship.mesh.quaternion.slerp(targetQuat, 0.1);
+    }
   }
 
-  // 2. Linear Movement (WASD)
-  const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(ship.mesh.quaternion);
-  const right = new THREE.Vector3(-1, 0, 0).applyQuaternion(ship.mesh.quaternion);
+  // 3. Update Physics & Camera
+  ship.mesh.position.add(ship.velocity);
+  ship.velocity.multiplyScalar(ship.friction);
 
-  // W Forward / S Backward Merge
-  let moveZ = 0;
-  if (keys['KeyW'] || isThrusting) moveZ += 1;
-  if (keys['KeyS']) moveZ -= 1;
-
-  if (moveZ !== 0) {
-    ship.velocity.add(forward.clone().multiplyScalar(ship.thrust * moveZ));
-  }
-
-  // A/D: Strafe Left/Right
-  if (keys['KeyA']) {
-    ship.velocity.add(right.clone().multiplyScalar(ship.thrust * 0.5));
-  }
-  if (keys['KeyD']) {
-    ship.velocity.add(right.clone().multiplyScalar(-ship.thrust * 0.5));
-  }
-
-  // Space: Emergency Thrust (Turbo)
-  if (keys['Space']) {
-    ship.velocity.add(forward.clone().multiplyScalar(ship.thrust * 2));
-  }
+  updatePilotCamera();
 }
+
+function updatePilotCamera() {
+  // Spherical Coordinates to Cartesian
+  const x = window._camOrbit.radius * Math.sin(window._camOrbit.phi) * Math.sin(window._camOrbit.theta);
+  const y = window._camOrbit.radius * Math.cos(window._camOrbit.phi);
+  const z = window._camOrbit.radius * Math.sin(window._camOrbit.phi) * Math.cos(window._camOrbit.theta);
+
+  const desiredPos = ship.mesh.position.clone().add(new THREE.Vector3(x, y, z));
+
+  // High damping for translation, instant for orientation
+  camera.position.lerp(desiredPos, 0.2);
+  camera.lookAt(ship.mesh.position);
+}
+
 
 // Handle Resize
 window.addEventListener('resize', () => {
@@ -467,39 +865,57 @@ window.addEventListener('resize', () => {
 });
 
 // Animation Loop
+// ------------------------------------------------------------------
+// UI Click-Through Prevention
+// Stop propagation of events from UI elements to background (OrbitControls)
+// ------------------------------------------------------------------
+const uiElements = ['controls', 'sub-menu', 'info-panel', 'flight-hud'];
+uiElements.forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  // Prevent mouse & touch events from reaching the 3D canvas
+  const blocker = (e) => e.stopPropagation();
+
+  // Simple but effective blocking
+  ['mousedown', 'mouseup', 'click', 'dblclick', 'wheel', 'touchstart', 'touchend', 'touchmove'].forEach(evtType => {
+    el.addEventListener(evtType, blocker);
+  });
+});
+
+const clock = new THREE.Clock();
+
 function animate() {
   requestAnimationFrame(animate);
+  const delta = clock.getDelta();
+  const cappedDelta = Math.min(delta, 0.1); // Prevent huge jumps during tab switch
 
   // 1. Move all celestial bodies (Planets then Satellites)
   if (solarSystem) {
-    solarSystem.update();
+    solarSystem.update(cappedDelta);
+  }
+  if (asteroidBelt) {
+    asteroidBelt.update(currentSpeed, cappedDelta);
+  }
+  if (kuiperBelt) {
+    kuiperBelt.update(currentSpeed, cappedDelta);
   }
 
   // Handle Space Flight
   if (isPilotMode) {
-    handleFlightInputs();
-    ship.update();
-
-    // Smooth camera follow - Refined for Central Third Person View
-    const offset = new THREE.Vector3(0, 1.5, -12).applyQuaternion(ship.mesh.quaternion);
-    const idealCameraPos = ship.mesh.position.clone().add(offset);
-    camera.position.lerp(idealCameraPos, 0.1);
-
-    // Look directly at the ship to keep it central
-    camera.lookAt(ship.mesh.position);
+    handleFlightInputs(cappedDelta);
+    updatePilotMode(cappedDelta);
   }
 
   // Update background to follow camera (infinite depth)
   if (stars && stars.update) {
-    stars.update(camera.position);
+    stars.update(camera.position, cappedDelta);
   }
 
   // 2. Determine tracking state
   if (!isPilotMode) {
     const isInfoPanelOpen = infoPanel && !infoPanel.classList.contains('hidden');
 
-    // When focused (info panel open), we disable Panning and make Right click = Rotate
-    // to ensure the celestial body stays centered no matter what.
     if (isInfoPanelOpen) {
       controls.enablePan = false;
       controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
@@ -514,59 +930,62 @@ function animate() {
       const currentWorldPos = new THREE.Vector3();
       selectedTarget.getWorldPosition(currentWorldPos);
 
-      // Initial auto-zoom approach
+      // Initial auto-zoom
       if (shouldAutoZoom) {
         const isReal = solarSystem.isRealScale();
         const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
-
-        const multiplier = window.innerWidth <= 1100 ? 10 : 6;
+        // Moderate zoom for mobile (around 15x-20x)
+        const multiplier = window.innerWidth <= 480 ? 18 : (window.innerWidth <= 1100 ? 12 : 6);
         const zoomDist = currentRadius * multiplier;
         const currentDist = camera.position.distanceTo(currentWorldPos);
         const newDist = THREE.MathUtils.lerp(currentDist, zoomDist, 0.05);
-
         const direction = camera.position.clone().sub(currentWorldPos).normalize();
         camera.position.copy(currentWorldPos.clone().add(direction.multiplyScalar(newDist)));
-
-        if (Math.abs(currentDist - zoomDist) < (currentRadius * 0.1)) {
-          shouldAutoZoom = false;
-        }
+        if (Math.abs(currentDist - zoomDist) < (currentRadius * 0.1)) shouldAutoZoom = false;
       }
 
       if (isInfoPanelOpen) {
-        // Calculate how much the target moved since the last frame
         const deltaMovement = currentWorldPos.clone().sub(lastTargetPos);
-
-        // Move the camera by the SAME amount to stay synchronized
         camera.position.add(deltaMovement);
-
-        // Update controls target
         const visualTarget = currentWorldPos.clone();
-        if (window.innerWidth <= 1100) {
-          const up = new THREE.Vector3(0, 1, 0);
-          visualTarget.sub(up.multiplyScalar(selectedTarget.userData.radius * 2.5));
+
+        // Mobile/Tablet Offsetting to clear UI (Improved Logic)
+        if (isInfoPanelOpen && window.innerWidth <= 1100) {
+          const isPhone = window.innerWidth <= 480;
+          const bodyRadius = selectedTarget.userData.radius;
+
+          const camDir = new THREE.Vector3().subVectors(camera.position, currentWorldPos).normalize();
+          const camRight = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), camDir).normalize();
+          const camUp = new THREE.Vector3().crossVectors(camDir, camRight).normalize();
+
+          // Determine zoom distance for scaling the offset
+          const isReal = solarSystem.isRealScale();
+          const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
+          // Slightly further back for mobile to give more room
+          const multiplier = isPhone ? 22 : 12;
+          const zoomDist = currentRadius * multiplier;
+
+          // Move target DOWN relative to screen space to push object UP
+          // Factor -0.12 is the sweet spot for v2.1.93 bottom drawer layout
+          const vShiftFactor = isPhone ? -0.12 : -0.08;
+          visualTarget.add(camUp.multiplyScalar(zoomDist * vShiftFactor));
         }
+
         controls.target.copy(visualTarget);
-      } else if (!isUserInteracting) {
-        // Smooth follow when panel is closed
+      } else if (!isUserInteracting && selectedTarget) {
         controls.target.lerp(currentWorldPos, 0.1);
       }
-
-      // Always update last known position for the next frame
       lastTargetPos.copy(currentWorldPos);
     }
   }
 
-  // 4. Update the controls to match the target and camera position
-  const prevTarget = controls.target.clone();
-  controls.update();
-
-  // 5. If panel is closed and user panned away, stop tracking
+  // 4. Update controls
   if (!isPilotMode) {
+    const prevTarget = controls.target.clone();
+    controls.update();
     const isInfoPanelOpen = infoPanel && !infoPanel.classList.contains('hidden');
     if (!isInfoPanelOpen && isUserInteracting) {
-      if (controls.target.distanceTo(prevTarget) > 0.01) {
-        selectedTarget = null;
-      }
+      if (controls.target.distanceTo(prevTarget) > 0.01) selectedTarget = null;
     }
   }
 
@@ -574,3 +993,8 @@ function animate() {
 }
 
 animate();
+
+// Debug Expose
+window.scene = scene;
+window.ship = ship;
+window.solarSystem = solarSystem;
