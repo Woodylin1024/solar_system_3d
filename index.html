@@ -6,7 +6,7 @@
   <link rel="icon" type="image/svg+xml" href="/solar_system_3d/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Solar System</title>
-  <script type="module" crossorigin src="/solar_system_3d/assets/index-zLqTki0i.js"></script>
+  <script type="module" crossorigin src="/solar_system_3d/assets/index-CpNzvhEH.js"></script>
   <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-BbRbO_mf.css">
 </head>
 
@@ -63,7 +63,7 @@
     </div>
   </div>
 
-  <div id="version-tag">v2.1.98</div>
+  <div id="version-tag">v2.1.99</div>
 
   <!-- Sub-menu moved to body root to avoid any parent clipping -->
   <div id="sub-menu" class="hidden">
@@ -96,33 +96,41 @@
     <div class="menu-label">顯示軌道</div>
 
     <div class="legend-container">
+      <!-- 1. Man-made -->
+      <div class="legend-item">
+        <span class="legend-color"
+          style="background: repeating-linear-gradient(to right, #ffffff 0, #ffffff 4px, transparent 4px, transparent 7px); opacity: 0.8;"></span>
+        <span class="legend-text">人造物體 (Man-made)</span>
+      </div>
+      <!-- 2. Planet -->
       <div class="legend-item">
         <span class="legend-color" style="background: #00d2ff;"></span>
         <span class="legend-text">行星 (Planet)</span>
       </div>
+      <!-- 3. Satellite -->
+      <div class="legend-item">
+        <span class="legend-color" style="background: #ffffff; opacity: 0.3;"></span>
+        <span class="legend-text">天然衛星 (Satellite)</span>
+      </div>
+      <!-- 4. Dwarf Planet -->
       <div class="legend-item">
         <span class="legend-color" style="background: #ffaa00;"></span>
         <span class="legend-text">矮行星 (Dwarf Planet)</span>
       </div>
+      <!-- 5. Candidate -->
       <div class="legend-item">
         <span class="legend-color" style="background: #cc66ff;"></span>
-        <span class="legend-text">候選 / TNO</span>
+        <span class="legend-text">候選矮行星 (Candidate)</span>
       </div>
-      <div class="legend-item">
-        <span class="legend-color" style="background: #ffffff; opacity: 0.3;"></span>
-        <span class="legend-text">衛星 (Satellite)</span>
-      </div>
-      <div class="legend-item">
-        <span class="legend-color" style="background: #ff3333;"></span>
-        <span class="legend-text">星際天體 (Interstellar)</span>
-      </div>
+      <!-- 6. Asteroid -->
       <div class="legend-item">
         <span class="legend-color" style="background: #84ff00;"></span>
         <span class="legend-text">主要小行星 (Asteroid)</span>
       </div>
+      <!-- 7. Interstellar -->
       <div class="legend-item">
-        <span class="legend-color" style="background: #ffaa00; box-shadow: 0 0 10px #ffaa00;"></span>
-        <span class="legend-text">人造物體 (Man-made)</span>
+        <span class="legend-color" style="background: #ff3333;"></span>
+        <span class="legend-text">星際天體 (Interstellar)</span>
       </div>
     </div>
 
