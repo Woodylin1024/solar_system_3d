@@ -6,7 +6,7 @@
   <link rel="icon" type="image/svg+xml" href="/solar_system_3d/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Solar System</title>
-  <script type="module" crossorigin src="/solar_system_3d/assets/index-Bmq8WWKB.js"></script>
+  <script type="module" crossorigin src="/solar_system_3d/assets/index-zLqTki0i.js"></script>
   <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-BbRbO_mf.css">
 </head>
 
@@ -63,7 +63,7 @@
     </div>
   </div>
 
-  <div id="version-tag">v2.1.97</div>
+  <div id="version-tag">v2.1.98</div>
 
   <!-- Sub-menu moved to body root to avoid any parent clipping -->
   <div id="sub-menu" class="hidden">
@@ -122,17 +122,23 @@
       </div>
       <div class="legend-item">
         <span class="legend-color" style="background: #ffaa00; box-shadow: 0 0 10px #ffaa00;"></span>
-        <span class="legend-text">空間站 (Station)</span>
+        <span class="legend-text">人造物體 (Man-made)</span>
       </div>
     </div>
 
     <div class="orbit-controls-grid">
+      <!-- Row 1: Near Objects -->
+      <button id="toggle-manmade-orbit" class="menu-item active" title="顯示人造物體軌道">人造</button>
       <button id="toggle-planet-orbit" class="menu-item active" title="顯示行星軌道">行星</button>
       <button id="toggle-sat-orbit" class="menu-item" title="顯示衛星軌道">衛星</button>
+
+      <!-- Row 2: Deep Inner/Small Bodies -->
       <button id="toggle-dwarf-orbit" class="menu-item" title="顯示矮行星軌道">矮行星</button>
       <button id="toggle-candidate-orbit" class="menu-item" title="顯示候選矮行星軌道">候選</button>
-      <button id="toggle-interstellar-orbit" class="menu-item" title="顯示星際天體軌道">星際</button>
       <button id="toggle-asteroid-orbit" class="menu-item" title="顯示主要小行星軌道">小行星</button>
+
+      <!-- Row 3: Distant / Belts -->
+      <button id="toggle-interstellar-orbit" class="menu-item" title="顯示星際天體軌道">星際</button>
       <button id="toggle-belt" class="menu-item active" title="顯示小行星帶">行星帶</button>
       <button id="toggle-kuiper" class="menu-item active" title="顯示柯伊伯帶">柯伊伯帶</button>
     </div>
