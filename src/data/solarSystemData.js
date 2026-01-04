@@ -438,7 +438,7 @@ export const solarSystemData = [
         radius: 3,
         realScaleRadius: 11,
         color: 0xdcae96,
-        texture: "jupiter.jpg",
+        texture: "jupiter_natural.png",
         distance: 120,
         realScaleDistance: 450,
         speed: 0.005,
@@ -539,7 +539,7 @@ export const solarSystemData = [
         radius: 2.5,
         realScaleRadius: 9.5,
         color: 0xf4d03f,
-        texture: "saturn.jpg",
+        texture: "saturn_ai.png",
         distance: 170,
         realScaleDistance: 800,
         speed: 0.004,
@@ -1003,6 +1003,89 @@ export const solarSystemData = [
             "質量": "1.66 × 10²² kg",
             "直徑": "2,326 km",
             "表面溫度": "-243 °C"
+        }
+    },
+    {
+        name: "Halley",
+        nameCH: "哈雷彗星",
+        type: "comet",
+        isComet: true,
+        radius: 0.3,
+        realScaleRadius: 0.008,
+        color: 0x88ffcc,
+        texture: "asteroid.jpg",
+        distance: 280,
+        realScaleDistance: 2600,
+        speed: 0.003,
+        inclination: 18,
+        description: "哈雷彗星是目前已知最著名的週期性彗星。基於其逆行且高傾角的特殊軌道軌跡、長達數千年的活動史，以及沿途釋出的厚實碎屑雲帶，地球每年會兩度穿越這條由其留下的「塵埃河流」：5月時形成了寶瓶座η流星雨，而10月則迎來著名的獵戶座流星雨。",
+        details: {
+            "週期": "約 76 年",
+            "核心大小": "約 15 × 8 km",
+            "最後回歸": "1986 年",
+            "下次預測": "2061 年"
+        }
+    },
+    {
+        name: "Swift-Tuttle",
+        nameCH: "斯威夫特-塔特爾彗星 (109P)",
+        type: "comet",
+        isComet: true,
+        radius: 0.35,
+        realScaleRadius: 0.013,
+        color: 0xaaffcc,
+        texture: "asteroid.jpg",
+        distance: 350,
+        realScaleDistance: 5000,
+        speed: 0.002,
+        inclination: 113.5,
+        description: "斯威夫特-塔特爾彗星是一顆極其龐大且具有潛在威脅的週期性彗星，其核心直徑達 26 公里。它是每年 8 月盛大的「英仙座流星雨」的高峰期來源。當地球穿過它在漫長軌跡上留下的塵埃帶時，這些顆粒進入大氣層即形成了壯麗的流星現象。",
+        details: {
+            "週期": "約 133 年",
+            "核心直徑": "約 26 km",
+            "最後回歸": "1992 年",
+            "下次預測": "2126 年"
+        }
+    },
+    {
+        name: "Tempel-Tuttle",
+        nameCH: "坦普爾-塔特爾彗星 (55P)",
+        type: "comet",
+        isComet: true,
+        radius: 0.28,
+        realScaleRadius: 0.002,
+        color: 0xccffff,
+        texture: "asteroid.jpg",
+        distance: 240,
+        realScaleDistance: 1500,
+        speed: 0.004,
+        inclination: 162.5,
+        description: "坦普爾-塔特爾彗星是一顆週期約 33 年的週期性彗星，它是著名的「獅子座流星雨」的母彗星。由於其軌道碎屑雲帶的密度分佈非常集中，當地球穿過其留下的密集塵埃帶時，獅子座流星雨偶爾會在 11 月爆發成每小時數千顆以上的「流星暴」，是天文史上最具威力的流星現象之一。",
+        details: {
+            "週期": "約 33 年",
+            "核心直徑": "約 3.6 km",
+            "最後回歸": "1998 年",
+            "下次預測": "2031 年"
+        }
+    },
+    {
+        name: "3200 Phaethon",
+        nameCH: "法厄同 (3200 Phaethon)",
+        type: "asteroid",
+        radius: 0.25,
+        realScaleRadius: 0.003,
+        color: 0x999999,
+        texture: "asteroid.jpg",
+        distance: 140,
+        realScaleDistance: 130, // Very close perihelion simulation
+        speed: 0.012,
+        inclination: 22.2,
+        description: "3200 Phaethon 是一顆軌道極其特殊的阿波羅型小行星，具有「岩石彗星」的特徵。它是每年 12 月「雙子座流星雨」的母體，這在流星雨起源中相當罕見（大多數流星雨源自彗星）。它在近日點時會極度接近太陽，表面溫度高達 750°C，導致其岩石表面因熱脹冷縮碎裂，並釋放出構成流星雨的塵埃粒子。",
+        details: {
+            "週期": "約 1.43 年",
+            "直徑": "約 5.1 km",
+            "分類": "阿波羅型小行星 / 岩石彗星",
+            "近日點": "0.14 AU (極接近太陽)"
         }
     },
     {

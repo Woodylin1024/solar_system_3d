@@ -5,6 +5,7 @@ import { createStars } from './objects/Stars.js';
 import { createSpaceship } from './objects/Spaceship.js';
 import { createAsteroidBelt } from './objects/AsteroidBelt.js';
 import { createKuiperBelt } from './objects/KuiperBelt.js';
+import { solarSystemData } from './data/solarSystemData.js';
 
 const scene = new THREE.Scene();
 // ... (camera setup)
@@ -22,8 +23,51 @@ renderer.toneMappingExposure = 0.8;
 camera.position.set(0, 60, 450); // Improved initial angle
 camera.lookAt(0, 0, 0);
 
+// Loading Manager implementation
+const loadingScreen = document.getElementById('loading-screen');
+const loadingBar = document.getElementById('loading-bar');
+const loadingStatus = document.getElementById('loading-status');
+
+// Build texture to Chinese name map for a better loading experience
+const textureToNameMap = {
+  'starmap_8k.jpg': '深空背景',
+  'saturn_ring_v3.png': '土星環'
+};
+
+const buildMap = (dataArray) => {
+  dataArray.forEach(item => {
+    if (item.texture) textureToNameMap[item.texture] = item.nameCH || item.name;
+    if (item.satellites) buildMap(item.satellites);
+  });
+};
+buildMap(solarSystemData);
+
+const loadingManager = new THREE.LoadingManager();
+
+loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
+  const progress = (itemsLoaded / itemsTotal) * 100;
+  loadingBar.style.width = progress + '%';
+
+  // Extract filename from URL
+  const fileName = url.split('/').pop().split('?')[0];
+  const displayName = textureToNameMap[fileName] || fileName;
+
+  loadingStatus.innerText = `正在探索 ${displayName}`;
+};
+
+loadingManager.onLoad = () => {
+  setTimeout(() => {
+    loadingScreen.classList.add('fade-out');
+  }, 500);
+};
+
+loadingManager.onError = (url) => {
+  console.error('There was an error loading ' + url);
+  loadingStatus.innerText = '部分資源讀取失敗，正在嘗試繼續...';
+};
+
 // Add Stars
-const stars = createStars(scene);
+const stars = createStars(scene, loadingManager);
 
 // Add Ship
 const ship = createSpaceship(scene);
@@ -77,7 +121,7 @@ let currentSpeed = 0.1; // Default speed set to 0.1x
 const speedDisplay = document.getElementById('speed-display');
 
 // Solar System
-const solarSystem = createSolarSystem(scene);
+const solarSystem = createSolarSystem(scene, loadingManager);
 solarSystem.setSpeedMultiplier(currentSpeed); // Now currentSpeed is defined!
 speedDisplay.innerText = `${currentSpeed.toFixed(1)}x`;
 
@@ -95,6 +139,7 @@ let dwarfOrbitsVisible = false;
 let candidateOrbitsVisible = false;
 let interstellarOrbitsVisible = false;
 let asteroidOrbitsVisible = false;
+let cometOrbitsVisible = false;
 let beltVisible = true;
 let kuiperVisible = true;
 
@@ -107,6 +152,7 @@ const syncOrbitVisibility = () => {
     solarSystem.setOrbitsVisibleByType('dwarf_planet_candidate', candidateOrbitsVisible);
     solarSystem.setOrbitsVisibleByType('interstellar', interstellarOrbitsVisible);
     solarSystem.setOrbitsVisibleByType('asteroid', asteroidOrbitsVisible);
+    solarSystem.setOrbitsVisibleByType('comet', cometOrbitsVisible);
     solarSystem.setSatOrbitsVisibleByType('satellite', satOrbitsVisible);
     solarSystem.setSatOrbitsVisibleByType('space_station', manmadeOrbitsVisible);
   }
@@ -164,26 +210,8 @@ window.addEventListener('pointerup', (event) => {
   handleInteraction(event.clientX, event.clientY, event.target);
 });
 
-// Dedicated Touch Support with movement tracking to avoid accidental deselects on mobile
-let touchStartPos = { x: 0, y: 0 };
-window.addEventListener('touchstart', (event) => {
-  if (event.touches.length > 0) {
-    touchStartPos = { x: event.touches[0].clientX, y: event.touches[0].clientY };
-  }
-}, { passive: true });
-
-window.addEventListener('touchend', (event) => {
-  if (event.changedTouches.length > 0) {
-    const touch = event.changedTouches[0];
-    const deltaX = Math.abs(touch.clientX - touchStartPos.x);
-    const deltaY = Math.abs(touch.clientY - touchStartPos.y);
-
-    // Only trigger if it's a tap, not a swipe/drag
-    if (deltaX < 20 && deltaY < 20) {
-      handleInteraction(touch.clientX, touch.clientY, event.target);
-    }
-  }
-});
+// Dedicated Touch Support is already handled by Pointer Events above. 
+// Redundant touchstart/touchend removed to prevent double-firing interaction logic on mobile.
 
 function handleInteraction(clientX, clientY, target) {
   // Click-through logic: Only block if clicking interactive UI components
@@ -444,6 +472,7 @@ const toggleDwarfBtn = document.getElementById('toggle-dwarf-orbit');
 const toggleCandidateBtn = document.getElementById('toggle-candidate-orbit');
 const toggleInterBtn = document.getElementById('toggle-interstellar-orbit');
 const toggleAsteroidBtn = document.getElementById('toggle-asteroid-orbit');
+const toggleCometBtn = document.getElementById('toggle-comet-orbit');
 const toggleBeltBtn = document.getElementById('toggle-belt');
 const toggleKuiperBtn = document.getElementById('toggle-kuiper');
 
@@ -501,6 +530,12 @@ toggleKuiperBtn.addEventListener('click', () => {
   syncOrbitVisibility();
 });
 
+toggleCometBtn.addEventListener('click', () => {
+  cometOrbitsVisible = !cometOrbitsVisible;
+  toggleCometBtn.classList.toggle('active', cometOrbitsVisible);
+  syncOrbitVisibility();
+});
+
 // For now, let's ensure the toggle-sat-orbit is not active in HTML (checked)
 
 
@@ -548,6 +583,7 @@ const bodyTypeMap = {
   'asteroid': '小行星',
   'interstellar': '星際天體',
   'satellite': '衛星',
+  'comet': '彗星',
   'space_station': '人造物體'
 };
 
@@ -885,6 +921,14 @@ uiElements.forEach(id => {
 
 const clock = new THREE.Clock();
 
+// Reusable vectors for performance (to avoid per-frame GC churn)
+const _v1 = new THREE.Vector3();
+const _v2 = new THREE.Vector3();
+const _v3 = new THREE.Vector3();
+const _v4 = new THREE.Vector3();
+const _v5 = new THREE.Vector3();
+
+
 function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
@@ -924,58 +968,71 @@ function animate() {
       controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
     }
 
-    // 3. Absolute Tracking Logic with Delta Movement
     if (selectedTarget) {
       selectedTarget.updateMatrixWorld(true);
-      const currentWorldPos = new THREE.Vector3();
-      selectedTarget.getWorldPosition(currentWorldPos);
+      // Use reusable vector for world position
+      selectedTarget.getWorldPosition(_v1);
 
       // Initial auto-zoom
       if (shouldAutoZoom) {
         const isReal = solarSystem.isRealScale();
         const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
-        // Moderate zoom for mobile (around 15x-20x)
         const multiplier = window.innerWidth <= 480 ? 18 : (window.innerWidth <= 1100 ? 12 : 6);
         const zoomDist = currentRadius * multiplier;
-        const currentDist = camera.position.distanceTo(currentWorldPos);
+        const currentDist = camera.position.distanceTo(_v1);
         const newDist = THREE.MathUtils.lerp(currentDist, zoomDist, 0.05);
-        const direction = camera.position.clone().sub(currentWorldPos).normalize();
-        camera.position.copy(currentWorldPos.clone().add(direction.multiplyScalar(newDist)));
+
+        // direction = camera.position - currentWorldPos
+        _v2.subVectors(camera.position, _v1).normalize();
+        // newPos = currentWorldPos + direction * newDist
+        _v3.copy(_v1).add(_v2.multiplyScalar(newDist));
+        camera.position.copy(_v3);
+
         if (Math.abs(currentDist - zoomDist) < (currentRadius * 0.1)) shouldAutoZoom = false;
       }
 
       if (isInfoPanelOpen) {
-        const deltaMovement = currentWorldPos.clone().sub(lastTargetPos);
-        camera.position.add(deltaMovement);
-        const visualTarget = currentWorldPos.clone();
+        // deltaMovement = currentWorldPos - lastTargetPos
+        _v2.subVectors(_v1, lastTargetPos);
+        camera.position.add(_v2);
 
-        // Mobile/Tablet Offsetting to clear UI (Improved Logic)
-        if (isInfoPanelOpen && window.innerWidth <= 1100) {
+        // visualTarget = currentWorldPos
+        _v3.copy(_v1);
+
+        // Mobile/Tablet Offsetting to clear UI
+        if (window.innerWidth <= 1100) {
           const isPhone = window.innerWidth <= 480;
-          const bodyRadius = selectedTarget.userData.radius;
+          const isLandscape = window.innerWidth > window.innerHeight;
 
-          const camDir = new THREE.Vector3().subVectors(camera.position, currentWorldPos).normalize();
-          const camRight = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), camDir).normalize();
-          const camUp = new THREE.Vector3().crossVectors(camDir, camRight).normalize();
+          // camDir = camera.position - currentWorldPos
+          _v2.subVectors(camera.position, _v1).normalize();
+          // camRight = (0,1,0) x camDir
+          _v4.set(0, 1, 0).cross(_v2).normalize();
+          // camUp = camDir x camRight
+          _v5.crossVectors(_v2, _v4).normalize();
 
-          // Determine zoom distance for scaling the offset
           const isReal = solarSystem.isRealScale();
           const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
-          // Slightly further back for mobile to give more room
           const multiplier = isPhone ? 22 : 12;
           const zoomDist = currentRadius * multiplier;
 
-          // Move target DOWN relative to screen space to push object UP
-          // Factor -0.12 is the sweet spot for v2.1.93 bottom drawer layout
-          const vShiftFactor = isPhone ? -0.12 : -0.08;
-          visualTarget.add(camUp.multiplyScalar(zoomDist * vShiftFactor));
+          if (isLandscape) {
+            // Landscape: Offset to the LEFT of the screen (move target RIGHT relative to cam)
+            // Factor 0.18 is chosen to balance the 280px wide panel
+            const hShiftFactor = 0.18;
+            _v3.add(_v4.multiplyScalar(zoomDist * hShiftFactor));
+          } else {
+            // Portrait: Offset to the TOP of the screen (move target DOWN relative to cam)
+            const vShiftFactor = isPhone ? -0.12 : -0.08;
+            _v3.add(_v5.multiplyScalar(zoomDist * vShiftFactor));
+          }
         }
 
-        controls.target.copy(visualTarget);
+        controls.target.copy(_v3);
       } else if (!isUserInteracting && selectedTarget) {
-        controls.target.lerp(currentWorldPos, 0.1);
+        controls.target.lerp(_v1, 0.1);
       }
-      lastTargetPos.copy(currentWorldPos);
+      lastTargetPos.copy(_v1);
     }
   }
 

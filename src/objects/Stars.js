@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export function createStars(scene, count = 2000) { // Drastically reduced count for a cleaner look
+export function createStars(scene, manager, count = 2000) { // Drastically reduced count for a cleaner look
     const group = new THREE.Group();
 
     // 1. Sparse Procedural Stars (Parallax Layer)
@@ -45,9 +45,9 @@ export function createStars(scene, count = 2000) { // Drastically reduced count 
     group.add(createStarLayer(count, 0.5, 0.6));
 
     // 2. NASA 8K Background (Dimmed for Subtlety)
-    const textureLoader = new THREE.TextureLoader();
+    const textureLoader = manager ? new THREE.TextureLoader(manager) : new THREE.TextureLoader();
     // Cache buster v14
-    const starmapTexture = textureLoader.load('textures/starmap_8k.jpg?v=14', (tex) => {
+    const starmapTexture = textureLoader.load('textures/starmap_8k.jpg?v=23.0', (tex) => {
         tex.wrapS = THREE.RepeatWrapping;
         tex.minFilter = THREE.LinearFilter;
         tex.magFilter = THREE.LinearFilter;

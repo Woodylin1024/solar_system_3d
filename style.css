@@ -6,6 +6,119 @@ body {
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(circle at center, #0f172a 0%, #000000 100%);
+  z-index: 100000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.8s ease-out, visibility 0.8s;
+}
+
+#loading-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loading-content {
+  text-align: center;
+  max-width: 300px;
+  width: 80%;
+}
+
+.loading-logo {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 30px;
+}
+
+.planet-core {
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+  border-radius: 50%;
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
+  animation: pulse-core 2s infinite ease-in-out;
+}
+
+.planet-ring {
+  width: 60px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  position: absolute;
+  top: 18px;
+  left: 0;
+  transform: rotateX(70deg);
+  animation: rotate-ring 4s infinite linear;
+}
+
+.loading-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  margin-bottom: 20px;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.loading-bar-container {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+#loading-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(to right, #00d2ff, #9333ea);
+  box-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+  transition: width 0.3s ease-out;
+}
+
+#loading-status {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 300;
+  height: 1.5em;
+}
+
+@keyframes pulse-core {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes rotate-ring {
+  from {
+    transform: rotateX(70deg) rotateZ(0deg);
+  }
+
+  to {
+    transform: rotateX(70deg) rotateZ(360deg);
+  }
+}
+
 #app {
   position: fixed;
   top: 0;
@@ -20,7 +133,11 @@ canvas {
   display: block;
 }
 
-/* Base UI Styles */
+/* UI Utility */
+.hidden {
+  display: none !important;
+}
+
 button {
   background: #333;
   color: white;
@@ -208,6 +325,7 @@ button:active {
 }
 
 #sub-menu.hidden {
+  display: block !important;
   opacity: 0;
   transform: scale(0.9) translateY(-10px);
   pointer-events: none;
@@ -219,6 +337,42 @@ button:active {
   text-transform: uppercase;
   letter-spacing: 2px;
   margin-bottom: 12px;
+}
+
+.menu-label-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.under-construction-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 204, 0, 0.15);
+  color: #ffcc00;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: bold;
+  border: 1px solid rgba(255, 204, 0, 0.2);
+  animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+  0% {
+    opacity: 0.8;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.8;
+  }
 }
 
 .menu-row {
@@ -247,55 +401,107 @@ button:active {
   margin: 15px 0;
 }
 
-/* Legend Styles */
-.legend-container {
-  padding: 5px 12px 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.legend-color {
-  width: 14px;
-  height: 3px;
-  border-radius: 2px;
-  box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
-}
-
-.legend-text {
-  font-size: 11px;
-  color: #aaa;
-  letter-spacing: 0.5px;
-}
-
-/* Orbit Control Grid */
+/* Orbit Control Grid & Buttons */
 .orbit-controls-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(6, 1fr);
   gap: 8px;
   padding: 5px 12px;
 }
 
 .orbit-controls-grid .menu-item {
   justify-content: center;
-  padding: 10px 2px;
+  padding: 14px 2px 8px 2px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.03);
   font-size: 11px;
-  font-weight: bold;
+  font-weight: 500;
   white-space: nowrap;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .orbit-controls-grid .menu-item.active {
-  background: rgba(0, 210, 255, 0.15);
+  background: rgba(0, 210, 255, 0.08);
+  border-color: rgba(0, 210, 255, 0.3);
   color: #00d2ff;
-  border: 1px solid rgba(0, 210, 255, 0.3);
+}
+
+/* Row 1 & 2: 3 items (each 2 columns) */
+.orbit-controls-grid button:nth-child(-n+6) {
+  grid-column: span 2;
+}
+
+/* Row 3 & 4: 2 items (each 3 columns) */
+.orbit-controls-grid button:nth-child(n+7) {
+  grid-column: span 3;
+}
+
+/* Orbit Button Color Indicators */
+.orbit-btn::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: 20%;
+  width: 60%;
+  height: 2px;
+  border-radius: 1px;
+  opacity: 0.6;
+  filter: saturate(0.8);
+  transition: all 0.2s ease;
+}
+
+.orbit-btn.active::before {
+  opacity: 1;
+  filter: saturate(1.2) brightness(1.2);
+  height: 3px;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.orbit-btn[data-color="manmade"]::before {
+  background: repeating-linear-gradient(to right, #fff 0, #fff 3px, transparent 3px, transparent 6px);
+  color: #fff;
+}
+
+.orbit-btn[data-color="planet"]::before {
+  background: #00d2ff;
+  color: #00d2ff;
+}
+
+.orbit-btn[data-color="satellite"]::before {
+  background: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+.orbit-btn[data-color="dwarf"]::before {
+  background: #ffaa00;
+  color: #ffaa00;
+}
+
+.orbit-btn[data-color="candidate"]::before {
+  background: #cc66ff;
+  color: #cc66ff;
+}
+
+.orbit-btn[data-color="asteroid"]::before {
+  background: #84ff00;
+  color: #84ff00;
+}
+
+.orbit-btn[data-color="comet"]::before {
+  background: #ff3333;
+  color: #ff3333;
+}
+
+.orbit-btn[data-color="interstellar"]::before {
+  background: #88ffff;
+  color: #88ffff;
+}
+
+.orbit-btn[data-color="belt"]::before,
+.orbit-btn[data-color="kuiper"]::before {
+  display: none;
 }
 
 .menu-item {
@@ -333,6 +539,7 @@ button:active {
 }
 
 #info-panel.hidden {
+  display: block !important;
   opacity: 0;
   transform: translateX(360px);
   pointer-events: none;
@@ -446,27 +653,55 @@ button:active {
 /* Mobile & Tablet Styles */
 @media (max-width: 1100px) {
   #info-panel {
-    top: auto;
-    bottom: 12px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
-    left: 10px;
-    right: 10px;
-    width: auto;
-    max-height: 48vh;
     padding-top: 10px;
     padding-left: 15px;
     padding-right: 15px;
-    border-radius: 28px;
-    display: flex;
-    flex-direction: column;
     transform: none;
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.4);
     pointer-events: auto;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1), opacity 0.3s;
   }
 
-  #info-panel.hidden {
-    transform: translateY(130%);
-    opacity: 0;
+  /* Default Mobile (Portrait / Square) -> Bottom Drawer */
+  @media (orientation: portrait),
+  (orientation: square) {
+    #info-panel {
+      top: auto;
+      bottom: 12px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      left: 10px;
+      right: 10px;
+      width: auto;
+      max-height: 48vh;
+      display: flex;
+      flex-direction: column;
+      border-radius: 28px;
+    }
+
+    #info-panel.hidden {
+      transform: translateY(130%) !important;
+      opacity: 0;
+    }
+  }
+
+  /* Specific Landscape Override -> Right Side Panel */
+  @media (orientation: landscape) {
+    #info-panel {
+      top: 12px;
+      bottom: 12px;
+      left: auto;
+      right: 12px;
+      width: 280px;
+      max-height: none;
+      height: auto;
+      border-radius: 20px;
+      padding-bottom: 20px;
+    }
+
+    #info-panel.hidden {
+      transform: translateX(120%) !important;
+      opacity: 0;
+    }
   }
 
   #info-scroll-container {
@@ -517,7 +752,13 @@ button:active {
 @media (max-width: 480px) {
   #controls {
     padding: 6px 8px;
+    width: fit-content;
     max-width: 94vw;
+  }
+
+  #search-container {
+    width: 190px;
+    /* Reduce width to eliminate the redundant space identified by user */
   }
 
   .control-top-row {

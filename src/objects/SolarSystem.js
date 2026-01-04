@@ -1,14 +1,20 @@
 import * as THREE from 'three';
 import { solarSystemData } from '../data/solarSystemData.js';
 
-export function createSolarSystem(scene) {
+export function createSolarSystem(scene, manager) {
     const bodies = [];
-    const textureLoader = new THREE.TextureLoader();
+    const textureLoader = manager ? new THREE.TextureLoader(manager) : new THREE.TextureLoader();
     let isRealScale = false;
+
+    // Reusable vectors for performance
+    const _vS1 = new THREE.Vector3();
+    const _vS2 = new THREE.Vector3();
+    const _vS3 = new THREE.Vector3();
+
 
     solarSystemData.forEach(data => {
         // We initialize with radius 1 and use mesh.scale for the actual sizes
-        const geometry = new THREE.SphereGeometry(1, 64, 64);
+        const geometry = new THREE.SphereGeometry(1, 128, 128);
 
         // Apply irregularity/deformation if specified (e.g., for "potato" shaped asteroids)
         if (data.isIrregular) {
@@ -55,15 +61,40 @@ export function createSolarSystem(scene) {
         }
 
         let material;
-        if (data.texture) {
-            const texture = textureLoader.load(`textures/${data.texture}?v=22`);
+        if (data.name === 'Sun') {
+            const texture = textureLoader.load(`textures/${data.texture}?v=25.5`);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.generateMipmaps = false;
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.LinearFilter;
+
+            material = new THREE.MeshBasicMaterial({
+                map: texture,
+                transparent: false
+            });
+        } else if (data.texture) {
+            const texture = textureLoader.load(`textures/${data.texture}?v=26.7`);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping; // Prevents artifacts at poles
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.anisotropy = 16;
+
+            // Balanced filtering: Use Mipmapping but with LinearFilter 
+            // to minimize the hard edge at the UV boundary.
+            texture.minFilter = THREE.LinearMipmapLinearFilter;
+            texture.generateMipmaps = true;
+
             material = new THREE.MeshStandardMaterial({
                 map: texture,
-                emissive: data.isComet ? 0x4488ff : (data.type === 'star' ? 0xffffff : 0x222222),
-                emissiveMap: data.type === 'star' ? texture : (data.isComet ? texture : null),
-                emissiveIntensity: data.isComet ? 0.8 : (data.type === 'star' ? 1 : 0.05)
+                emissive: (data.isComet || data.type === 'comet') ? 0x4488ff : (data.type === 'star' ? 0xffffff : 0x222222),
+                emissiveMap: data.type === 'star' ? texture : ((data.isComet || data.type === 'comet') ? texture : null),
+                emissiveIntensity: (data.isComet || data.type === 'comet') ? 0.8 : (data.type === 'star' ? 1 : 0.05),
+                roughness: 1,
+                metalness: 0
             });
-        } else {
+        }
+        else {
             material = new THREE.MeshStandardMaterial({
                 color: data.color,
                 emissive: data.type === 'star' ? data.color : 0x000000,
@@ -74,6 +105,9 @@ export function createSolarSystem(scene) {
         const mesh = new THREE.Mesh(geometry, material);
         mesh.userData = data;
         mesh.name = data.name;
+
+        // Apply Axial Tilt (Obliquity) to the mesh
+        mesh.rotation.z = THREE.MathUtils.degToRad(data.obliquity || 0);
 
         // Initial scale
         if (data.geometryScale) {
@@ -86,9 +120,6 @@ export function createSolarSystem(scene) {
             mesh.scale.setScalar(data.radius);
         }
 
-        // Apply Axial Tilt (Obliquity) to the mesh
-        mesh.rotation.z = THREE.MathUtils.degToRad(data.obliquity || 0);
-
         const body = {
             name: data.name,
             data: data,
@@ -100,7 +131,8 @@ export function createSolarSystem(scene) {
             satellites: [],
             orbitLine: null,
             ringMesh: null,
-            obliquity: THREE.MathUtils.degToRad(data.obliquity || 0)
+            obliquity: THREE.MathUtils.degToRad(data.obliquity || 0),
+            isSunShader: data.name === 'Sun'
         };
 
         // Orbit Line
@@ -113,7 +145,9 @@ export function createSolarSystem(scene) {
             } else if (data.type === 'dwarf_planet_candidate') {
                 orbitColor = 0xcc66ff; // Candidate purple
             } else if (data.type === 'interstellar') {
-                orbitColor = 0xff3333; // Interstellar red
+                orbitColor = 0x88ffff; // Interstellar icy teal
+            } else if (data.type === 'comet' || data.isComet) {
+                orbitColor = 0xff3333; // Comet red
             } else if (data.type === 'asteroid') {
                 orbitColor = 0x84ff00; // Asteroid bright lime green
             }
@@ -129,11 +163,12 @@ export function createSolarSystem(scene) {
                 // Interstellar: Path-based non-closed orbit
                 const pts = data.pathPoints.map(p => new THREE.Vector3(p[0], p[1], p[2]));
                 const curve = new THREE.CatmullRomCurve3(pts);
-                const points = curve.getPoints(200);
-                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-                orbitLine = new THREE.Line(lineGeometry, lineMaterial);
                 body.orbitCurve = curve;
                 body.progress = Math.random(); // Start at random progress
+
+                const points = curve.getPoints(400); // Increased resolution for interstellar paths
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                orbitLine = new THREE.Line(lineGeometry, lineMaterial);
             } else {
                 // Standard: Circular closed orbit
                 const curve = new THREE.EllipseCurve(0, 0, data.distance, data.distance, 0, 2 * Math.PI, false, 0);
@@ -163,7 +198,7 @@ export function createSolarSystem(scene) {
                 const radialRatio = (d - inner) / (outer - inner);
                 uv.setXY(i, 0.5, radialRatio);
             }
-            const ringTex = textureLoader.load('textures/saturn_ring_v3.png');
+            const ringTex = textureLoader.load('textures/saturn_ring_v3.png?v=23.4');
             const ringMat = new THREE.MeshStandardMaterial({
                 map: ringTex,
                 side: THREE.DoubleSide,
@@ -283,8 +318,14 @@ export function createSolarSystem(scene) {
                     const satGeo = new THREE.SphereGeometry(1, 64, 64);
                     let satMat;
                     if (satData.texture) {
+                        const satTex = textureLoader.load(`textures/${satData.texture}?v=25.1`);
+                        satTex.wrapS = THREE.RepeatWrapping;
+                        satTex.wrapT = THREE.RepeatWrapping;
+                        satTex.colorSpace = THREE.SRGBColorSpace;
+                        satTex.anisotropy = 8; // Lower anisotropy for satellites for performance
+
                         satMat = new THREE.MeshStandardMaterial({
-                            map: textureLoader.load(`textures/${satData.texture}?v=18`),
+                            map: satTex,
                             emissive: 0x222222,
                             emissiveIntensity: 0.05
                         });
@@ -346,7 +387,7 @@ export function createSolarSystem(scene) {
         }
 
         // Comet Effects: Coma and Tail
-        if (data.isComet) {
+        if (data.isComet || data.type === 'comet') {
             // 1. Coma (Glowing atmosphere) - Larger and softer
             const comaGeo = new THREE.SphereGeometry(1.8, 32, 32);
             const comaMat = new THREE.MeshBasicMaterial({
@@ -472,7 +513,9 @@ export function createSolarSystem(scene) {
                 if (body.data.type === 'interstellar' && body.orbitCurve) {
                     body.progress += body.speed * speedMultiplier * timeStep;
                     if (body.progress > 1) body.progress = 0;
-                    body.mesh.position.copy(body.orbitCurve.getPoint(body.progress));
+                    // Provide destination vector to avoid internal allocation
+                    body.orbitCurve.getPoint(body.progress, _vS1);
+                    body.mesh.position.copy(_vS1);
                 } else if (body.distance > 0) {
                     body.angle += body.speed * speedMultiplier * timeStep;
                     const incl = THREE.MathUtils.degToRad(body.data.inclination || 0);
@@ -480,6 +523,12 @@ export function createSolarSystem(scene) {
                     const lz = Math.sin(body.angle) * body.distance;
                     body.mesh.position.set(lx, lz * -Math.sin(incl), lz * Math.cos(incl));
                 }
+
+                // Update Sun Plasma Shader (Modern onBeforeCompile approach)
+                if (body.isSunShader && body.mesh.material.userData.sunShader) {
+                    body.mesh.material.userData.sunShader.uniforms.uTime.value += delta * speedMultiplier;
+                }
+
                 body.mesh.rotateY(body.rotationSpeed * speedMultiplier * timeStep);
 
                 body.satellites.forEach(sat => {
@@ -501,8 +550,11 @@ export function createSolarSystem(scene) {
 
                 if (body.tailMesh) {
                     body.tailMesh.position.copy(body.mesh.position);
-                    const dir = new THREE.Vector3().copy(body.mesh.position).normalize();
-                    body.tailMesh.lookAt(new THREE.Vector3().addVectors(body.mesh.position, dir));
+                    // direction = normalized mesh position
+                    _vS1.copy(body.mesh.position).normalize();
+                    // lookTarget = mesh position + direction
+                    _vS2.addVectors(body.mesh.position, _vS1);
+                    body.tailMesh.lookAt(_vS2);
                     const distToSun = body.mesh.position.length();
                     body.tailMesh.material.opacity = Math.max(0.1, 0.6 - (distToSun / 600));
                 }
