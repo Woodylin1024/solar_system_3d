@@ -6,8 +6,8 @@
   <link rel="icon" type="image/svg+xml" href="/solar_system_3d/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Solar System</title>
-  <script type="module" crossorigin src="/solar_system_3d/assets/index-BgzgdLiZ.js"></script>
-  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-DrfxzmJ7.css">
+  <script type="module" crossorigin src="/solar_system_3d/assets/index-B0tjwwP6.js"></script>
+  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-CP-B1oYI.css">
 </head>
 
 <div id="loading-screen">
@@ -76,7 +76,7 @@
   </div>
 </div>
 
-<div id="version-tag">v2.4.7</div>
+<div id="version-tag">v2.5.0</div>
 
 <!-- Sub-menu moved to body root to avoid any parent clipping -->
 <div id="sub-menu" class="hidden">
@@ -108,60 +108,27 @@
 
   <div class="menu-label">顯示軌道</div>
 
-  <div class="legend-container">
-    <!-- 1. Man-made -->
-    <div class="legend-item">
-      <span class="legend-color"
-        style="background: repeating-linear-gradient(to right, #ffffff 0, #ffffff 4px, transparent 4px, transparent 7px); opacity: 0.8;"></span>
-      <span class="legend-text">人造物體 (Man-made)</span>
-    </div>
-    <!-- 2. Planet -->
-    <div class="legend-item">
-      <span class="legend-color" style="background: #00d2ff;"></span>
-      <span class="legend-text">行星 (Planet)</span>
-    </div>
-    <!-- 3. Satellite -->
-    <div class="legend-item">
-      <span class="legend-color" style="background: #ffffff; opacity: 0.3;"></span>
-      <span class="legend-text">天然衛星 (Satellite)</span>
-    </div>
-    <!-- 4. Dwarf Planet -->
-    <div class="legend-item">
-      <span class="legend-color" style="background: #ffaa00;"></span>
-      <span class="legend-text">矮行星 (Dwarf Planet)</span>
-    </div>
-    <!-- 5. Candidate -->
-    <div class="legend-item">
-      <span class="legend-color" style="background: #cc66ff;"></span>
-      <span class="legend-text">候選矮行星 (Candidate)</span>
-    </div>
-    <!-- 6. Asteroid -->
-    <div class="legend-item">
-      <span class="legend-color" style="background: #84ff00;"></span>
-      <span class="legend-text">主要小行星 (Asteroid)</span>
-    </div>
-    <!-- 7. Interstellar -->
-    <div class="legend-item">
-      <span class="legend-color" style="background: #ff3333;"></span>
-      <span class="legend-text">星際天體 (Interstellar)</span>
-    </div>
-  </div>
-
   <div class="orbit-controls-grid">
-    <!-- Row 1: Near Objects -->
-    <button id="toggle-manmade-orbit" class="menu-item" title="顯示人造物體軌道">人造</button>
-    <button id="toggle-planet-orbit" class="menu-item active" title="顯示行星軌道">行星</button>
-    <button id="toggle-sat-orbit" class="menu-item" title="顯示衛星軌道">衛星</button>
+    <!-- Row 1: Primary Bodies -->
+    <button id="toggle-manmade-orbit" class="menu-item orbit-btn" data-color="manmade" title="顯示人造物體軌道">人造物體</button>
+    <button id="toggle-planet-orbit" class="menu-item orbit-btn active" data-color="planet" title="顯示行星軌道">行星</button>
+    <button id="toggle-sat-orbit" class="menu-item orbit-btn" data-color="satellite" title="顯示天然衛星軌道">天然衛星</button>
 
-    <!-- Row 2: Deep Inner/Small Bodies -->
-    <button id="toggle-dwarf-orbit" class="menu-item" title="顯示矮行星軌道">矮行星</button>
-    <button id="toggle-candidate-orbit" class="menu-item" title="顯示候選矮行星軌道">候選</button>
-    <button id="toggle-asteroid-orbit" class="menu-item" title="顯示主要小行星軌道">小行星</button>
+    <!-- Row 2: Small Bodies -->
+    <button id="toggle-dwarf-orbit" class="menu-item orbit-btn" data-color="dwarf" title="顯示矮行星軌道">矮行星</button>
+    <button id="toggle-candidate-orbit" class="menu-item orbit-btn" data-color="candidate"
+      title="顯示候選天體軌道">候選天體</button>
+    <button id="toggle-asteroid-orbit" class="menu-item orbit-btn" data-color="asteroid"
+      title="顯示主要小行星軌道">主要小行星</button>
 
-    <!-- Row 3: Distant / Belts -->
-    <button id="toggle-interstellar-orbit" class="menu-item" title="顯示星際天體軌道">星際</button>
-    <button id="toggle-belt" class="menu-item active" title="顯示小行星帶">行星帶</button>
-    <button id="toggle-kuiper" class="menu-item active" title="顯示柯伊伯帶">柯伊伯帶</button>
+    <!-- Row 3: Far / Deep Objects (New Layout) -->
+    <button id="toggle-comet-orbit" class="menu-item orbit-btn" data-color="comet" title="顯示彗星軌道">彗星</button>
+    <button id="toggle-interstellar-orbit" class="menu-item orbit-btn" data-color="interstellar"
+      title="顯示星際天體軌道">星際天體</button>
+
+    <!-- Row 4: Belt Structures (New Layout) -->
+    <button id="toggle-belt" class="menu-item orbit-btn active" data-color="belt" title="顯示小行星帶">行星帶</button>
+    <button id="toggle-kuiper" class="menu-item orbit-btn active" data-color="kuiper" title="顯示柯伊伯帶">柯伊伯帶</button>
   </div>
 
   <div class="divider-horizontal"></div>
