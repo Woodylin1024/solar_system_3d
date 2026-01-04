@@ -6,216 +6,229 @@
   <link rel="icon" type="image/svg+xml" href="/solar_system_3d/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Solar System</title>
-  <script type="module" crossorigin src="/solar_system_3d/assets/index-CYTXq6ow.js"></script>
-  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-cYWfL9EI.css">
+  <script type="module" crossorigin src="/solar_system_3d/assets/index-Dlo0MhIY.js"></script>
+  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-tZDLSmO6.css">
 </head>
 
-<body>
-  <div id="app"></div>
-
-  <div id="controls">
-    <div class="control-top-row">
-      <button id="slow" title="Slower (Hold for Auto)">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19 6L9 12L19 18V6Z" />
-        </svg>
-      </button>
-      <div id="speed-display">0.1x</div>
-      <button id="fast" title="Faster (Hold for Auto)">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M6 18L16 12L6 6V18Z" />
-        </svg>
-      </button>
-      <button id="pause" title="Pause/Play">
-        <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M6 19H10V5H6V19ZM14 5V19H18V5H14Z" />
-        </svg>
-      </button>
-      <div class="divider"></div>
-      <button id="reset-to-sun" title="Reset to Sun (快速回航)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="5" />
-          <path
-            d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-        </svg>
-      </button>
-      <button id="menu-toggle" title="Settings (圖層)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </button>
+<div id="loading-screen">
+  <div class="loading-content">
+    <div class="loading-logo">
+      <div class="planet-ring"></div>
+      <div class="planet-core"></div>
     </div>
-
-    <!-- Search UI -->
-    <div id="search-container">
-      <div class="search-input-wrapper">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input type="text" id="planet-search" placeholder="搜尋天體" autocomplete="off">
-        <button id="clear-search" class="hidden">&times;</button>
-      </div>
-      <div id="search-results" class="hidden"></div>
+    <div class="loading-title">探索宇宙中...</div>
+    <div class="loading-bar-container">
+      <div id="loading-bar"></div>
     </div>
+    <div id="loading-status">正在啟動推進系統...</div>
   </div>
+</div>
 
-  <div id="version-tag">v2.2.5</div>
+<div id="app"></div>
 
-  <!-- Sub-menu moved to body root to avoid any parent clipping -->
-  <div id="sub-menu" class="hidden">
-    <div class="menu-label">顯示比例</div>
-    <div class="menu-row">
-      <button id="mode-artistic" class="active">
-        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-          <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
-          <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
-          <path d="M2 2l7.5 1.5"></path>
-          <path d="M14.5 3.5l7.5 1.5"></path>
-        </svg>
-        <span>藝術模式</span>
-      </button>
-      <button id="mode-real">
-        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-          <circle cx="12" cy="12" r="10"></circle>
-          <circle cx="12" cy="12" r="4"></circle>
-          <line x1="12" y1="2" x2="12" y2="4"></line>
-          <line x1="12" y1="20" x2="12" y2="22"></line>
-          <line x1="2" y1="12" x2="4" y2="12"></line>
-          <line x1="20" y1="12" x2="22" y2="12"></line>
-        </svg>
-        <span>實際比例</span>
-      </button>
-    </div>
-
-    <div class="divider-horizontal"></div>
-
-    <div class="menu-label">顯示軌道</div>
-
-    <div class="legend-container">
-      <!-- 1. Man-made -->
-      <div class="legend-item">
-        <span class="legend-color"
-          style="background: repeating-linear-gradient(to right, #ffffff 0, #ffffff 4px, transparent 4px, transparent 7px); opacity: 0.8;"></span>
-        <span class="legend-text">人造物體 (Man-made)</span>
-      </div>
-      <!-- 2. Planet -->
-      <div class="legend-item">
-        <span class="legend-color" style="background: #00d2ff;"></span>
-        <span class="legend-text">行星 (Planet)</span>
-      </div>
-      <!-- 3. Satellite -->
-      <div class="legend-item">
-        <span class="legend-color" style="background: #ffffff; opacity: 0.3;"></span>
-        <span class="legend-text">天然衛星 (Satellite)</span>
-      </div>
-      <!-- 4. Dwarf Planet -->
-      <div class="legend-item">
-        <span class="legend-color" style="background: #ffaa00;"></span>
-        <span class="legend-text">矮行星 (Dwarf Planet)</span>
-      </div>
-      <!-- 5. Candidate -->
-      <div class="legend-item">
-        <span class="legend-color" style="background: #cc66ff;"></span>
-        <span class="legend-text">候選矮行星 (Candidate)</span>
-      </div>
-      <!-- 6. Asteroid -->
-      <div class="legend-item">
-        <span class="legend-color" style="background: #84ff00;"></span>
-        <span class="legend-text">主要小行星 (Asteroid)</span>
-      </div>
-      <!-- 7. Interstellar -->
-      <div class="legend-item">
-        <span class="legend-color" style="background: #ff3333;"></span>
-        <span class="legend-text">星際天體 (Interstellar)</span>
-      </div>
-    </div>
-
-    <div class="orbit-controls-grid">
-      <!-- Row 1: Near Objects -->
-      <button id="toggle-manmade-orbit" class="menu-item" title="顯示人造物體軌道">人造</button>
-      <button id="toggle-planet-orbit" class="menu-item active" title="顯示行星軌道">行星</button>
-      <button id="toggle-sat-orbit" class="menu-item" title="顯示衛星軌道">衛星</button>
-
-      <!-- Row 2: Deep Inner/Small Bodies -->
-      <button id="toggle-dwarf-orbit" class="menu-item" title="顯示矮行星軌道">矮行星</button>
-      <button id="toggle-candidate-orbit" class="menu-item" title="顯示候選矮行星軌道">候選</button>
-      <button id="toggle-asteroid-orbit" class="menu-item" title="顯示主要小行星軌道">小行星</button>
-
-      <!-- Row 3: Distant / Belts -->
-      <button id="toggle-interstellar-orbit" class="menu-item" title="顯示星際天體軌道">星際</button>
-      <button id="toggle-belt" class="menu-item active" title="顯示小行星帶">行星帶</button>
-      <button id="toggle-kuiper" class="menu-item active" title="顯示柯伊伯帶">柯伊伯帶</button>
-    </div>
-
-    <div class="divider-horizontal"></div>
-
-    <div class="menu-label-container">
-      <div class="menu-label" style="margin-bottom: 0;">飛行設定</div>
-      <div class="under-construction-badge">
-        <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-          <path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V8h2v4z" />
-        </svg>
-        <span>施工中</span>
-      </div>
-    </div>
-    <button id="toggle-pilot" class="menu-item">
-      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-        <path
-          d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z">
-        </path>
+<div id="controls">
+  <div class="control-top-row">
+    <button id="slow" title="Slower (Hold for Auto)">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 6L9 12L19 18V6Z" />
       </svg>
-      <span>開始駕駛模式</span>
     </button>
+    <div id="speed-display">0.1x</div>
+    <button id="fast" title="Faster (Hold for Auto)">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M6 18L16 12L6 6V18Z" />
+      </svg>
+    </button>
+    <button id="pause" title="Pause/Play">
+      <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M6 19H10V5H6V19ZM14 5V19H18V5H14Z" />
+      </svg>
+    </button>
+    <div class="divider"></div>
+    <button id="reset-to-sun" title="Reset to Sun (快速回航)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="5" />
+        <path
+          d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+      </svg>
+    </button>
+    <button id="menu-toggle" title="Settings (圖層)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+  </div>
 
-    <div id="pilot-controls-extra" class="pilot-settings-section">
-      <div class="slider-container">
-        <div class="slider-label">
-          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 8v8M8 12h8"></path>
-          </svg>
-          <span>視角移動速度</span>
-        </div>
-        <input type="range" id="sensitivity-range" min="0.1" max="2.0" step="0.1" value="0.1">
-      </div>
+  <!-- Search UI -->
+  <div id="search-container">
+    <div class="search-input-wrapper">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="planet-search" placeholder="搜尋天體" autocomplete="off">
+      <button id="clear-search" class="hidden">&times;</button>
+    </div>
+    <div id="search-results" class="hidden"></div>
+  </div>
+</div>
+
+<div id="version-tag">v2.3.0</div>
+
+<!-- Sub-menu moved to body root to avoid any parent clipping -->
+<div id="sub-menu" class="hidden">
+  <div class="menu-label">顯示比例</div>
+  <div class="menu-row">
+    <button id="mode-artistic" class="active">
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+        <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+        <path d="M2 2l7.5 1.5"></path>
+        <path d="M14.5 3.5l7.5 1.5"></path>
+      </svg>
+      <span>藝術模式</span>
+    </button>
+    <button id="mode-real">
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+        <circle cx="12" cy="12" r="10"></circle>
+        <circle cx="12" cy="12" r="4"></circle>
+        <line x1="12" y1="2" x2="12" y2="4"></line>
+        <line x1="12" y1="20" x2="12" y2="22"></line>
+        <line x1="2" y1="12" x2="4" y2="12"></line>
+        <line x1="20" y1="12" x2="22" y2="12"></line>
+      </svg>
+      <span>實際比例</span>
+    </button>
+  </div>
+
+  <div class="divider-horizontal"></div>
+
+  <div class="menu-label">顯示軌道</div>
+
+  <div class="legend-container">
+    <!-- 1. Man-made -->
+    <div class="legend-item">
+      <span class="legend-color"
+        style="background: repeating-linear-gradient(to right, #ffffff 0, #ffffff 4px, transparent 4px, transparent 7px); opacity: 0.8;"></span>
+      <span class="legend-text">人造物體 (Man-made)</span>
+    </div>
+    <!-- 2. Planet -->
+    <div class="legend-item">
+      <span class="legend-color" style="background: #00d2ff;"></span>
+      <span class="legend-text">行星 (Planet)</span>
+    </div>
+    <!-- 3. Satellite -->
+    <div class="legend-item">
+      <span class="legend-color" style="background: #ffffff; opacity: 0.3;"></span>
+      <span class="legend-text">天然衛星 (Satellite)</span>
+    </div>
+    <!-- 4. Dwarf Planet -->
+    <div class="legend-item">
+      <span class="legend-color" style="background: #ffaa00;"></span>
+      <span class="legend-text">矮行星 (Dwarf Planet)</span>
+    </div>
+    <!-- 5. Candidate -->
+    <div class="legend-item">
+      <span class="legend-color" style="background: #cc66ff;"></span>
+      <span class="legend-text">候選矮行星 (Candidate)</span>
+    </div>
+    <!-- 6. Asteroid -->
+    <div class="legend-item">
+      <span class="legend-color" style="background: #84ff00;"></span>
+      <span class="legend-text">主要小行星 (Asteroid)</span>
+    </div>
+    <!-- 7. Interstellar -->
+    <div class="legend-item">
+      <span class="legend-color" style="background: #ff3333;"></span>
+      <span class="legend-text">星際天體 (Interstellar)</span>
     </div>
   </div>
 
-  <div id="info-panel" class="hidden">
-    <div class="info-header">
-      <div id="reset-view" title="重置視角">
-        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"
-          stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <circle cx="12" cy="12" r="3" />
-          <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+  <div class="orbit-controls-grid">
+    <!-- Row 1: Near Objects -->
+    <button id="toggle-manmade-orbit" class="menu-item" title="顯示人造物體軌道">人造</button>
+    <button id="toggle-planet-orbit" class="menu-item active" title="顯示行星軌道">行星</button>
+    <button id="toggle-sat-orbit" class="menu-item" title="顯示衛星軌道">衛星</button>
+
+    <!-- Row 2: Deep Inner/Small Bodies -->
+    <button id="toggle-dwarf-orbit" class="menu-item" title="顯示矮行星軌道">矮行星</button>
+    <button id="toggle-candidate-orbit" class="menu-item" title="顯示候選矮行星軌道">候選</button>
+    <button id="toggle-asteroid-orbit" class="menu-item" title="顯示主要小行星軌道">小行星</button>
+
+    <!-- Row 3: Distant / Belts -->
+    <button id="toggle-interstellar-orbit" class="menu-item" title="顯示星際天體軌道">星際</button>
+    <button id="toggle-belt" class="menu-item active" title="顯示小行星帶">行星帶</button>
+    <button id="toggle-kuiper" class="menu-item active" title="顯示柯伊伯帶">柯伊伯帶</button>
+  </div>
+
+  <div class="divider-horizontal"></div>
+
+  <div class="menu-label-container">
+    <div class="menu-label" style="margin-bottom: 0;">飛行設定</div>
+    <div class="under-construction-badge">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+        <path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V8h2v4z" />
+      </svg>
+      <span>施工中</span>
+    </div>
+  </div>
+  <button id="toggle-pilot" class="menu-item">
+    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+      <path
+        d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z">
+      </path>
+    </svg>
+    <span>開始駕駛模式</span>
+  </button>
+
+  <div id="pilot-controls-extra" class="pilot-settings-section">
+    <div class="slider-container">
+      <div class="slider-label">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 8v8M8 12h8"></path>
         </svg>
+        <span>視角移動速度</span>
       </div>
-      <button id="close-info">&times;</button>
-    </div>
-    <div id="info-scroll-container">
-      <h2 id="info-title">天體名稱</h2>
-      <p id="info-description">天體介紹描述...</p>
-      <div id="info-details"></div>
+      <input type="range" id="sensitivity-range" min="0.1" max="2.0" step="0.1" value="0.1">
     </div>
   </div>
+</div>
 
-  <!-- Flight Control HUD (Hidden by default) -->
-  <div id="flight-hud" class="hidden">
-    <div id="joystick-container">
-      <div id="joystick-base">
-        <div id="joystick-stick"></div>
-      </div>
+<div id="info-panel" class="hidden">
+  <div class="info-header">
+    <div id="reset-view" title="重置視角">
+      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+      </svg>
     </div>
-    <div id="throttle-controls">
-      <button id="thrust-up">THRUST</button>
-      <div class="hud-label">飛行控制: WASD 移動 / 滑鼠 轉向</div>
+    <button id="close-info">&times;</button>
+  </div>
+  <div id="info-scroll-container">
+    <h2 id="info-title">天體名稱</h2>
+    <p id="info-description">天體介紹描述...</p>
+    <div id="info-details"></div>
+  </div>
+</div>
+
+<!-- Flight Control HUD (Hidden by default) -->
+<div id="flight-hud" class="hidden">
+  <div id="joystick-container">
+    <div id="joystick-base">
+      <div id="joystick-stick"></div>
     </div>
   </div>
+  <div id="throttle-controls">
+    <button id="thrust-up">THRUST</button>
+    <div class="hud-label">飛行控制: WASD 移動 / 滑鼠 轉向</div>
+  </div>
+</div>
 
 </body>
 
