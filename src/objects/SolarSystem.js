@@ -9,8 +9,8 @@ export function createSolarSystem(scene, manager) {
     // Reusable vectors for performance
     const _vS1 = new THREE.Vector3();
     const _vS2 = new THREE.Vector3();
-    const _vS3 = new THREE.Vector3();
-
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+    const orbitLineWidth = isMobile ? 2 : 1;
 
     solarSystemData.forEach(data => {
         // We initialize with radius 1 and use mesh.scale for the actual sizes
@@ -156,7 +156,8 @@ export function createSolarSystem(scene, manager) {
                 color: orbitColor,
                 transparent: true,
                 opacity: 0.35,
-                blending: THREE.AdditiveBlending
+                blending: THREE.AdditiveBlending,
+                linewidth: orbitLineWidth
             });
 
             if (data.type === 'interstellar' && data.pathPoints) {
@@ -352,14 +353,16 @@ export function createSolarSystem(scene, manager) {
                         opacity: 0.3,
                         blending: THREE.AdditiveBlending,
                         dashSize: 0.5,
-                        gapSize: 0.3
+                        gapSize: 0.3,
+                        linewidth: orbitLineWidth
                     });
                 } else {
                     satOrbitMat = new THREE.LineBasicMaterial({
                         color: 0xffffff,
                         transparent: true,
                         opacity: 0.15,
-                        blending: THREE.AdditiveBlending
+                        blending: THREE.AdditiveBlending,
+                        linewidth: orbitLineWidth
                     });
                 }
 
