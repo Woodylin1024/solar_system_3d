@@ -443,11 +443,21 @@ export function createSolarSystem(scene, manager) {
 
                 if (body.orbitLine) {
                     if (d.type === 'interstellar' && d.pathPoints) {
-                        const scale = isRealScale ? 8.5 : 1; // Corrected scale to better fit solar system bounds
+                        // Use a consistent scale factor reflecting the outer system expansion
+                        // Neptune Artistic: 300, Real: 2500 -> ~8.33
+                        const scale = isRealScale ? 8.35 : 1;
+
+                        // Regenerate curve points based on source data to ensure no accumulated mutation
                         const pts = d.pathPoints.map(p => new THREE.Vector3(p[0] * scale, p[1] * scale, p[2] * scale));
                         const curve = new THREE.CatmullRomCurve3(pts);
-                        const points = curve.getPoints(800); // Higher resolution for vast interstellar paths
+                        const points = curve.getPoints(800);
+
+                        // Update geometry and curve for movement
                         body.orbitLine.geometry.setFromPoints(points);
+                        body.orbitLine.geometry.attributes.position.needsUpdate = true;
+                        body.orbitLine.geometry.computeBoundingSphere();
+                        body.orbitLine.geometry.computeBoundingBox();
+
                         body.orbitCurve = curve;
                     } else {
                         const curve = new THREE.EllipseCurve(0, 0, targetDistance, targetDistance, 0, 2 * Math.PI, false, 0);
@@ -556,7 +566,8 @@ export function createSolarSystem(scene, manager) {
                     _vS2.addVectors(body.mesh.position, _vS1);
                     body.tailMesh.lookAt(_vS2);
                     const distToSun = body.mesh.position.length();
-                    body.tailMesh.material.opacity = Math.max(0.1, 0.6 - (distToSun / 600));
+                    const fadeDist = isRealScale ? 5000 : 600;
+                    body.tailMesh.material.opacity = Math.max(0.1, 0.6 - (distToSun / fadeDist));
                 }
             });
         }
