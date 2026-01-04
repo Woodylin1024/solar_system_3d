@@ -443,33 +443,39 @@ export function createSolarSystem(scene, manager) {
 
                 if (body.orbitLine) {
                     if (d.type === 'interstellar' && d.pathPoints) {
-                        // Non-linear mapping to match planetary distribution
-                        const mapVal = (v) => {
-                            if (!isRealScale) return v;
-                            const dist = Math.abs(v);
-                            const sign = Math.sign(v);
-                            let scale = 1;
-                            if (dist < 40) scale = 2.5 + (dist / 40) * 0.75;
-                            else if (dist < 120) scale = 3.25 + ((dist - 40) / 80) * 0.5;
-                            else if (dist < 300) scale = 3.75 + ((dist - 120) / 180) * 4.58;
-                            else scale = 8.33 + ((dist - 300) / 700) * 1.67;
-                            return v * scale;
+                        // Correct Radial Mapping to match planetary distribution expansion
+                        const getRadialScale = (r) => {
+                            if (!isRealScale) return 1.0;
+                            // Interpolate scale factors based on planetary distribution
+                            if (r <= 60) return 2.5; // Earth Region
+                            if (r <= 160) return 2.5 + (r - 60) / 100 * (4.86 - 2.5); // Earth-Jupiter
+                            if (r <= 200) return 4.86 + (r - 160) / 40 * (7.13 - 4.86); // Jupiter-Saturn
+                            if (r <= 300) return 7.13 + (r - 200) / 100 * (8.33 - 7.13); // Saturn-Neptune
+                            return 8.35; // Beyond Neptune
                         };
 
-                        const pts = d.pathPoints.map(p => new THREE.Vector3(mapVal(p[0]), mapVal(p[1]), mapVal(p[2])));
-                        const curve = new THREE.CatmullRomCurve3(pts);
-                        const points = curve.getPoints(800);
+                        const pts = d.pathPoints.map(p => {
+                            const vec = new THREE.Vector3(p[0], p[1], p[2]);
+                            const originalDist = vec.length();
+                            if (originalDist < 0.001) return vec;
+                            return vec.multiplyScalar(getRadialScale(originalDist));
+                        });
 
-                        body.orbitLine.geometry.setFromPoints(points);
-                        body.orbitLine.geometry.attributes.position.needsUpdate = true;
+                        const curve = new THREE.CatmullRomCurve3(pts);
+                        const points = curve.getPoints(1000);
+
+                        // Force complete geometry replacement to avoid GPU buffer state bugs
+                        body.orbitLine.geometry.dispose();
+                        const newGeo = new THREE.BufferGeometry().setFromPoints(points);
+                        body.orbitLine.geometry = newGeo;
                         body.orbitCurve = curve;
                     } else {
                         const curve = new THREE.EllipseCurve(0, 0, targetDistance, targetDistance, 0, 2 * Math.PI, false, 0);
                         const points = curve.getPoints(256);
-                        body.orbitLine.geometry.setFromPoints(points);
-                        body.orbitLine.geometry.attributes.position.needsUpdate = true;
+                        body.orbitLine.geometry.dispose();
+                        const newGeo = new THREE.BufferGeometry().setFromPoints(points);
+                        body.orbitLine.geometry = newGeo;
                     }
-                    body.orbitLine.geometry.computeBoundingSphere();
                 }
 
                 if (body.ringMesh) {
