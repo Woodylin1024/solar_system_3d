@@ -443,26 +443,31 @@ export function createSolarSystem(scene, manager) {
 
                 if (body.orbitLine) {
                     if (d.type === 'interstellar' && d.pathPoints) {
-                        // Use a consistent scale factor reflecting the outer system expansion
-                        // Neptune Artistic: 300, Real: 2500 -> ~8.33
-                        const scale = isRealScale ? 8.35 : 1;
+                        // Non-linear mapping to match planetary distribution
+                        const mapVal = (v) => {
+                            if (!isRealScale) return v;
+                            const dist = Math.abs(v);
+                            const sign = Math.sign(v);
+                            let scale = 1;
+                            if (dist < 40) scale = 2.5 + (dist / 40) * 0.75;
+                            else if (dist < 120) scale = 3.25 + ((dist - 40) / 80) * 0.5;
+                            else if (dist < 300) scale = 3.75 + ((dist - 120) / 180) * 4.58;
+                            else scale = 8.33 + ((dist - 300) / 700) * 1.67;
+                            return v * scale;
+                        };
 
-                        // Regenerate curve points based on source data to ensure no accumulated mutation
-                        const pts = d.pathPoints.map(p => new THREE.Vector3(p[0] * scale, p[1] * scale, p[2] * scale));
+                        const pts = d.pathPoints.map(p => new THREE.Vector3(mapVal(p[0]), mapVal(p[1]), mapVal(p[2])));
                         const curve = new THREE.CatmullRomCurve3(pts);
                         const points = curve.getPoints(800);
 
-                        // Update geometry and curve for movement
                         body.orbitLine.geometry.setFromPoints(points);
                         body.orbitLine.geometry.attributes.position.needsUpdate = true;
-                        body.orbitLine.geometry.computeBoundingSphere();
-                        body.orbitLine.geometry.computeBoundingBox();
-
                         body.orbitCurve = curve;
                     } else {
                         const curve = new THREE.EllipseCurve(0, 0, targetDistance, targetDistance, 0, 2 * Math.PI, false, 0);
                         const points = curve.getPoints(256);
                         body.orbitLine.geometry.setFromPoints(points);
+                        body.orbitLine.geometry.attributes.position.needsUpdate = true;
                     }
                     body.orbitLine.geometry.computeBoundingSphere();
                 }
