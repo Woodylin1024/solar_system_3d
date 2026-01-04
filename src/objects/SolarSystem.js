@@ -443,10 +443,10 @@ export function createSolarSystem(scene, manager) {
 
                 if (body.orbitLine) {
                     if (d.type === 'interstellar' && d.pathPoints) {
-                        const scale = isRealScale ? 15 : 1;
+                        const scale = isRealScale ? 8.5 : 1; // Corrected scale to better fit solar system bounds
                         const pts = d.pathPoints.map(p => new THREE.Vector3(p[0] * scale, p[1] * scale, p[2] * scale));
                         const curve = new THREE.CatmullRomCurve3(pts);
-                        const points = curve.getPoints(200);
+                        const points = curve.getPoints(800); // Higher resolution for vast interstellar paths
                         body.orbitLine.geometry.setFromPoints(points);
                         body.orbitCurve = curve;
                     } else {
