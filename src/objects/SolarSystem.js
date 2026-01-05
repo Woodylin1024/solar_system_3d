@@ -163,13 +163,14 @@ export function createSolarSystem(scene, manager) {
             if (data.pathPoints) {
                 // Path-based orbit (e.g. interstellar or long-period comets)
                 const pts = data.pathPoints.map(p => new THREE.Vector3(p[0], p[1], p[2]));
-                const curve = new THREE.CatmullRomCurve3(pts);
+                const closed = !!data.isClosed;
+                const curve = new THREE.CatmullRomCurve3(pts, closed);
                 body.orbitCurve = curve;
-                body.progress = Math.random(); // Start at random progress
+                body.progress = Math.random();
 
-                const points = curve.getPoints(400); // Increased resolution for interstellar paths
+                const points = curve.getPoints(closed ? 1000 : 400);
                 const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-                orbitLine = new THREE.Line(lineGeometry, lineMaterial);
+                orbitLine = closed ? new THREE.LineLoop(lineGeometry, lineMaterial) : new THREE.Line(lineGeometry, lineMaterial);
             } else {
                 // Standard: Circular closed orbit
                 const curve = new THREE.EllipseCurve(0, 0, data.distance, data.distance, 0, 2 * Math.PI, false, 0);
@@ -464,14 +465,13 @@ export function createSolarSystem(scene, manager) {
                             return vec.multiplyScalar(getRadialScale(originalDist));
                         });
 
-                        const curve = new THREE.CatmullRomCurve3(pts);
-                        const points = curve.getPoints(1000);
+                        const curve = new THREE.CatmullRomCurve3(pts, !!d.isClosed);
+                        const points = curve.getPoints(d.isClosed ? 1000 : 800);
 
                         // Force complete geometry replacement to avoid GPU buffer state bugs
                         body.orbitLine.geometry.dispose();
                         const newGeo = new THREE.BufferGeometry().setFromPoints(points);
                         body.orbitLine.geometry = newGeo;
-                        body.orbitCurve = curve;
                     } else {
                         const curve = new THREE.EllipseCurve(0, 0, targetDistance, targetDistance, 0, 2 * Math.PI, false, 0);
                         const points = curve.getPoints(256);

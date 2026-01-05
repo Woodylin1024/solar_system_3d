@@ -1077,17 +1077,19 @@ export const solarSystemData = [
         realScaleRadius: 0.04,
         color: 0xffffff,
         texture: "asteroid.jpg",
-        speed: 0.0003,
+        speed: 0.0001,
+        isClosed: true,
         pathPoints: [
-            [-100, 4500, 20],   // Aphelion direction (Deep Space)
-            [-50, 1500, 10],   // Entering inner system
-            [-20, 300, 5],     // Near Saturn/Jupiter region
-            [-5, 50, 2],       // Near Mars
-            [0, 10, 0],        // Perihelion (Just inside Earth orbit)
-            [5, 50, -2],       // Departing
-            [20, 300, -5],
-            [50, 1500, -10],
-            [100, 4500, -20]    // Exiting back to deep space
+            [0, 10, 0],           // Perihelion (Just inside Earth orbit)
+            [15, -20, 10],        // High speed departure, polar angle
+            [100, -500, 30],      // Stretching out
+            [180, -1800, 40],     // Side mid-point
+            [100, -3200, 30],     // Curving back
+            [0, -3700, 0],        // Aphelion (Deep Space)
+            [-100, -3200, -30],
+            [-180, -1800, -40],
+            [-100, -500, -30],
+            [-15, -20, -10]
         ],
         description: "20 世紀最壯觀的彗星之一，擁有巨大的彗核（直徑約 60 公里）。它以極高的軌道傾角與極長的週期（約 2,500 年）著稱。其標誌性的雙彗尾（藍色的離子尾與白色的塵埃尾）在 1997 年回歸時在北半球肉眼清晰可見長達 18 個月。",
         details: {
