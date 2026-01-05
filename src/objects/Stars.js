@@ -170,25 +170,30 @@ export function createStars(scene, manager, count = 2000) { // Drastically reduc
     const dustRadius = glowRadius - 2000; // Slightly in front of the glow
 
     // Scatter multiple irregular dust sprites along the galactic plane
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 20; i++) {
+        // Create unique material for each sprite to allow individual rotations
         const dustMat = new THREE.SpriteMaterial({
             map: dustTex,
             transparent: true,
-            opacity: 0.85,
+            opacity: 0.8 + Math.random() * 0.15,
             depthWrite: false
         });
+
+        // Randomly rotate the sprite texture itself (correct syntax)
+        dustMat.rotation = Math.random() * Math.PI;
+
         const dustSprite = new THREE.Sprite(dustMat);
 
-        // Randomly position along the equator (mostly horizontal)
-        const offsetX = (Math.random() - 0.5) * 160000;
-        const offsetY = (Math.random() - 0.5) * 25000;
+        // Randomly position along the galactic plane
+        const offsetX = (Math.random() - 0.5) * 180000;
+        const offsetY = (Math.random() - 0.5) * 20000;
 
         dustSprite.position.set(offsetX, offsetY, -dustRadius);
 
-        const sw = 30000 + Math.random() * 60000;
-        const sh = 15000 + Math.random() * 30000;
+        // Highly irregular scaling to make it look like filaments/clumps
+        const sw = 40000 + Math.random() * 70000;
+        const sh = 10000 + Math.random() * 40000;
         dustSprite.scale.set(sw, sh, 1);
-        dustSprite.rotation = Math.random() * Math.PI; // Irregular angles
 
         mwSystem.add(dustSprite);
     }
