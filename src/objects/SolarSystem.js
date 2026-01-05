@@ -74,7 +74,7 @@ export function createSolarSystem(scene, manager) {
                 transparent: false
             });
         } else if (data.texture) {
-            const texture = textureLoader.load(`textures/${data.texture}?v=26.7`);
+            const texture = textureLoader.load(`textures/${data.texture}?v=27.2`);
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.ClampToEdgeWrapping; // Prevents artifacts at poles
             texture.colorSpace = THREE.SRGBColorSpace;
