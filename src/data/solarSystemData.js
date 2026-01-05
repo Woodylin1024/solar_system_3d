@@ -714,7 +714,7 @@ export const solarSystemData = [
                 texture: "phoebe.png",
                 distance: 26,
                 realScaleDistance: 250,
-                speed: -0.005,
+                speed: 0.005,
                 inclination: 175,
                 description: "一顆極其黑暗的大型衛星，被認為是來自柯伊伯帶的捕獲天體。它以逆行軌道繞土星運行。",
                 details: {
@@ -872,7 +872,7 @@ export const solarSystemData = [
                 texture: "triton.png",
                 distance: 5,
                 realScaleDistance: 13,
-                speed: -0.015,
+                speed: 0.015,
                 inclination: 157,
                 description: "海王星最大的衛星，也是太陽系中唯一逆行繞行行星的大衛星。表面有著名的「哈密瓜皮」地形，並噴發著氮氣間歇泉。",
                 details: {
