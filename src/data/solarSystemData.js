@@ -847,7 +847,7 @@ export const solarSystemData = [
         radius: 1.5,
         realScaleRadius: 3.9,
         color: 0x2e86c1,
-        texture: "neptune_ai.png",
+        texture: "neptune_ai_v3.png",
         distance: 300,
         realScaleDistance: 2500,
         speed: 0.002,
