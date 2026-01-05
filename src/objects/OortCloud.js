@@ -61,7 +61,7 @@ export function createOortCloud(scene) {
 
     const points = new THREE.Points(geometry, material);
     scene.add(points);
-    points.visible = false; // Hidden by default
+    points.visible = true; // Enabled by default v3.1.7
 
     let currentMin = minRadius;
     let currentMax = maxRadius;

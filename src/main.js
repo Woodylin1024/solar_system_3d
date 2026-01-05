@@ -146,7 +146,7 @@ let asteroidOrbitsVisible = false;
 let cometOrbitsVisible = false;
 let beltVisible = true;
 let kuiperVisible = true;
-let oortVisible = false;
+let oortVisible = true;
 
 // Function to sync UI and 3D states
 const syncOrbitVisibility = () => {

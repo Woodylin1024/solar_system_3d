@@ -66,8 +66,9 @@ export function createStars(scene, manager, count = 2000) { // Drastically reduc
         map: starmapTexture,
         side: THREE.BackSide,
         depthWrite: false,
+        depthTest: false, // Disable depth testing for background so sprites blend perfectly
         transparent: true,
-        opacity: 0.4, // Balanced background
+        opacity: 0.4,
         color: 0x999999
     });
 
@@ -105,7 +106,8 @@ export function createStars(scene, manager, count = 2000) { // Drastically reduc
         map: coreTex,
         blending: THREE.AdditiveBlending,
         transparent: true,
-        depthWrite: false
+        depthWrite: false,
+        depthTest: false // Crucial to prevent boxy seams
     }));
     coreSprite.position.set(0, 0, -glowRadius);
     coreSprite.scale.set(60000, 50000, 1);
@@ -117,6 +119,7 @@ export function createStars(scene, manager, count = 2000) { // Drastically reduc
         blending: THREE.AdditiveBlending,
         transparent: true,
         depthWrite: false,
+        depthTest: false,
         opacity: 0.8
     }));
     // Note: Sprite faces camera by default, but we can scale it on one axis.
@@ -130,7 +133,8 @@ export function createStars(scene, manager, count = 2000) { // Drastically reduc
         map: outerTex,
         blending: THREE.AdditiveBlending,
         transparent: true,
-        depthWrite: false
+        depthWrite: false,
+        depthTest: false
     }));
     outerHaze.position.set(0, 0, -glowRadius);
     outerHaze.scale.set(90000, 80000, 1);
@@ -176,7 +180,8 @@ export function createStars(scene, manager, count = 2000) { // Drastically reduc
             map: dustTex,
             transparent: true,
             opacity: 0.8 + Math.random() * 0.15,
-            depthWrite: false
+            depthWrite: false,
+            depthTest: false // Prevent rectangular clipping
         });
 
         // Randomly rotate the sprite texture itself (correct syntax)
