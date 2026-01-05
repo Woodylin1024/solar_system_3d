@@ -539,9 +539,9 @@ toggleKuiperBtn.addEventListener('click', () => {
   syncOrbitVisibility();
 });
 
-toggleOortBtn.addEventListener('click', () => {
-  oortVisible = !oortVisible;
-  toggleOortBtn.classList.toggle('active', oortVisible);
+toggleCometBtn.addEventListener('click', () => {
+  cometOrbitsVisible = !cometOrbitsVisible;
+  toggleCometBtn.classList.toggle('active', cometOrbitsVisible);
   syncOrbitVisibility();
 });
 
