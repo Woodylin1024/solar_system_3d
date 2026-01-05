@@ -55,57 +55,87 @@ export function createStars(scene, manager, count = 2000) { // Drastically reduc
         tex.generateMipmaps = false;
     });
 
+    // Create a shared container for Milky Way components to ensure perfect alignment
+    const mwSystem = new THREE.Group();
+    mwSystem.rotation.x = THREE.MathUtils.degToRad(-63);
+    mwSystem.rotation.z = THREE.MathUtils.degToRad(45);
+    group.add(mwSystem);
+
     const skyGeo = new THREE.SphereGeometry(120000, 128, 128);
     const skyMat = new THREE.MeshBasicMaterial({
         map: starmapTexture,
         side: THREE.BackSide,
         depthWrite: false,
         transparent: true,
-        opacity: 0.38, // Refined global opacity for deeper space
-        color: 0x999999 // Subtle tint
+        opacity: 0.4, // Balanced background
+        color: 0x999999
     });
 
     const skySphere = new THREE.Mesh(skyGeo, skyMat);
+    mwSystem.add(skySphere);
 
-    // Precise Milky Way alignment
-    skySphere.rotation.x = THREE.MathUtils.degToRad(-63);
-    skySphere.rotation.z = THREE.MathUtils.degToRad(45);
-    group.add(skySphere);
+    // 3. Multi-Layered Galactic Core & Plane Glow
+    const createGlowTexture = (isCore) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        const gradient = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
 
-    // 3. Localized Galactic Core Glow (Focus brightness only on the center)
-    // Create a procedural radial glow texture
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-    const ctx = canvas.getContext('2d');
-    const gradient = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
-    gradient.addColorStop(0, 'rgba(255, 200, 120, 0.4)'); // Warm amber core
-    gradient.addColorStop(0.3, 'rgba(255, 150, 80, 0.15)');
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 512, 512);
+        if (isCore) {
+            gradient.addColorStop(0, 'rgba(255, 210, 150, 0.45)'); // Bright core
+            gradient.addColorStop(0.2, 'rgba(255, 160, 100, 0.2)');
+        } else {
+            gradient.addColorStop(0, 'rgba(255, 180, 120, 0.15)'); // Soft outer haze
+            gradient.addColorStop(0.5, 'rgba(255, 120, 60, 0.05)');
+        }
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 512, 512);
+        return new THREE.CanvasTexture(canvas);
+    };
 
-    const glowTexture = new THREE.CanvasTexture(canvas);
-    const glowMat = new THREE.SpriteMaterial({
-        map: glowTexture,
-        transparent: true,
+    const coreTex = createGlowTexture(true);
+    const outerTex = createGlowTexture(false);
+
+    const glowRadius = 118000;
+
+    // Layer 1: Intensive Central Bulge
+    const coreSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: coreTex,
         blending: THREE.AdditiveBlending,
+        transparent: true,
         depthWrite: false
-    });
+    }));
+    coreSprite.position.set(0, 0, -glowRadius);
+    coreSprite.scale.set(60000, 50000, 1);
+    mwSystem.add(coreSprite);
 
-    const coreGlow = new THREE.Sprite(glowMat);
-    // Position it at the estimated Galactic Center on the sphere
-    // Radius is slightly less than sky sphere to avoid z-fighting
-    const glowRadius = 119000;
+    // Layer 2: Extended Galactic Plane Ribbon (Horizontal Stretch)
+    const planeRibbon = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: outerTex,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        depthWrite: false,
+        opacity: 0.8
+    }));
+    // Note: Sprite faces camera by default, but we can scale it on one axis.
+    // For a better "disc" look, we use its wide scale along the galactic equator.
+    planeRibbon.position.set(0, 0, -glowRadius);
+    planeRibbon.scale.set(180000, 40000, 1); // Extreme horizontal stretching
+    mwSystem.add(planeRibbon);
 
-    // Direction vector roughly matching the core position in the 8k map after rotations
-    const glowPos = new THREE.Vector3(0, 0, -glowRadius);
-    // Apply same world rotations to the position
-    glowPos.applyEuler(new THREE.Euler(THREE.MathUtils.degToRad(-63), 0, THREE.MathUtils.degToRad(45)));
+    // Layer 3: Secondary Outer Haze
+    const outerHaze = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: outerTex,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        depthWrite: false
+    }));
+    outerHaze.position.set(0, 0, -glowRadius);
+    outerHaze.scale.set(90000, 80000, 1);
+    mwSystem.add(outerHaze);
 
-    coreGlow.position.copy(glowPos);
-    coreGlow.scale.set(60000, 45000, 1); // Large oval-like glow for the central bulge
-    group.add(coreGlow);
     scene.add(group);
 
     return {
