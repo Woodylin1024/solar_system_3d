@@ -61,8 +61,8 @@ export function createStars(scene, manager, count = 2000) { // Drastically reduc
         side: THREE.BackSide,
         depthWrite: false,
         transparent: true,
-        opacity: 0.3, // Dimmed significantly to reduce visual noise
-        color: 0xaaaaaa // Darken the texture further
+        opacity: 0.65, // Increased from 0.3 to make Galactic Center pop
+        color: 0xffffff // Changed from 0xaaaaaa to full brightness
     });
 
     const skySphere = new THREE.Mesh(skyGeo, skyMat);
