@@ -136,6 +136,63 @@ export function createStars(scene, manager, count = 2000) { // Drastically reduc
     outerHaze.scale.set(90000, 80000, 1);
     mwSystem.add(outerHaze);
 
+    // 4. Irregular Dark Dust & Gas Clouds (Blocking the light)
+    const createDustTexture = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+
+        // Clear with transparent
+        ctx.clearRect(0, 0, 512, 512);
+
+        // Draw multiple clumpy, dark spots to create irregular "holes"
+        for (let i = 0; i < 40; i++) {
+            const x = Math.random() * 512;
+            const y = Math.random() * 512;
+            const r = 20 + Math.random() * 80;
+
+            const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+            const op = 0.2 + Math.random() * 0.6;
+            // Dark brownish/black dust
+            grad.addColorStop(0, `rgba(20, 10, 5, ${op})`);
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        return new THREE.CanvasTexture(canvas);
+    };
+
+    const dustTex = createDustTexture();
+    const dustRadius = glowRadius - 2000; // Slightly in front of the glow
+
+    // Scatter multiple irregular dust sprites along the galactic plane
+    for (let i = 0; i < 15; i++) {
+        const dustMat = new THREE.SpriteMaterial({
+            map: dustTex,
+            transparent: true,
+            opacity: 0.85,
+            depthWrite: false
+        });
+        const dustSprite = new THREE.Sprite(dustMat);
+
+        // Randomly position along the equator (mostly horizontal)
+        const offsetX = (Math.random() - 0.5) * 160000;
+        const offsetY = (Math.random() - 0.5) * 25000;
+
+        dustSprite.position.set(offsetX, offsetY, -dustRadius);
+
+        const sw = 30000 + Math.random() * 60000;
+        const sh = 15000 + Math.random() * 30000;
+        dustSprite.scale.set(sw, sh, 1);
+        dustSprite.rotation = Math.random() * Math.PI; // Irregular angles
+
+        mwSystem.add(dustSprite);
+    }
+
     scene.add(group);
 
     return {
