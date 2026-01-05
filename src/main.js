@@ -5,6 +5,7 @@ import { createStars } from './objects/Stars.js';
 import { createSpaceship } from './objects/Spaceship.js';
 import { createAsteroidBelt } from './objects/AsteroidBelt.js';
 import { createKuiperBelt } from './objects/KuiperBelt.js';
+import { createOortCloud } from './objects/OortCloud.js';
 import { solarSystemData } from './data/solarSystemData.js';
 
 const scene = new THREE.Scene();
@@ -131,6 +132,9 @@ const asteroidBelt = createAsteroidBelt(scene);
 // Kuiper Belt
 const kuiperBelt = createKuiperBelt(scene);
 
+// Oort Cloud
+const oortCloud = createOortCloud(scene);
+
 // Orbit Visibility State & Toggles
 let planetOrbitsVisible = true;
 let satOrbitsVisible = false;
@@ -142,6 +146,7 @@ let asteroidOrbitsVisible = false;
 let cometOrbitsVisible = false;
 let beltVisible = true;
 let kuiperVisible = true;
+let oortVisible = false;
 
 // Function to sync UI and 3D states
 const syncOrbitVisibility = () => {
@@ -161,6 +166,9 @@ const syncOrbitVisibility = () => {
   }
   if (kuiperBelt) {
     kuiperBelt.setVisible(kuiperVisible);
+  }
+  if (oortCloud) {
+    oortCloud.setVisible(oortVisible);
   }
 };
 
@@ -475,6 +483,7 @@ const toggleAsteroidBtn = document.getElementById('toggle-asteroid-orbit');
 const toggleCometBtn = document.getElementById('toggle-comet-orbit');
 const toggleBeltBtn = document.getElementById('toggle-belt');
 const toggleKuiperBtn = document.getElementById('toggle-kuiper');
+const toggleOortBtn = document.getElementById('toggle-oort');
 
 toggleManmadeBtn.addEventListener('click', () => {
   manmadeOrbitsVisible = !manmadeOrbitsVisible;
@@ -530,9 +539,15 @@ toggleKuiperBtn.addEventListener('click', () => {
   syncOrbitVisibility();
 });
 
-toggleCometBtn.addEventListener('click', () => {
-  cometOrbitsVisible = !cometOrbitsVisible;
-  toggleCometBtn.classList.toggle('active', cometOrbitsVisible);
+toggleOortBtn.addEventListener('click', () => {
+  oortVisible = !oortVisible;
+  toggleOortBtn.classList.toggle('active', oortVisible);
+  syncOrbitVisibility();
+});
+
+toggleOortBtn.addEventListener('click', () => {
+  oortVisible = !oortVisible;
+  toggleOortBtn.classList.toggle('active', oortVisible);
   syncOrbitVisibility();
 });
 
@@ -546,6 +561,7 @@ modeArtisticBtn.addEventListener('click', () => {
   solarSystem.setViewMode(false);
   if (asteroidBelt) asteroidBelt.setViewMode(false);
   if (kuiperBelt) kuiperBelt.setViewMode(false);
+  if (oortCloud) oortCloud.setViewMode(false);
 
   if (selectedTarget) {
     shouldAutoZoom = true;
@@ -562,6 +578,7 @@ modeRealBtn.addEventListener('click', () => {
   solarSystem.setViewMode(true);
   if (asteroidBelt) asteroidBelt.setViewMode(true);
   if (kuiperBelt) kuiperBelt.setViewMode(true);
+  if (oortCloud) oortCloud.setViewMode(true);
 
   if (selectedTarget) {
     shouldAutoZoom = true;
@@ -943,6 +960,9 @@ function animate() {
   }
   if (kuiperBelt) {
     kuiperBelt.update(currentSpeed, cappedDelta);
+  }
+  if (oortCloud) {
+    oortCloud.update(currentSpeed, cappedDelta);
   }
 
   // Handle Space Flight
