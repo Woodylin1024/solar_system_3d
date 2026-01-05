@@ -61,16 +61,51 @@ export function createStars(scene, manager, count = 2000) { // Drastically reduc
         side: THREE.BackSide,
         depthWrite: false,
         transparent: true,
-        opacity: 0.65, // Increased from 0.3 to make Galactic Center pop
-        color: 0xffffff // Changed from 0xaaaaaa to full brightness
+        opacity: 0.38, // Refined global opacity for deeper space
+        color: 0x999999 // Subtle tint
     });
 
     const skySphere = new THREE.Mesh(skyGeo, skyMat);
 
+    // Precise Milky Way alignment
     skySphere.rotation.x = THREE.MathUtils.degToRad(-63);
     skySphere.rotation.z = THREE.MathUtils.degToRad(45);
-
     group.add(skySphere);
+
+    // 3. Localized Galactic Core Glow (Focus brightness only on the center)
+    // Create a procedural radial glow texture
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    const gradient = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
+    gradient.addColorStop(0, 'rgba(255, 200, 120, 0.4)'); // Warm amber core
+    gradient.addColorStop(0.3, 'rgba(255, 150, 80, 0.15)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 512, 512);
+
+    const glowTexture = new THREE.CanvasTexture(canvas);
+    const glowMat = new THREE.SpriteMaterial({
+        map: glowTexture,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+    });
+
+    const coreGlow = new THREE.Sprite(glowMat);
+    // Position it at the estimated Galactic Center on the sphere
+    // Radius is slightly less than sky sphere to avoid z-fighting
+    const glowRadius = 119000;
+
+    // Direction vector roughly matching the core position in the 8k map after rotations
+    const glowPos = new THREE.Vector3(0, 0, -glowRadius);
+    // Apply same world rotations to the position
+    glowPos.applyEuler(new THREE.Euler(THREE.MathUtils.degToRad(-63), 0, THREE.MathUtils.degToRad(45)));
+
+    coreGlow.position.copy(glowPos);
+    coreGlow.scale.set(60000, 45000, 1); // Large oval-like glow for the central bulge
+    group.add(coreGlow);
     scene.add(group);
 
     return {
