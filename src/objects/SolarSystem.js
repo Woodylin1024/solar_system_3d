@@ -160,8 +160,8 @@ export function createSolarSystem(scene, manager) {
                 linewidth: orbitLineWidth
             });
 
-            if (data.type === 'interstellar' && data.pathPoints) {
-                // Interstellar: Path-based non-closed orbit
+            if (data.pathPoints) {
+                // Path-based orbit (e.g. interstellar or long-period comets)
                 const pts = data.pathPoints.map(p => new THREE.Vector3(p[0], p[1], p[2]));
                 const curve = new THREE.CatmullRomCurve3(pts);
                 body.orbitCurve = curve;
@@ -445,7 +445,7 @@ export function createSolarSystem(scene, manager) {
                 body.distance = targetDistance;
 
                 if (body.orbitLine) {
-                    if (d.type === 'interstellar' && d.pathPoints) {
+                    if (d.pathPoints) {
                         // Correct Radial Mapping to match planetary distribution expansion
                         const getRadialScale = (r) => {
                             if (!isRealScale) return 1.0;
@@ -534,7 +534,7 @@ export function createSolarSystem(scene, manager) {
         update: (delta) => {
             const timeStep = delta * 60;
             bodies.forEach(body => {
-                if (body.data.type === 'interstellar' && body.orbitCurve) {
+                if (body.orbitCurve && body.data.pathPoints) {
                     body.progress += body.speed * speedMultiplier * timeStep;
                     if (body.progress > 1) body.progress = 0;
                     // Provide destination vector to avoid internal allocation

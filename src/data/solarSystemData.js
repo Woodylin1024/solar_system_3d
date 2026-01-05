@@ -1069,6 +1069,36 @@ export const solarSystemData = [
         }
     },
     {
+        name: "Hale-Bopp",
+        nameCH: "海爾-博普彗星 (C/1995 O1)",
+        type: "comet",
+        isComet: true,
+        radius: 0.6,
+        realScaleRadius: 0.04,
+        color: 0xffffff,
+        texture: "asteroid.jpg",
+        speed: 0.0003,
+        pathPoints: [
+            [-100, 4500, 20],   // Aphelion direction (Deep Space)
+            [-50, 1500, 10],   // Entering inner system
+            [-20, 300, 5],     // Near Saturn/Jupiter region
+            [-5, 50, 2],       // Near Mars
+            [0, 10, 0],        // Perihelion (Just inside Earth orbit)
+            [5, 50, -2],       // Departing
+            [20, 300, -5],
+            [50, 1500, -10],
+            [100, 4500, -20]    // Exiting back to deep space
+        ],
+        description: "20 世紀最壯觀的彗星之一，擁有巨大的彗核（直徑約 60 公里）。它以極高的軌道傾角與極長的週期（約 2,500 年）著稱。其標誌性的雙彗尾（藍色的離子尾與白色的塵埃尾）在 1997 年回歸時在北半球肉眼清晰可見長達 18 個月。",
+        details: {
+            "週期": "約 2,533 年",
+            "核心直徑": "約 60 km",
+            "近日點": "0.914 AU",
+            "遠日點": "約 370 AU",
+            "軌道傾角": "89.4° (近垂直)"
+        }
+    },
+    {
         name: "3200 Phaethon",
         nameCH: "法厄同 (3200 Phaethon)",
         type: "asteroid",
