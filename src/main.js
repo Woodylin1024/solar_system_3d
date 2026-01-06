@@ -726,188 +726,9 @@ window.addEventListener('mousedown', (e) => {
   }
 });
 
-// Pilot Mode Variable and Listeners
-let isPilotMode = false;
-const togglePilotBtn = document.getElementById('toggle-pilot');
-const flightHud = document.getElementById('flight-hud');
+// Flight mode logic removed
 
-togglePilotBtn.addEventListener('click', () => {
-  isPilotMode = !isPilotMode;
-  togglePilotBtn.classList.toggle('active', isPilotMode);
-  ship.mesh.visible = isPilotMode;
-  flightHud.classList.toggle('hidden', !isPilotMode);
 
-  // Close the menu automatically
-  subMenu.classList.add('hidden');
-
-  if (isPilotMode) {
-    controls.enabled = false;
-    // Enter Pointer Lock on Desktop for better control
-    if (!('ontouchstart' in window)) {
-      renderer.domElement.requestPointerLock();
-    }
-
-    if (selectedTarget) {
-      const targetPos = new THREE.Vector3();
-      selectedTarget.getWorldPosition(targetPos);
-
-      // Calculate a safe distance based on target's radius
-      const isReal = solarSystem.isRealScale();
-      const radius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
-      const spawnDist = radius * 2 + 50;
-
-      ship.mesh.position.copy(targetPos).add(new THREE.Vector3(0, radius + 20, spawnDist));
-    } else {
-      // Default position if nothing selected - further from sun
-      ship.mesh.position.set(0, 20, 300);
-    }
-
-    // Initialize Modern 3D Orbit Camera Values
-    window._camOrbit = {
-      theta: Math.PI, // Start BEHIND the ship (180 degrees)
-      phi: Math.PI / 2.2, // Slightly above horizontal
-      radius: 40
-    };
-
-    // Reset ship state for clean start
-    ship.mesh.quaternion.set(0, 0, 0, 1); // Face standard forward (+Z)
-    ship.velocity.set(0, 0, 0);
-    ship.rotationVelocity.set(0, 0, 0);
-
-    updatePilotCamera();
-  } else {
-    controls.enabled = true;
-    if (document.pointerLockElement === renderer.domElement) {
-      document.exitPointerLock();
-    }
-  }
-});
-
-// Cursor lock click handler
-renderer.domElement.addEventListener('click', () => {
-  if (isPilotMode && !('ontouchstart' in window)) {
-    renderer.domElement.requestPointerLock();
-  }
-});
-
-// Controls logic (Desktop & Mobile)
-const keys = {};
-window.addEventListener('keydown', (e) => keys[e.code] = true);
-window.addEventListener('keyup', (e) => keys[e.code] = false);
-
-// Joystick Logic
-const joystickStick = document.getElementById('joystick-stick');
-const joystickBase = document.getElementById('joystick-base');
-const thrustBtn = document.getElementById('thrust-up');
-let joystickDelta = { x: 0, y: 0 };
-let isThrusting = false;
-
-joystickBase.addEventListener('touchstart', handleJoystickMove);
-joystickBase.addEventListener('touchmove', handleJoystickMove);
-joystickBase.addEventListener('touchend', () => {
-  joystickStick.style.transform = 'translate(-50%, -50%)';
-  joystickDelta = { x: 0, y: 0 };
-});
-
-function handleJoystickMove(e) {
-  const touch = e.touches[0];
-  const rect = joystickBase.getBoundingClientRect();
-  const centerX = rect.left + rect.width / 2;
-  const centerY = rect.top + rect.height / 2;
-  const dx = touch.clientX - centerX;
-  const dy = touch.clientY - centerY;
-  const dist = Math.min(Math.sqrt(dx * dx + dy * dy), 50);
-  const angle = Math.atan2(dy, dx);
-
-  const moveX = Math.cos(angle) * dist;
-  const moveY = Math.sin(angle) * dist;
-
-  joystickStick.style.transform = `translate(calc(-50% + ${moveX}px), calc(-50% + ${moveY}px))`;
-  joystickDelta = { x: moveX / 50, y: moveY / 50 };
-}
-
-thrustBtn.addEventListener('mousedown', () => isThrusting = true);
-thrustBtn.addEventListener('mouseup', () => isThrusting = false);
-thrustBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isThrusting = true; });
-thrustBtn.addEventListener('touchend', () => isThrusting = false);
-
-// Mouse Rotation Logic (Camera Movement Speed)
-let mouseSensitivity = 0.000025; // Default matched to slider value 0.1 (0.1 * 0.00025)
-const sensitivityRange = document.getElementById('sensitivity-range');
-sensitivityRange.addEventListener('input', (e) => {
-  // Mapping 0.1 - 2.0 to 0.000025 - 0.0005
-  mouseSensitivity = parseFloat(e.target.value) * 0.00025;
-});
-
-window.addEventListener('mousemove', (e) => {
-  if (isPilotMode && document.pointerLockElement === renderer.domElement) {
-    // 1. Mouse rotates the CAMERA ORBIT, not the ship
-    const sensitivity = mouseSensitivity * 6; // Adjusted for snappy orbiting
-    window._camOrbit.theta -= e.movementX * sensitivity;
-    window._camOrbit.phi -= e.movementY * sensitivity;
-
-    // Clamp vertical angle to avoid flipping over the top
-    window._camOrbit.phi = Math.max(0.1, Math.min(Math.PI - 0.1, window._camOrbit.phi));
-  }
-});
-
-function handleFlightInputs() {
-  if (!isPilotMode) return;
-
-  // Directions relative to orbit camera
-  const camQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(window._camOrbit.phi - Math.PI / 2, window._camOrbit.theta, 0, 'YXZ'));
-  const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(camQuat);
-  const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camQuat);
-
-  // 1. Movement Inputs
-  let moveDir = new THREE.Vector3(0, 0, 0);
-  if (keys['KeyW']) moveDir.add(forward);
-  if (keys['KeyS']) moveDir.sub(forward);
-  if (keys['KeyA']) moveDir.sub(right); // In 3D explorer mode, A/D is usually lateral or turn
-  if (keys['KeyD']) moveDir.add(right);
-
-  // Apply Impulse
-  if (moveDir.length() > 0) {
-    moveDir.normalize();
-    const thrustPower = keys['Space'] ? ship.thrust * 3 : ship.thrust;
-    ship.velocity.add(moveDir.multiplyScalar(thrustPower));
-
-    // 2. Smoothly rotate ship to face MOVEMENT direction
-    // This is the "bow aligns with movement" part
-    const targetQuaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), moveDir);
-    ship.mesh.quaternion.slerp(targetQuaternion, 0.1);
-  }
-
-  // Mobile Joytick Mapping
-  if (joystickDelta.x !== 0 || joystickDelta.y !== 0) {
-    const joyMove = forward.clone().multiplyScalar(-joystickDelta.y).add(right.clone().multiplyScalar(joystickDelta.x));
-    ship.velocity.add(joyMove.multiplyScalar(ship.thrust));
-
-    if (joyMove.length() > 0) {
-      const targetQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), joyMove.normalize());
-      ship.mesh.quaternion.slerp(targetQuat, 0.1);
-    }
-  }
-
-  // 3. Update Physics & Camera
-  ship.mesh.position.add(ship.velocity);
-  ship.velocity.multiplyScalar(ship.friction);
-
-  updatePilotCamera();
-}
-
-function updatePilotCamera() {
-  // Spherical Coordinates to Cartesian
-  const x = window._camOrbit.radius * Math.sin(window._camOrbit.phi) * Math.sin(window._camOrbit.theta);
-  const y = window._camOrbit.radius * Math.cos(window._camOrbit.phi);
-  const z = window._camOrbit.radius * Math.sin(window._camOrbit.phi) * Math.cos(window._camOrbit.theta);
-
-  const desiredPos = ship.mesh.position.clone().add(new THREE.Vector3(x, y, z));
-
-  // High damping for translation, instant for orientation
-  camera.position.lerp(desiredPos, 0.2);
-  camera.lookAt(ship.mesh.position);
-}
 
 
 // Handle Resize
@@ -922,7 +743,7 @@ window.addEventListener('resize', () => {
 // UI Click-Through Prevention
 // Stop propagation of events from UI elements to background (OrbitControls)
 // ------------------------------------------------------------------
-const uiElements = ['controls', 'sub-menu', 'info-panel', 'flight-hud'];
+const uiElements = ['controls', 'sub-menu', 'info-panel'];
 uiElements.forEach(id => {
   const el = document.getElementById(id);
   if (!el) return;
@@ -965,105 +786,94 @@ function animate() {
     oortCloud.update(currentSpeed, cappedDelta);
   }
 
-  // Handle Space Flight
-  if (isPilotMode) {
-    handleFlightInputs(cappedDelta);
-    updatePilotMode(cappedDelta);
-  }
-
   // Update background to follow camera (infinite depth)
   if (stars && stars.update) {
     stars.update(camera.position, cappedDelta);
   }
 
   // 2. Determine tracking state
-  if (!isPilotMode) {
-    const isInfoPanelOpen = infoPanel && !infoPanel.classList.contains('hidden');
+  const isInfoPanelOpen = infoPanel && !infoPanel.classList.contains('hidden');
+
+  if (isInfoPanelOpen) {
+    controls.enablePan = false;
+    controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
+  } else {
+    controls.enablePan = true;
+    controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
+  }
+
+  if (selectedTarget) {
+    selectedTarget.updateMatrixWorld(true);
+    // Use reusable vector for world position
+    selectedTarget.getWorldPosition(_v1);
+
+    // Initial auto-zoom
+    if (shouldAutoZoom) {
+      const isReal = solarSystem.isRealScale();
+      const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
+      const multiplier = window.innerWidth <= 480 ? 18 : (window.innerWidth <= 1100 ? 12 : 6);
+      const zoomDist = currentRadius * multiplier;
+      const currentDist = camera.position.distanceTo(_v1);
+      const newDist = THREE.MathUtils.lerp(currentDist, zoomDist, 0.05);
+
+      // direction = camera.position - currentWorldPos
+      _v2.subVectors(camera.position, _v1).normalize();
+      // newPos = currentWorldPos + direction * newDist
+      _v3.copy(_v1).add(_v2.multiplyScalar(newDist));
+      camera.position.copy(_v3);
+
+      if (Math.abs(currentDist - zoomDist) < (currentRadius * 0.1)) shouldAutoZoom = false;
+    }
 
     if (isInfoPanelOpen) {
-      controls.enablePan = false;
-      controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
-    } else {
-      controls.enablePan = true;
-      controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
-    }
+      // deltaMovement = currentWorldPos - lastTargetPos
+      _v2.subVectors(_v1, lastTargetPos);
+      camera.position.add(_v2);
 
-    if (selectedTarget) {
-      selectedTarget.updateMatrixWorld(true);
-      // Use reusable vector for world position
-      selectedTarget.getWorldPosition(_v1);
+      // visualTarget = currentWorldPos
+      _v3.copy(_v1);
 
-      // Initial auto-zoom
-      if (shouldAutoZoom) {
+      // Mobile/Tablet Offsetting to clear UI
+      if (window.innerWidth <= 1100) {
+        const isPhone = window.innerWidth <= 480;
+        const isLandscape = window.innerWidth > window.innerHeight;
+
+        // camDir = camera.position - currentWorldPos
+        _v2.subVectors(camera.position, _v1).normalize();
+        // camRight = (0,1,0) x camDir
+        _v4.set(0, 1, 0).cross(_v2).normalize();
+        // camUp = camDir x camRight
+        _v5.crossVectors(_v2, _v4).normalize();
+
         const isReal = solarSystem.isRealScale();
         const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
-        const multiplier = window.innerWidth <= 480 ? 18 : (window.innerWidth <= 1100 ? 12 : 6);
+        const multiplier = isPhone ? 22 : 12;
         const zoomDist = currentRadius * multiplier;
-        const currentDist = camera.position.distanceTo(_v1);
-        const newDist = THREE.MathUtils.lerp(currentDist, zoomDist, 0.05);
 
-        // direction = camera.position - currentWorldPos
-        _v2.subVectors(camera.position, _v1).normalize();
-        // newPos = currentWorldPos + direction * newDist
-        _v3.copy(_v1).add(_v2.multiplyScalar(newDist));
-        camera.position.copy(_v3);
-
-        if (Math.abs(currentDist - zoomDist) < (currentRadius * 0.1)) shouldAutoZoom = false;
-      }
-
-      if (isInfoPanelOpen) {
-        // deltaMovement = currentWorldPos - lastTargetPos
-        _v2.subVectors(_v1, lastTargetPos);
-        camera.position.add(_v2);
-
-        // visualTarget = currentWorldPos
-        _v3.copy(_v1);
-
-        // Mobile/Tablet Offsetting to clear UI
-        if (window.innerWidth <= 1100) {
-          const isPhone = window.innerWidth <= 480;
-          const isLandscape = window.innerWidth > window.innerHeight;
-
-          // camDir = camera.position - currentWorldPos
-          _v2.subVectors(camera.position, _v1).normalize();
-          // camRight = (0,1,0) x camDir
-          _v4.set(0, 1, 0).cross(_v2).normalize();
-          // camUp = camDir x camRight
-          _v5.crossVectors(_v2, _v4).normalize();
-
-          const isReal = solarSystem.isRealScale();
-          const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
-          const multiplier = isPhone ? 22 : 12;
-          const zoomDist = currentRadius * multiplier;
-
-          if (isLandscape) {
-            // Landscape: Offset to the LEFT of the screen (move target RIGHT relative to cam)
-            // Factor 0.18 is chosen to balance the 280px wide panel
-            const hShiftFactor = 0.18;
-            _v3.add(_v4.multiplyScalar(zoomDist * hShiftFactor));
-          } else {
-            // Portrait: Offset to the TOP of the screen (move target DOWN relative to cam)
-            const vShiftFactor = isPhone ? -0.12 : -0.08;
-            _v3.add(_v5.multiplyScalar(zoomDist * vShiftFactor));
-          }
+        if (isLandscape) {
+          // Landscape: Offset to the LEFT of the screen (move target RIGHT relative to cam)
+          // Factor 0.18 is chosen to balance the 280px wide panel
+          const hShiftFactor = 0.18;
+          _v3.add(_v4.multiplyScalar(zoomDist * hShiftFactor));
+        } else {
+          // Portrait: Offset to the TOP of the screen (move target DOWN relative to cam)
+          const vShiftFactor = isPhone ? -0.12 : -0.08;
+          _v3.add(_v5.multiplyScalar(zoomDist * vShiftFactor));
         }
-
-        controls.target.copy(_v3);
-      } else if (!isUserInteracting && selectedTarget) {
-        controls.target.lerp(_v1, 0.1);
       }
-      lastTargetPos.copy(_v1);
+
+      controls.target.copy(_v3);
+    } else if (!isUserInteracting && selectedTarget) {
+      controls.target.lerp(_v1, 0.1);
     }
+    lastTargetPos.copy(_v1);
   }
 
   // 4. Update controls
-  if (!isPilotMode) {
-    const prevTarget = controls.target.clone();
-    controls.update();
-    const isInfoPanelOpen = infoPanel && !infoPanel.classList.contains('hidden');
-    if (!isInfoPanelOpen && isUserInteracting) {
-      if (controls.target.distanceTo(prevTarget) > 0.01) selectedTarget = null;
-    }
+  const prevTarget = controls.target.clone();
+  controls.update();
+  if (!isInfoPanelOpen && isUserInteracting) {
+    if (controls.target.distanceTo(prevTarget) > 0.01) selectedTarget = null;
   }
 
   renderer.render(scene, camera);
