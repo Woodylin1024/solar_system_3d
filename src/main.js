@@ -670,6 +670,14 @@ searchInput.addEventListener('input', () => {
     });
   });
 
+  // Add interstellar stars from neighbor systems to search
+  if (interstellarSystems) {
+    const starMeshes = interstellarSystems.getStarMeshes();
+    starMeshes.forEach(mesh => {
+      allTargets.push({ mesh: mesh, data: mesh.userData, type: 'star' });
+    });
+  }
+
   const matches = allTargets.filter(t =>
     t.data.name.toLowerCase().includes(query) ||
     (t.data.nameCH && t.data.nameCH.includes(query))

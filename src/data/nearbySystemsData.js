@@ -22,7 +22,8 @@ export const nearbyStarSystemsData = [
                 radius: 0.86, // Solar radii
                 color: 0xffd2a1, // Pale orange (K1V)
                 emissiveIntensity: 1.2,
-                position: { x: 1200, y: 400, z: 200 }, // Scaled separation
+                position: { x: 1200, y: 100, z: 400 }, // Scaled separation
+                orbit: { radius: 1265, inclination: 15 },
                 description: "半人馬座 α B 是系統中的第二顆恆星，顏色稍橘，體積略小於太陽。"
             },
             {
@@ -32,7 +33,8 @@ export const nearbyStarSystemsData = [
                 radius: 0.15, // Red dwarf size
                 color: 0xff4500, // Deep red (M6Ve)
                 emissiveIntensity: 0.8,
-                position: { x: -8000, y: -5000, z: -3000 }, // Much further out
+                position: { x: -8000, y: -2000, z: -5500 }, // Much further out
+                orbit: { radius: 9912, inclination: 45 },
                 description: "比鄰星是距離太陽最近的單一恆星，也是一個紅矮星。"
             }
         ]

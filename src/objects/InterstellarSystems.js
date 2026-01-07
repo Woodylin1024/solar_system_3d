@@ -57,6 +57,33 @@ export function createInterstellarSystems(scene, manager) {
 
             systemGroup.add(mesh);
             starMeshes.push(mesh);
+
+            // Add orbital lines for non-primary stars in the system
+            if (starData.orbit) {
+                const orbitPoints = [];
+                const segments = 128;
+                for (let j = 0; j <= segments; j++) {
+                    const angle = (j / segments) * Math.PI * 2;
+                    const ox = starData.orbit.radius * Math.cos(angle);
+                    const oz = starData.orbit.radius * Math.sin(angle);
+                    orbitPoints.push(new THREE.Vector3(ox, 0, oz));
+                }
+                const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPoints);
+                const orbitMat = new THREE.LineBasicMaterial({
+                    color: starData.color,
+                    transparent: true,
+                    opacity: 0.2,
+                    blending: THREE.AdditiveBlending
+                });
+                const orbitLine = new THREE.LineLoop(orbitGeo, orbitMat);
+
+                // Tilt the orbit slightly for a more natural look
+                if (starData.orbit.inclination) {
+                    orbitLine.rotation.x = THREE.MathUtils.degToRad(starData.orbit.inclination);
+                }
+
+                systemGroup.add(orbitLine);
+            }
         });
 
         systemsGroup.add(systemGroup);
