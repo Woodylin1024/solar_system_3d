@@ -155,11 +155,12 @@ export function createSolarSystem(scene, manager) {
                 blending: THREE.AdditiveBlending,
                 transparent: true,
                 depthWrite: false,
-                sizeAttenuation: false // KEEP SIZE CONSTANT if very far? No, just make it big enough.
+                sizeAttenuation: true // Must be true to prevent screen-filling washout
             });
             const sunGlowSprite = new THREE.Sprite(sunGlowMat);
-            // Non-attenuating glow is tricky, but we can make it massive
-            sunGlowSprite.scale.setScalar(50); // Large enough to see as a star from 4ly
+            // In world units, the Sun is radius 10. A 500-unit glow is visible from the Oort cloud
+            // and looks like a distant star from Alpha Centauri (4ly).
+            sunGlowSprite.scale.setScalar(500);
             mesh.add(sunGlowSprite);
         }
 

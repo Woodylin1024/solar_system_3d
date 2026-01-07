@@ -889,7 +889,7 @@ function animate() {
         currentRadius = selectedTarget.userData.visualScale;
       }
 
-      const multiplier = window.innerWidth <= 480 ? 18 : (window.innerWidth <= 1100 ? 12 : 6);
+      const multiplier = isInter ? 25 : (window.innerWidth <= 480 ? 18 : (window.innerWidth <= 1100 ? 12 : 6));
       const zoomDist = currentRadius * multiplier;
       const currentDist = camera.position.distanceTo(_v1);
       const newDist = THREE.MathUtils.lerp(currentDist, zoomDist, 0.05);
