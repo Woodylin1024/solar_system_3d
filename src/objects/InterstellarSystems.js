@@ -55,7 +55,8 @@ export function createInterstellarSystems(scene, manager) {
                 visualScale: visualScale, // Store this for navigation
                 parentSystem: systemData.name,
                 isInterstellar: true,
-                angle: Math.random() * Math.PI * 2
+                // Initialize angle based on starting position to avoid jumping
+                angle: Math.atan2(starData.position.z, starData.position.x)
             };
 
             systemGroup.add(mesh);
@@ -101,10 +102,25 @@ export function createInterstellarSystems(scene, manager) {
             starMeshes.forEach(mesh => {
                 const data = mesh.userData;
                 if (data.orbit) {
-                    data.angle += (data.orbit.speed || 0.1) * simSpeed * delta * 0.1; // Slower for realism
-                    const x = data.orbit.radius * Math.cos(data.angle);
-                    const z = data.orbit.radius * Math.sin(data.angle);
-                    mesh.position.set(x, 0, z);
+                    // 1. Update the angle
+                    data.angle += (data.orbit.speed || 0.1) * simSpeed * delta * 0.1;
+
+                    // 2. Calculate local X,Y,Z based on radius and inclination
+                    const radius = data.orbit.radius;
+                    const xLocal = radius * Math.cos(data.angle);
+                    const zPlane = radius * Math.sin(data.angle);
+
+                    if (data.orbit.inclination) {
+                        // If there's a tilt (around X-axis as per our orbit line creation)
+                        const tiltRad = THREE.MathUtils.degToRad(data.orbit.inclination);
+                        mesh.position.set(
+                            xLocal,
+                            -zPlane * Math.sin(tiltRad), // Y movement due to tilt
+                            zPlane * Math.cos(tiltRad)  // Corrected Z
+                        );
+                    } else {
+                        mesh.position.set(xLocal, 0, zPlane);
+                    }
                 }
             });
         },
