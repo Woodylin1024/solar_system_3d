@@ -76,7 +76,7 @@ export function createInterstellarSystems(scene, manager) {
 
                     // Add planet orbit line
                     const orbitPoints = [];
-                    const segments = 128;
+                    const segments = 512; // Increased for smoothness when zoomed in
                     for (let j = 0; j <= segments; j++) {
                         const angle = (j / segments) * Math.PI * 2;
                         orbitPoints.push(new THREE.Vector3(
@@ -110,7 +110,7 @@ export function createInterstellarSystems(scene, manager) {
             // 2. Handle Star Orbit
             if (starData.orbit) {
                 const orbitPoints = [];
-                const segments = 128;
+                const segments = 2048; // Significantly increased for giant interstellar orbits
                 for (let j = 0; j <= segments; j++) {
                     const angle = (j / segments) * Math.PI * 2;
                     orbitPoints.push(new THREE.Vector3(
