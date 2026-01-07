@@ -49,7 +49,8 @@ export function createInterstellarSystems(scene, manager) {
                 depthWrite: false
             });
             const glowSprite = new THREE.Sprite(glowMat);
-            glowSprite.scale.setScalar(visualScale * 4); // Smaller glow
+            glowSprite.scale.setScalar(visualScale * 4);
+            glowSprite.raycast = () => { }; // Prevent glow from blocking clicks
             mesh.add(glowSprite);
 
             mesh.userData = {
