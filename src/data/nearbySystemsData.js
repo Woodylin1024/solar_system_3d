@@ -52,14 +52,49 @@ export const nearbyStarSystemsData = [
                 emissiveIntensity: 0.8,
                 position: { x: -9912, y: 0, z: 0 }, // Positioned exactly on orbit radius
                 orbit: { radius: 9912, inclination: 45, speed: 0.05 },
-                description: "比鄰星是一顆紅矮星，是目前已知距離太陽最近的個別恆星。它擁有至少兩顆行星，其中一顆位於適居帶內。",
+                description: "比鄰星是一顆紅矮星，是目前已知距離太陽最近的個別恆星。它擁有至少三顆已被證實或候選的行星。",
                 details: {
                     "質量": "0.122 太陽質量",
                     "直徑": "0.154 太陽直徑",
                     "表面溫度": "3,042 K",
                     "光譜類型": "M6Ve",
                     "距離": "4.24 光年"
-                }
+                },
+                planets: [
+                    {
+                        name: "Proxima Centauri d",
+                        nameCH: "比鄰星 d",
+                        type: "planet",
+                        radius: 0.1, // Approx 0.26 Earth radius
+                        color: 0x8b4513,
+                        texture: "proxima_d.png",
+                        orbit: { radius: 15, speed: 1.5, inclination: 0 }, // Very close
+                        description: "一顆極靠近恆星的岩石行星，公轉週期僅 5.1 天。",
+                        details: { "質量": "0.26 地球質量", "距離恆星": "0.029 AU" }
+                    },
+                    {
+                        name: "Proxima Centauri b",
+                        nameCH: "比鄰星 b",
+                        type: "planet",
+                        radius: 0.2, // Approx 1.07 Earth radius
+                        color: 0xcd5c5c,
+                        texture: "proxima_b.png",
+                        orbit: { radius: 30, speed: 0.8, inclination: 0 },
+                        description: "位於適居帶內的類地行星，是尋找外星生命的首選目標。",
+                        details: { "質量": "1.07 地球質量", "距離恆星": "0.048 AU" }
+                    },
+                    {
+                        name: "Proxima Centauri c",
+                        nameCH: "比鄰星 c",
+                        type: "planet",
+                        radius: 0.5, // Super-Earth / Mini-Neptune
+                        color: 0x483d8b,
+                        texture: "proxima_c.png",
+                        orbit: { radius: 150, speed: 0.05, inclination: 10 },
+                        description: "一顆距離較遠的寒冷超級地球，公轉週期約 5.2 年。",
+                        details: { "質量": "7 地球質量", "距離恆星": "1.48 AU" }
+                    }
+                ]
             }
         ]
     }
