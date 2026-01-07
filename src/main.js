@@ -6,7 +6,9 @@ import { createSpaceship } from './objects/Spaceship.js';
 import { createAsteroidBelt } from './objects/AsteroidBelt.js';
 import { createKuiperBelt } from './objects/KuiperBelt.js';
 import { createOortCloud } from './objects/OortCloud.js';
+import { createInterstellarSystems } from './objects/InterstellarSystems.js';
 import { solarSystemData } from './data/solarSystemData.js';
+import { nearbyStarSystemsData } from './data/nearbySystemsData.js';
 
 const scene = new THREE.Scene();
 // ... (camera setup)
@@ -102,7 +104,7 @@ controls.mouseButtons = {
   MIDDLE: THREE.MOUSE.DOLLY,
   RIGHT: THREE.MOUSE.PAN
 };
-controls.maxDistance = 100000; // Increased to allow deep exploration of the system
+controls.maxDistance = 1000000; // Increased to allow deep exploration of the interstellar neighborhood
 
 // Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.15); // Reduced to make shadows deeper
@@ -134,6 +136,14 @@ const kuiperBelt = createKuiperBelt(scene);
 
 // Oort Cloud
 const oortCloud = createOortCloud(scene);
+
+// Interstellar Systems (Nearby Stars)
+const interstellarSystems = createInterstellarSystems(scene, loadingManager);
+// Align interstellar systems with the background starmap rotation (-63, 45)
+if (interstellarSystems && interstellarSystems.group) {
+  interstellarSystems.group.rotation.x = THREE.MathUtils.degToRad(-63);
+  interstellarSystems.group.rotation.z = THREE.MathUtils.degToRad(45);
+}
 
 // Orbit Visibility State & Toggles
 let planetOrbitsVisible = true;
@@ -246,13 +256,18 @@ function handleInteraction(clientX, clientY, target) {
 
   raycaster.setFromCamera(mouse, camera);
 
-  // Get all clickable meshes (Planets + Satellites)
+  // Get all clickable meshes (Planets + Satellites + Interstellar Stars)
   const bodies = solarSystem.getBodies();
   const clickableMeshes = [];
   bodies.forEach(b => {
     clickableMeshes.push(b.mesh);
     b.satellites.forEach(s => clickableMeshes.push(s.mesh));
   });
+
+  // Add nearby stars to clickable items
+  if (interstellarSystems) {
+    clickableMeshes.push(...interstellarSystems.getStarMeshes());
+  }
 
   const intersects = raycaster.intersectObjects(clickableMeshes, true);
 
@@ -736,10 +751,14 @@ systemMenu.querySelectorAll('.system-menu-item').forEach(item => {
       // Update UI state
       systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
       item.classList.add('active');
-    } else {
-      // For future systems like Alpha Centauri
-      console.log(`Switching to ${systemId} - Coming Soon!`);
-      // You can add a toast notification here if desired
+    } else if (systemId === 'alpha-centauri') {
+      const alphaMeshes = interstellarSystems.getStarMeshes();
+      const alphaA = alphaMeshes.find(m => m.userData.name === 'Alpha Centauri A');
+      if (alphaA) selectBody(alphaA);
+
+      // Update UI state
+      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
     }
 
     systemMenu.classList.add('hidden');
@@ -814,6 +833,9 @@ function animate() {
   }
   if (oortCloud) {
     oortCloud.update(currentSpeed, cappedDelta);
+  }
+  if (interstellarSystems) {
+    interstellarSystems.update(camera.position, cappedDelta);
   }
 
   // Update background to follow camera (infinite depth)
