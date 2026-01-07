@@ -6,8 +6,8 @@
   <link rel="icon" type="image/svg+xml" href="/solar_system_3d/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Solar System</title>
-  <script type="module" crossorigin src="/solar_system_3d/assets/index-GPO0BPAW.js"></script>
-  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-vNuC6ThO.css">
+  <script type="module" crossorigin src="/solar_system_3d/assets/index-DsERgOtn.js"></script>
+  <link rel="stylesheet" crossorigin href="/solar_system_3d/assets/index-CcnXpPaX.css">
 </head>
 
 <div id="loading-screen">
@@ -76,7 +76,26 @@
   </div>
 </div>
 
-<div id="version-tag">v3.2.1</div>
+<!-- System Selector Menu (快速切換恆星系) -->
+<div id="system-menu" class="hidden">
+  <div class="menu-label">選擇恆星系</div>
+  <div class="system-menu-item active" data-id="solar">
+    <div class="system-icon">☀️</div>
+    <div class="system-info">
+      <div class="system-name">太陽系</div>
+      <div class="system-status">當前所在</div>
+    </div>
+  </div>
+  <div class="system-menu-item" data-id="alpha-centauri">
+    <div class="system-icon">✨</div>
+    <div class="system-info">
+      <div class="system-name">半人馬座 α</div>
+      <div class="system-status locked">施工中</div>
+    </div>
+  </div>
+</div>
+
+<div id="version-tag">v3.3.0</div>
 
 <!-- Sub-menu moved to body root to avoid any parent clipping -->
 <div id="sub-menu" class="hidden">
