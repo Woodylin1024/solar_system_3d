@@ -152,6 +152,7 @@ let manmadeOrbitsVisible = false; // Hidden by default v2.2.1
 let dwarfOrbitsVisible = false;
 let candidateOrbitsVisible = false;
 let interstellarOrbitsVisible = false;
+let starOrbitsVisible = true; // New visibility state for neighbor stars
 let asteroidOrbitsVisible = false;
 let cometOrbitsVisible = false;
 let beltVisible = true;
@@ -170,6 +171,9 @@ const syncOrbitVisibility = () => {
     solarSystem.setOrbitsVisibleByType('comet', cometOrbitsVisible);
     solarSystem.setSatOrbitsVisibleByType('satellite', satOrbitsVisible);
     solarSystem.setSatOrbitsVisibleByType('space_station', manmadeOrbitsVisible);
+  }
+  if (interstellarSystems) {
+    interstellarSystems.setVisible(starOrbitsVisible);
   }
   if (asteroidBelt) {
     asteroidBelt.setVisible(beltVisible);
@@ -499,6 +503,7 @@ const toggleCometBtn = document.getElementById('toggle-comet-orbit');
 const toggleBeltBtn = document.getElementById('toggle-belt');
 const toggleKuiperBtn = document.getElementById('toggle-kuiper');
 const toggleOortBtn = document.getElementById('toggle-oort');
+const toggleStarBtn = document.getElementById('toggle-star-orbit');
 
 toggleManmadeBtn.addEventListener('click', () => {
   manmadeOrbitsVisible = !manmadeOrbitsVisible;
@@ -533,6 +538,12 @@ toggleCandidateBtn.addEventListener('click', () => {
 toggleInterBtn.addEventListener('click', () => {
   interstellarOrbitsVisible = !interstellarOrbitsVisible;
   toggleInterBtn.classList.toggle('active', interstellarOrbitsVisible);
+  syncOrbitVisibility();
+});
+
+toggleStarBtn.addEventListener('click', () => {
+  starOrbitsVisible = !starOrbitsVisible;
+  toggleStarBtn.classList.toggle('active', starOrbitsVisible);
   syncOrbitVisibility();
 });
 

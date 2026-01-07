@@ -99,6 +99,11 @@ export function createInterstellarSystems(scene, manager) {
             // Interstellar stars are so far they don't move much, 
             // but we can add subtle twinkling here if needed.
         },
-        getStarMeshes: () => starMeshes
+        getStarMeshes: () => starMeshes,
+        setVisible: (visible) => {
+            systemsGroup.traverse(child => {
+                if (child instanceof THREE.LineLoop) child.visible = visible;
+            });
+        }
     };
 }

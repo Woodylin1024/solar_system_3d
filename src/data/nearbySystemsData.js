@@ -29,7 +29,7 @@ export const nearbyStarSystemsData = [
                 radius: 0.86, // Solar radii
                 color: 0xffd2a1, // Pale orange (K1V)
                 emissiveIntensity: 1.2,
-                position: { x: 1200, y: 100, z: 400 }, // Scaled separation
+                position: { x: 1265, y: 0, z: 0 }, // Positioned exactly on orbit radius
                 orbit: { radius: 1265, inclination: 15 },
                 description: "半人馬座 α B（南門二 B）是系統中的第二顆恆星，顏色稍橘，屬於 K 型主序星。",
                 details: {
@@ -47,7 +47,7 @@ export const nearbyStarSystemsData = [
                 radius: 0.15, // Red dwarf size
                 color: 0xff4500, // Deep red (M6Ve)
                 emissiveIntensity: 0.8,
-                position: { x: -8000, y: -2000, z: -5500 }, // Much further out
+                position: { x: -9912, y: 0, z: 0 }, // Positioned exactly on orbit radius
                 orbit: { radius: 9912, inclination: 45 },
                 description: "比鄰星是一顆紅矮星，是目前已知距離太陽最近的個別恆星。它擁有至少兩顆行星，其中一顆位於適居帶內。",
                 details: {

@@ -583,6 +583,11 @@ button:active {
   color: #88ffff;
 }
 
+.orbit-btn[data-color="star"]::before {
+  background: #ff4500;
+  color: #ff4500;
+}
+
 .orbit-btn[data-color="belt"]::before,
 .orbit-btn[data-color="kuiper"]::before {
   display: none;
