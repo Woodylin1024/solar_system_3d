@@ -32,10 +32,10 @@ export function createInterstellarSystems(scene, manager) {
             const context = canvas.getContext('2d');
             const gradient = context.createRadialGradient(64, 64, 0, 64, 64, 64);
             const starColor = new THREE.Color(starData.color);
-            // Center is a very bright version of the star color, not pure white
-            gradient.addColorStop(0, starColor.clone().offsetHSL(0, 0, 0.2).getStyle());
-            gradient.addColorStop(0.2, starColor.getStyle());
-            gradient.addColorStop(0.5, starColor.getStyle());
+            // Even more saturated at the core to prevent washout
+            gradient.addColorStop(0, starColor.clone().offsetHSL(0, 0, 0.4).getStyle());
+            gradient.addColorStop(0.3, starColor.getStyle());
+            gradient.addColorStop(0.6, starColor.getStyle());
             gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
             context.fillStyle = gradient;
             context.fillRect(0, 0, 128, 128);
@@ -79,8 +79,8 @@ export function createInterstellarSystems(scene, manager) {
                 const orbitMat = new THREE.LineBasicMaterial({
                     color: starData.color,
                     transparent: true,
-                    opacity: 0.2,
-                    blending: THREE.AdditiveBlending
+                    opacity: 0.4, // Increased opacity
+                    blending: THREE.NormalBlending // Change to Normal to prevent bleaching
                 });
                 const orbitLine = new THREE.LineLoop(orbitGeo, orbitMat);
 

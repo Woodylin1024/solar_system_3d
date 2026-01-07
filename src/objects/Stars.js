@@ -52,14 +52,14 @@ export function createStars(scene, manager, count = 2000) {
         tex.generateMipmaps = false;
     });
 
-    const skyGeo = new THREE.SphereGeometry(120000, 128, 128);
+    const skyGeo = new THREE.SphereGeometry(2000000, 64, 64); // Much larger to cover interstellar distances
     const skyMat = new THREE.MeshBasicMaterial({
         map: starmapTexture,
         side: THREE.BackSide,
         depthWrite: false,
         transparent: true,
-        opacity: 0.1, // Very faint for deep space feel
-        color: 0x222222 // Darker to eliminate grey washout
+        opacity: 0.25, // Restored visibility
+        color: 0x888888 // Neutral multiplier
     });
 
     const skySphere = new THREE.Mesh(skyGeo, skyMat);
