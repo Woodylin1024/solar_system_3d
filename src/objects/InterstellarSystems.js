@@ -26,32 +26,34 @@ export function createInterstellarSystems(scene, manager) {
             mesh.scale.setScalar(visualScale);
 
             // Refined Glow effect
-            const canvas = document.createElement('canvas');
-            canvas.width = 128;
-            canvas.height = 128;
-            const context = canvas.getContext('2d');
-            const gradient = context.createRadialGradient(64, 64, 0, 64, 64, 64);
-            const starColor = new THREE.Color(starData.color);
-            // Even more saturated at the core to prevent washout
-            gradient.addColorStop(0, starColor.clone().offsetHSL(0, 0, 0.4).getStyle());
-            gradient.addColorStop(0.3, starColor.getStyle());
-            gradient.addColorStop(0.6, starColor.getStyle());
-            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            context.fillStyle = gradient;
-            context.fillRect(0, 0, 128, 128);
+            if (starData.name !== "Alpha Centauri A") {
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 128;
+                const context = canvas.getContext('2d');
+                const gradient = context.createRadialGradient(64, 64, 0, 64, 64, 64);
+                const starColor = new THREE.Color(starData.color);
+                // Even more saturated at the core to prevent washout
+                gradient.addColorStop(0, starColor.clone().offsetHSL(0, 0, 0.4).getStyle());
+                gradient.addColorStop(0.3, starColor.getStyle());
+                gradient.addColorStop(0.6, starColor.getStyle());
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                context.fillStyle = gradient;
+                context.fillRect(0, 0, 128, 128);
 
-            const glowTex = new THREE.CanvasTexture(canvas);
-            const glowMat = new THREE.SpriteMaterial({
-                map: glowTex,
-                blending: THREE.AdditiveBlending,
-                transparent: true,
-                opacity: 0.3, // Even lower to prevent masking the sphere body
-                depthWrite: false
-            });
-            const glowSprite = new THREE.Sprite(glowMat);
-            glowSprite.scale.setScalar(visualScale * 4);
-            glowSprite.raycast = () => { }; // Prevent glow from blocking clicks
-            mesh.add(glowSprite);
+                const glowTex = new THREE.CanvasTexture(canvas);
+                const glowMat = new THREE.SpriteMaterial({
+                    map: glowTex,
+                    blending: THREE.AdditiveBlending,
+                    transparent: true,
+                    opacity: 0.3, // Even lower to prevent masking the sphere body
+                    depthWrite: false
+                });
+                const glowSprite = new THREE.Sprite(glowMat);
+                glowSprite.scale.setScalar(visualScale * 4);
+                glowSprite.raycast = () => { }; // Prevent glow from blocking clicks
+                mesh.add(glowSprite);
+            }
 
             mesh.userData = {
                 ...starData,
