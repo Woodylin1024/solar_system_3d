@@ -31,9 +31,11 @@ export function createInterstellarSystems(scene, manager) {
             canvas.height = 128;
             const context = canvas.getContext('2d');
             const gradient = context.createRadialGradient(64, 64, 0, 64, 64, 64);
-            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-            gradient.addColorStop(0.1, new THREE.Color(starData.color).getStyle());
-            gradient.addColorStop(0.3, new THREE.Color(starData.color).getStyle());
+            const starColor = new THREE.Color(starData.color);
+            // Center is a very bright version of the star color, not pure white
+            gradient.addColorStop(0, starColor.clone().offsetHSL(0, 0, 0.2).getStyle());
+            gradient.addColorStop(0.2, starColor.getStyle());
+            gradient.addColorStop(0.5, starColor.getStyle());
             gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
             context.fillStyle = gradient;
             context.fillRect(0, 0, 128, 128);
@@ -43,7 +45,7 @@ export function createInterstellarSystems(scene, manager) {
                 map: glowTex,
                 blending: THREE.AdditiveBlending,
                 transparent: true,
-                opacity: 0.4, // Further reduced for clarity
+                opacity: 0.3, // Even lower to prevent masking the sphere body
                 depthWrite: false
             });
             const glowSprite = new THREE.Sprite(glowMat);

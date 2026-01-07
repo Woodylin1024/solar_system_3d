@@ -58,8 +58,8 @@ export function createStars(scene, manager, count = 2000) {
         side: THREE.BackSide,
         depthWrite: false,
         transparent: true,
-        opacity: 0.15, // Reduced for darker black space
-        color: 0x555555 // Desaturated to prevent grey fog
+        opacity: 0.1, // Very faint for deep space feel
+        color: 0x222222 // Darker to eliminate grey washout
     });
 
     const skySphere = new THREE.Mesh(skyGeo, skyMat);
