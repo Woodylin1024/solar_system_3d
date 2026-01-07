@@ -158,9 +158,9 @@ export function createSolarSystem(scene, manager) {
                 sizeAttenuation: true // Must be true to prevent screen-filling washout
             });
             const sunGlowSprite = new THREE.Sprite(sunGlowMat);
-            // In world units, the Sun is radius 10. A 500-unit glow is visible from the Oort cloud
-            // and looks like a distant star from Alpha Centauri (4ly).
-            sunGlowSprite.scale.setScalar(500);
+            // Reduced scale significantly to prevent washout at planetary distances.
+            // Sun radius is 10, so 100 is a 10x visual glow.
+            sunGlowSprite.scale.setScalar(100);
             mesh.add(sunGlowSprite);
         }
 

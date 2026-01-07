@@ -31,9 +31,9 @@ export function createInterstellarSystems(scene, manager) {
             canvas.height = 128;
             const context = canvas.getContext('2d');
             const gradient = context.createRadialGradient(64, 64, 0, 64, 64, 64);
-            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
             gradient.addColorStop(0.1, new THREE.Color(starData.color).getStyle());
-            gradient.addColorStop(0.4, new THREE.Color(starData.color).getStyle());
+            gradient.addColorStop(0.3, new THREE.Color(starData.color).getStyle());
             gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
             context.fillStyle = gradient;
             context.fillRect(0, 0, 128, 128);
@@ -43,17 +43,19 @@ export function createInterstellarSystems(scene, manager) {
                 map: glowTex,
                 blending: THREE.AdditiveBlending,
                 transparent: true,
+                opacity: 0.4, // Further reduced for clarity
                 depthWrite: false
             });
             const glowSprite = new THREE.Sprite(glowMat);
-            glowSprite.scale.setScalar(visualScale * 8); // Large but soft glow
+            glowSprite.scale.setScalar(visualScale * 4); // Smaller glow
             mesh.add(glowSprite);
 
             mesh.userData = {
                 ...starData,
                 visualScale: visualScale, // Store this for navigation
                 parentSystem: systemData.name,
-                isInterstellar: true
+                isInterstellar: true,
+                angle: Math.random() * Math.PI * 2
             };
 
             systemGroup.add(mesh);
@@ -95,9 +97,16 @@ export function createInterstellarSystems(scene, manager) {
     return {
         group: systemsGroup,
         starMeshes: starMeshes,
-        update: (cameraPosition) => {
-            // Interstellar stars are so far they don't move much, 
-            // but we can add subtle twinkling here if needed.
+        update: (simSpeed, delta) => {
+            starMeshes.forEach(mesh => {
+                const data = mesh.userData;
+                if (data.orbit) {
+                    data.angle += (data.orbit.speed || 0.1) * simSpeed * delta * 0.1; // Slower for realism
+                    const x = data.orbit.radius * Math.cos(data.angle);
+                    const z = data.orbit.radius * Math.sin(data.angle);
+                    mesh.position.set(x, 0, z);
+                }
+            });
         },
         getStarMeshes: () => starMeshes,
         setVisible: (visible) => {

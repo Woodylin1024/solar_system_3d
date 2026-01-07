@@ -854,7 +854,7 @@ function animate() {
     oortCloud.update(currentSpeed, cappedDelta);
   }
   if (interstellarSystems) {
-    interstellarSystems.update(camera.position, cappedDelta);
+    interstellarSystems.update(currentSpeed, cappedDelta);
   }
 
   // Update background to follow camera (infinite depth)
