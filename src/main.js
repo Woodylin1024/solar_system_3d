@@ -870,7 +870,14 @@ function animate() {
     // Initial auto-zoom
     if (shouldAutoZoom) {
       const isReal = solarSystem.isRealScale();
-      const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
+      const isInter = selectedTarget.userData.isInterstellar;
+      let currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
+
+      // If interstellar, account for the visualScale (50x)
+      if (isInter) {
+        currentRadius = selectedTarget.userData.visualScale;
+      }
+
       const multiplier = window.innerWidth <= 480 ? 18 : (window.innerWidth <= 1100 ? 12 : 6);
       const zoomDist = currentRadius * multiplier;
       const currentDist = camera.position.distanceTo(_v1);
@@ -906,7 +913,13 @@ function animate() {
         _v5.crossVectors(_v2, _v4).normalize();
 
         const isReal = solarSystem.isRealScale();
-        const currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
+        const isInter = selectedTarget.userData.isInterstellar;
+        let currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
+
+        if (isInter) {
+          currentRadius = selectedTarget.userData.visualScale;
+        }
+
         const multiplier = isPhone ? 22 : 12;
         const zoomDist = currentRadius * multiplier;
 

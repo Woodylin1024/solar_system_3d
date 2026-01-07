@@ -13,7 +13,14 @@ export const nearbyStarSystemsData = [
                 color: 0xfff4e1, // Warm white (G2V)
                 emissiveIntensity: 1.5,
                 position: { x: 0, y: 0, z: 0 },
-                description: "半人馬座 α A 是該三合星系統中的主星，其光譜類型與太陽極其相似。"
+                description: "半人馬座 α A（南門二 A）是系統中的主星，其光譜類型 G2V 與太陽極其相似，是全天第四亮的恆星。",
+                details: {
+                    "質量": "1.100 太陽質量",
+                    "直徑": "1.217 太陽直徑",
+                    "表面溫度": "5,790 K",
+                    "光譜類型": "G2V",
+                    "距離": "4.37 光年"
+                }
             },
             {
                 name: "Alpha Centauri B",
@@ -24,7 +31,14 @@ export const nearbyStarSystemsData = [
                 emissiveIntensity: 1.2,
                 position: { x: 1200, y: 100, z: 400 }, // Scaled separation
                 orbit: { radius: 1265, inclination: 15 },
-                description: "半人馬座 α B 是系統中的第二顆恆星，顏色稍橘，體積略小於太陽。"
+                description: "半人馬座 α B（南門二 B）是系統中的第二顆恆星，顏色稍橘，屬於 K 型主序星。",
+                details: {
+                    "質量": "0.907 太陽質量",
+                    "直徑": "0.865 太陽直徑",
+                    "表面溫度": "5,260 K",
+                    "光譜類型": "K1V",
+                    "距離": "4.37 光年"
+                }
             },
             {
                 name: "Proxima Centauri",
@@ -35,7 +49,14 @@ export const nearbyStarSystemsData = [
                 emissiveIntensity: 0.8,
                 position: { x: -8000, y: -2000, z: -5500 }, // Much further out
                 orbit: { radius: 9912, inclination: 45 },
-                description: "比鄰星是距離太陽最近的單一恆星，也是一個紅矮星。"
+                description: "比鄰星是一顆紅矮星，是目前已知距離太陽最近的個別恆星。它擁有至少兩顆行星，其中一顆位於適居帶內。",
+                details: {
+                    "質量": "0.122 太陽質量",
+                    "直徑": "0.154 太陽直徑",
+                    "表面溫度": "3,042 K",
+                    "光譜類型": "M6Ve",
+                    "距離": "4.24 光年"
+                }
             }
         ]
     }

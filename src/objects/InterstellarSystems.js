@@ -21,22 +21,22 @@ export function createInterstellarSystems(scene, manager) {
             const mesh = new THREE.Mesh(geometry, material);
             mesh.position.set(starData.position.x, starData.position.y, starData.position.z);
 
-            // Scaling: In interstellar space, stars are huge compared to planets but points from afar.
-            // We use a visibility-friendly scale.
-            const visualScale = starData.radius * 200;
+            // Adjust scale: 50x is enough for search-highlighted stars to be visible but not overwhelming
+            const visualScale = starData.radius * 50;
             mesh.scale.setScalar(visualScale);
 
-            // Add a glow effect (Sprite)
+            // Refined Glow effect
             const canvas = document.createElement('canvas');
-            canvas.width = 64;
-            canvas.height = 64;
+            canvas.width = 128;
+            canvas.height = 128;
             const context = canvas.getContext('2d');
-            const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+            const gradient = context.createRadialGradient(64, 64, 0, 64, 64, 64);
             gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            gradient.addColorStop(0.2, new THREE.Color(starData.color).getStyle());
+            gradient.addColorStop(0.1, new THREE.Color(starData.color).getStyle());
+            gradient.addColorStop(0.4, new THREE.Color(starData.color).getStyle());
             gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
             context.fillStyle = gradient;
-            context.fillRect(0, 0, 64, 64);
+            context.fillRect(0, 0, 128, 128);
 
             const glowTex = new THREE.CanvasTexture(canvas);
             const glowMat = new THREE.SpriteMaterial({
@@ -46,11 +46,12 @@ export function createInterstellarSystems(scene, manager) {
                 depthWrite: false
             });
             const glowSprite = new THREE.Sprite(glowMat);
-            glowSprite.scale.setScalar(visualScale * 4);
+            glowSprite.scale.setScalar(visualScale * 8); // Large but soft glow
             mesh.add(glowSprite);
 
             mesh.userData = {
                 ...starData,
+                visualScale: visualScale, // Store this for navigation
                 parentSystem: systemData.name,
                 isInterstellar: true
             };
