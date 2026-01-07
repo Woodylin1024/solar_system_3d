@@ -832,9 +832,12 @@ button:active {
   }
 
   #sub-menu {
-    top: 68px;
+    top: 105px;
+    /* Clear the expanded mobile controls */
     left: 10px;
-    width: 210px;
+    width: 220px;
+    max-height: 70vh;
+    overflow-y: auto;
   }
 }
 

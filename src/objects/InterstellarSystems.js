@@ -5,6 +5,7 @@ export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
     const starMeshes = [];
     const planetMeshes = [];
+    const orbitLines = []; // Keep track of all orbit lines for visibility syncing
 
     const textureLoader = manager ? new THREE.TextureLoader(manager) : new THREE.TextureLoader();
 
@@ -78,52 +79,61 @@ export function createInterstellarSystems(scene, manager) {
                     const segments = 128;
                     for (let j = 0; j <= segments; j++) {
                         const angle = (j / segments) * Math.PI * 2;
-                        const ox = planetData.orbit.radius * Math.cos(angle);
-                        const oz = planetData.orbit.radius * Math.sin(angle);
-                        orbitPoints.push(new THREE.Vector3(ox, 0, oz));
+                        orbitPoints.push(new THREE.Vector3(
+                            planetData.orbit.radius * Math.cos(angle),
+                            0,
+                            planetData.orbit.radius * Math.sin(angle)
+                        ));
                     }
                     const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPoints);
                     const orbitMat = new THREE.LineBasicMaterial({
-                        color: planetData.color,
+                        color: 0x00d2ff, // Planet blue for ALL planets
                         transparent: true,
                         opacity: 0.15,
                         blending: THREE.NormalBlending
                     });
                     const orbitLine = new THREE.LineLoop(orbitGeo, orbitMat);
 
-                    // Position orbit relative to star
-                    orbitLine.position.copy(starMesh.position);
+                    orbitLine.userData = {
+                        type: 'planet_orbit',
+                        parentStar: starData.name
+                    };
 
                     if (planetData.orbit.inclination) {
                         orbitLine.rotation.x = THREE.MathUtils.degToRad(planetData.orbit.inclination);
                     }
                     systemGroup.add(orbitLine);
+                    orbitLines.push(orbitLine);
                 });
             }
 
-            // 2. Handle Star Orbit (if any)
+            // 2. Handle Star Orbit
             if (starData.orbit) {
                 const orbitPoints = [];
                 const segments = 128;
                 for (let j = 0; j <= segments; j++) {
                     const angle = (j / segments) * Math.PI * 2;
-                    const ox = starData.orbit.radius * Math.cos(angle);
-                    const oz = starData.orbit.radius * Math.sin(angle);
-                    orbitPoints.push(new THREE.Vector3(ox, 0, oz));
+                    orbitPoints.push(new THREE.Vector3(
+                        starData.orbit.radius * Math.cos(angle),
+                        0,
+                        starData.orbit.radius * Math.sin(angle)
+                    ));
                 }
                 const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPoints);
                 const orbitMat = new THREE.LineBasicMaterial({
-                    color: starData.color,
+                    color: 0xff4400, // Deep red for Star orbits
                     transparent: true,
                     opacity: 0.4,
                     blending: THREE.NormalBlending
                 });
                 const orbitLine = new THREE.LineLoop(orbitGeo, orbitMat);
+                orbitLine.userData = { type: 'star_orbit' };
 
                 if (starData.orbit.inclination) {
                     orbitLine.rotation.x = THREE.MathUtils.degToRad(starData.orbit.inclination);
                 }
                 systemGroup.add(orbitLine);
+                orbitLines.push(orbitLine);
             }
         });
 
@@ -146,52 +156,56 @@ export function createInterstellarSystems(scene, manager) {
                 if (data.orbit) {
                     data.angle += (data.orbit.speed || 0.1) * simSpeed * delta * 0.1;
                     const radius = data.orbit.radius;
-                    const xLocal = radius * Math.cos(data.angle);
-                    const zPlane = radius * Math.sin(data.angle);
+                    const xL = radius * Math.cos(data.angle);
+                    const zP = radius * Math.sin(data.angle);
 
                     if (data.orbit.inclination) {
-                        const tiltRad = THREE.MathUtils.degToRad(data.orbit.inclination);
-                        mesh.position.set(xLocal, -zPlane * Math.sin(tiltRad), zPlane * Math.cos(tiltRad));
+                        const t = THREE.MathUtils.degToRad(data.orbit.inclination);
+                        mesh.position.set(xL, -zP * Math.sin(t), zP * Math.cos(t));
                     } else {
-                        mesh.position.set(xLocal, 0, zPlane);
+                        mesh.position.set(xL, 0, zP);
                     }
                 }
             });
 
-            // Update Planet positions relative to their parent stars
+            // Update Planet positions & Planet Orbit line positions (Sync with moving Stars)
             planetMeshes.forEach(pMesh => {
                 const pData = pMesh.userData;
                 const parentStar = starMeshes.find(s => s.userData.name === pData.parentStar);
                 if (parentStar && pData.orbit) {
                     pData.angle += (pData.orbit.speed || 0.5) * simSpeed * delta * 0.5;
                     const radius = pData.orbit.radius;
-                    const xLocal = radius * Math.cos(pData.angle);
-                    const zPlane = radius * Math.sin(pData.angle);
+                    const xL = radius * Math.cos(pData.angle);
+                    const zP = radius * Math.sin(pData.angle);
 
-                    // Update orbit line position if the star moves!
-                    // (Though currently interstellar orbit lines are static children of systemGroup)
-                    // We must update the planet position based on star position
                     if (pData.orbit.inclination) {
-                        const tiltRad = THREE.MathUtils.degToRad(pData.orbit.inclination);
+                        const t = THREE.MathUtils.degToRad(pData.orbit.inclination);
                         pMesh.position.set(
-                            parentStar.position.x + xLocal,
-                            parentStar.position.y - zPlane * Math.sin(tiltRad),
-                            parentStar.position.z + zPlane * Math.cos(tiltRad)
+                            parentStar.position.x + xL,
+                            parentStar.position.y - zP * Math.sin(t),
+                            parentStar.position.z + zP * Math.cos(t)
                         );
                     } else {
-                        pMesh.position.set(
-                            parentStar.position.x + xLocal,
-                            parentStar.position.y,
-                            parentStar.position.z + zPlane
-                        );
+                        pMesh.position.set(parentStar.position.x + xL, parentStar.position.y, parentStar.position.z + zP);
                     }
+                }
+            });
+
+            orbitLines.forEach(line => {
+                if (line.userData.type === 'planet_orbit' && line.userData.parentStar) {
+                    const parentStar = starMeshes.find(s => s.userData.name === line.userData.parentStar);
+                    if (parentStar) line.position.copy(parentStar.position);
                 }
             });
         },
         getStarMeshes: () => allSelectable, // Update this so main.js can pick up planets
-        setVisible: (visible) => {
-            systemsGroup.traverse(child => {
-                if (child instanceof THREE.LineLoop) child.visible = visible;
+        setVisible: (starOrbitsVisible, planetOrbitsVisible) => {
+            orbitLines.forEach(line => {
+                if (line.userData.type === 'star_orbit') {
+                    line.visible = starOrbitsVisible;
+                } else if (line.userData.type === 'planet_orbit') {
+                    line.visible = planetOrbitsVisible;
+                }
             });
         }
     };
