@@ -135,34 +135,6 @@ export function createSolarSystem(scene, manager) {
             isSunShader: data.name === 'Sun'
         };
 
-        // Add Sun distant glow to ensure it's visible from interstellar space
-        if (data.name === 'Sun') {
-            const sunGlowCanvas = document.createElement('canvas');
-            sunGlowCanvas.width = 128;
-            sunGlowCanvas.height = 128;
-            const ctx = sunGlowCanvas.getContext('2d');
-            const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-            grad.addColorStop(0, 'white');
-            grad.addColorStop(0.15, '#fff4e1'); // Warm Sun color
-            grad.addColorStop(0.4, 'rgba(255, 244, 225, 0.3)');
-            grad.addColorStop(1, 'transparent');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, 128, 128);
-
-            const sunGlowTex = new THREE.CanvasTexture(sunGlowCanvas);
-            const sunGlowMat = new THREE.SpriteMaterial({
-                map: sunGlowTex,
-                blending: THREE.AdditiveBlending,
-                transparent: true,
-                depthWrite: false,
-                sizeAttenuation: true // Must be true to prevent screen-filling washout
-            });
-            const sunGlowSprite = new THREE.Sprite(sunGlowMat);
-            // Reduced scale significantly to prevent washout at planetary distances.
-            // Sun radius is 10, so 100 is a 10x visual glow.
-            sunGlowSprite.scale.setScalar(100);
-            mesh.add(sunGlowSprite);
-        }
 
         // Orbit Line
         if (data.name !== 'Sun') {
