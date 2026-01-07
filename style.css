@@ -310,7 +310,8 @@ button:active {
 /* System Selector Menu Styles */
 #system-menu {
   position: fixed;
-  top: 65px;
+  top: 115px;
+  /* Moved down to clear the search bar */
   left: 145px;
   background: rgba(15, 15, 25, 0.95);
   backdrop-filter: blur(20px);
@@ -392,7 +393,8 @@ button:active {
 /* Sub-Menu Styles */
 #sub-menu {
   position: fixed;
-  top: 70px;
+  top: 115px;
+  /* Moved down to clear the search bar */
   left: 15px;
   background: rgba(15, 15, 25, 0.95);
   backdrop-filter: blur(20px);
