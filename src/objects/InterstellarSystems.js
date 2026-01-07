@@ -5,23 +5,29 @@ export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
     const starMeshes = [];
 
+    const textureLoader = manager ? new THREE.TextureLoader(manager) : new THREE.TextureLoader();
+
     nearbyStarSystemsData.forEach(systemData => {
         const systemGroup = new THREE.Group();
         systemGroup.position.set(systemData.position.x, systemData.position.y, systemData.position.z);
 
         systemData.stars.forEach(starData => {
-            // Stars are essentially spheres with high light emission
             const geometry = new THREE.SphereGeometry(1, 32, 32);
+
+            // Standard material for better texture fidelity
             const material = new THREE.MeshBasicMaterial({
-                color: starData.color,
-                transparent: true,
-                opacity: 1
+                color: 0xffffff, // Use white to let texture show full color
             });
+
+            if (starData.texture) {
+                material.map = textureLoader.load(`textures/${starData.texture}`);
+            } else {
+                material.color.set(starData.color);
+            }
 
             const mesh = new THREE.Mesh(geometry, material);
             mesh.position.set(starData.position.x, starData.position.y, starData.position.z);
 
-            // Adjust scale: 50x is enough for search-highlighted stars to be visible but not overwhelming
             const visualScale = starData.radius * 50;
             mesh.scale.setScalar(visualScale);
 

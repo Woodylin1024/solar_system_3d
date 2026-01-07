@@ -11,6 +11,7 @@ export const nearbyStarSystemsData = [
                 type: "star",
                 radius: 1.1, // Solar radii
                 color: 0xfff4e1, // Warm white (G2V)
+                texture: "alphacentauri_a.png",
                 emissiveIntensity: 1.5,
                 position: { x: 0, y: 0, z: 0 },
                 description: "半人馬座 α A（南門二 A）是系統中的主星，其光譜類型 G2V 與太陽極其相似，是全天第四亮的恆星。",
@@ -28,6 +29,7 @@ export const nearbyStarSystemsData = [
                 type: "star",
                 radius: 0.86, // Solar radii
                 color: 0xffd2a1, // Pale orange (K1V)
+                texture: "alphacentauri_b.png",
                 emissiveIntensity: 1.2,
                 position: { x: 1265, y: 0, z: 0 }, // Positioned exactly on orbit radius
                 orbit: { radius: 1265, inclination: 15, speed: 0.2 },
@@ -46,6 +48,7 @@ export const nearbyStarSystemsData = [
                 type: "star",
                 radius: 0.15, // Red dwarf size
                 color: 0xff4500, // Deep red (M6Ve)
+                texture: "proxima.png",
                 emissiveIntensity: 0.8,
                 position: { x: -9912, y: 0, z: 0 }, // Positioned exactly on orbit radius
                 orbit: { radius: 9912, inclination: 45, speed: 0.05 },
