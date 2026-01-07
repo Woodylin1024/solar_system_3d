@@ -712,17 +712,47 @@ clearSearchBtn.addEventListener('click', (e) => {
   searchResults.classList.add('hidden');
 });
 
+const systemMenu = document.getElementById('system-menu');
+
 resetToSunBtn.addEventListener('click', (e) => {
   e.stopPropagation();
-  const bodies = solarSystem.getBodies();
-  const sunBody = bodies.find(b => b.data.name === 'Sun');
-  if (sunBody) selectBody(sunBody.mesh);
+  systemMenu.classList.toggle('hidden');
+  // Close other menus
+  subMenu.classList.add('hidden');
+  searchResults.classList.add('hidden');
+});
+
+// System Menu Items Logic
+systemMenu.querySelectorAll('.system-menu-item').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const systemId = item.getAttribute('data-id');
+
+    if (systemId === 'solar') {
+      const bodies = solarSystem.getBodies();
+      const sunBody = bodies.find(b => b.data.name === 'Sun');
+      if (sunBody) selectBody(sunBody.mesh);
+
+      // Update UI state
+      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    } else {
+      // For future systems like Alpha Centauri
+      console.log(`Switching to ${systemId} - Coming Soon!`);
+      // You can add a toast notification here if desired
+    }
+
+    systemMenu.classList.add('hidden');
+  });
 });
 
 // Close search if clicking elsewhere
 window.addEventListener('mousedown', (e) => {
   if (!document.getElementById('search-container').contains(e.target)) {
     searchResults.classList.add('hidden');
+  }
+  if (!systemMenu.contains(e.target) && e.target !== resetToSunBtn && !resetToSunBtn.contains(e.target)) {
+    systemMenu.classList.add('hidden');
   }
 });
 
@@ -743,7 +773,7 @@ window.addEventListener('resize', () => {
 // UI Click-Through Prevention
 // Stop propagation of events from UI elements to background (OrbitControls)
 // ------------------------------------------------------------------
-const uiElements = ['controls', 'sub-menu', 'info-panel'];
+const uiElements = ['controls', 'sub-menu', 'info-panel', 'system-menu'];
 uiElements.forEach(id => {
   const el = document.getElementById(id);
   if (!el) return;

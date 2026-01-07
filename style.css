@@ -307,6 +307,88 @@ button:active {
   color: #aaa;
 }
 
+/* System Selector Menu Styles */
+#system-menu {
+  position: fixed;
+  top: 65px;
+  left: 145px;
+  background: rgba(15, 15, 25, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 12px;
+  width: 200px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  z-index: 10001;
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+  transform-origin: top center;
+}
+
+#system-menu.hidden {
+  display: block !important;
+  opacity: 0;
+  transform: scale(0.9) translateY(-10px);
+  pointer-events: none;
+}
+
+.system-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+}
+
+.system-menu-item:last-child {
+  margin-bottom: 0;
+}
+
+.system-menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.system-menu-item.active {
+  background: rgba(0, 210, 255, 0.1);
+  border-color: rgba(0, 210, 255, 0.2);
+}
+
+.system-icon {
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.system-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.system-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.system-status {
+  font-size: 10px;
+  color: #00d2ff;
+  font-weight: 500;
+}
+
+.system-status.locked {
+  color: #666;
+}
+
 /* Sub-Menu Styles */
 #sub-menu {
   position: fixed;
