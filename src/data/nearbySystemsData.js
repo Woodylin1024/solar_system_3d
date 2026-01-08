@@ -154,88 +154,31 @@ export const nearbyStarSystemsData = [
         ]
     },
     {
-        name: "Epsilon Eridani",
-        nameCH: "天苑四",
-        distanceFromSun: 661264,
-        position: { x: 389800, y: 522300, z: -108400 },
-        stars: [
-            {
-                name: "Epsilon Eridani",
-                nameCH: "天苑四",
-                type: "star",
-                radius: 0.74,
-                color: 0xffa500,
-                texture: "epsilon_eridani.png",
-                emissiveIntensity: 1.2,
-                position: { x: 0, y: 0, z: 0 },
-                description: "年輕的類太陽恆星，擁有兩個碎屑盤。",
-                details: { "質量": "0.82 太陽質量", "表面溫度": "5,084 K", "光譜類型": "K2V", "距離": "10.47 光年" },
-                planets: [
-                    {
-                        name: "Epsilon Eridani b",
-                        nameCH: "天苑四 b",
-                        type: "planet",
-                        radius: 1.2,
-                        color: 0x4682b4,
-                        texture: "epsilon_eridani_b.png",
-                        orbit: { radius: 600, speed: 0.15, inclination: 30 },
-                        description: "氣態巨行星。",
-                        details: { "質量": "1.55 木星質量", "公轉週期": "7.3 年" }
-                    }
-                ],
-                belts: [
-                    { nameCH: "內碎屑盤", minRadius: 5500, maxRadius: 6500, count: 1000, color: 0x888888, opacity: 0.6 },
-                    { nameCH: "外碎屑盤", minRadius: 10500, maxRadius: 12500, count: 1500, color: 0x778899, opacity: 0.5 }
-                ]
-            }
-        ]
-    },
-    {
-        name: "Lacaille 9352",
-        nameCH: "拉卡伊 9352",
-        distanceFromSun: 678000,
-        position: { x: 500000, y: -400000, z: -250000 },
-        stars: [
-            {
-                name: "Lacaille 9352",
-                nameCH: "拉卡伊 9352",
-                type: "star",
-                radius: 0.46,
-                color: 0xff5a00,
-                texture: "lacaille9352.png",
-                emissiveIntensity: 0.9,
-                position: { x: 0, y: 0, z: 0 },
-                description: "高自行的明亮紅矮星。",
-                details: { "質量": "0.48 太陽質量", "直徑": "0.46 太陽直徑", "光譜類型": "M0.5V", "距離": "10.74 光年" }
-            }
-        ]
-    },
-    {
         name: "Castor",
         nameCH: "北河二 (雙子座 α)",
         distanceFromSun: 3225291,
         position: { x: 1500000, y: 1200000, z: -2500000 },
         stars: [
             {
-                name: "Castor Systems Barycenter",
-                nameCH: "北河二總質心",
+                name: "Castor Total Barycenter",
+                nameCH: "北河二總系質心",
                 type: "star",
                 radius: 0,
                 position: { x: 0, y: 0, z: 0 },
                 planets: [
                     {
                         name: "Castor AB Barycenter",
-                        nameCH: "北河二 AB 共同質心",
+                        nameCH: "北河二 AB 共同體",
                         type: "star",
                         radius: 0,
-                        orbit: { radius: 15000, speed: 0.05, inclination: 10, startAngle: 0 },
+                        orbit: { radius: 100000, speed: 0.005, inclination: 10, startAngle: 0 },
                         planets: [
                             {
                                 name: "Castor A Barycenter",
-                                nameCH: "北河二 A 系統質心",
+                                nameCH: "北河二 A 質心",
                                 type: "star",
                                 radius: 0,
-                                orbit: { radius: 6000, speed: 0.1, inclination: 5, startAngle: 0 },
+                                orbit: { radius: 15000, speed: 0.1, inclination: 5, startAngle: 0 },
                                 planets: [
                                     {
                                         name: "Castor A1 (Aa)",
@@ -244,9 +187,9 @@ export const nearbyStarSystemsData = [
                                         radius: 2.3,
                                         color: 0xffffff,
                                         texture: "castor_a.png",
-                                        orbit: { radius: 600, speed: 0.6, inclination: 0, startAngle: 0 },
+                                        orbit: { radius: 800, speed: 0.6, inclination: 0, startAngle: 0 },
                                         description: "A1V 型藍白主序星。",
-                                        details: { "質量": "2.76 太陽質量", "光譜類型": "A1V" }
+                                        details: { "質量": "2.76 太陽質量", "表面溫度": "9,500 K", "光譜類型": "A1V" }
                                     },
                                     {
                                         name: "Castor A2 (Ab)",
@@ -255,18 +198,18 @@ export const nearbyStarSystemsData = [
                                         radius: 0.5,
                                         color: 0xff4500,
                                         texture: "castor_c.png",
-                                        orbit: { radius: 600, speed: 0.6, inclination: 0, startAngle: Math.PI },
-                                        description: "與 A1 互繞的紅矮星，週期約 9.2 天。",
+                                        orbit: { radius: 800, speed: 0.6, inclination: 0, startAngle: Math.PI },
+                                        description: "紅矮星伴星，週期 9.2 天。",
                                         details: { "光譜類型": "dM1e", "公轉週期": "9.2 天" }
                                     }
                                 ]
                             },
                             {
                                 name: "Castor B Barycenter",
-                                nameCH: "北河二 B 系統質心",
+                                nameCH: "北河二 B 質心",
                                 type: "star",
                                 radius: 0,
-                                orbit: { radius: 6000, speed: 0.1, inclination: 5, startAngle: Math.PI },
+                                orbit: { radius: 15000, speed: 0.1, inclination: 5, startAngle: Math.PI },
                                 planets: [
                                     {
                                         name: "Castor B1 (Ba)",
@@ -275,9 +218,9 @@ export const nearbyStarSystemsData = [
                                         radius: 1.6,
                                         color: 0xffffff,
                                         texture: "castor_a.png",
-                                        orbit: { radius: 500, speed: 0.8, inclination: 0, startAngle: 0 },
+                                        orbit: { radius: 600, speed: 0.8, inclination: 0, startAngle: 0 },
                                         description: "A5V 型白主序星。",
-                                        details: { "質量": "2.14 太陽質量", "光譜類型": "A5V" }
+                                        details: { "質量": "2.14 太陽質量", "表面溫度": "8,300 K", "光譜類型": "A5V" }
                                     },
                                     {
                                         name: "Castor B2 (Bb)",
@@ -286,8 +229,8 @@ export const nearbyStarSystemsData = [
                                         radius: 0.4,
                                         color: 0xff4500,
                                         texture: "castor_c.png",
-                                        orbit: { radius: 500, speed: 0.8, inclination: 0, startAngle: Math.PI },
-                                        description: "與 B1 互繞的紅矮星，週期約 2.9 天。",
+                                        orbit: { radius: 600, speed: 0.8, inclination: 0, startAngle: Math.PI },
+                                        description: "紅矮星伴星，週期 2.9 天。",
                                         details: { "光譜類型": "dM1e", "公轉週期": "2.9 天" }
                                     }
                                 ]
@@ -296,10 +239,10 @@ export const nearbyStarSystemsData = [
                     },
                     {
                         name: "Castor C Barycenter",
-                        nameCH: "北河二 C 系統質心",
+                        nameCH: "北河二 C 質心",
                         type: "star",
                         radius: 0,
-                        orbit: { radius: 180000, speed: 0.005, inclination: 35, startAngle: Math.PI },
+                        orbit: { radius: 100000, speed: 0.005, inclination: 10, startAngle: Math.PI },
                         planets: [
                             {
                                 name: "Castor C1 (Ca)",
@@ -310,7 +253,7 @@ export const nearbyStarSystemsData = [
                                 texture: "castor_c.png",
                                 orbit: { radius: 800, speed: 1.2, inclination: 0, startAngle: 0 },
                                 description: "YY Gem 紅矮星。",
-                                details: { "質量": "0.6 太陽質量", "光譜類型": "M0.5Ve" }
+                                details: { "質量": "0.6 太陽質量", "表面溫度": "3,820 K", "光譜類型": "M0.5Ve" }
                             },
                             {
                                 name: "Castor C2 (Cb)",
@@ -320,7 +263,7 @@ export const nearbyStarSystemsData = [
                                 color: 0xff4500,
                                 texture: "castor_c.png",
                                 orbit: { radius: 800, speed: 1.2, inclination: 0, startAngle: Math.PI },
-                                description: "互繞週期僅 19.5 小時。",
+                                description: "周期 19.5 小時的食雙星伴星。",
                                 details: { "光譜類型": "M0.5Ve", "公轉週期": "19.5 小時" }
                             }
                         ]
