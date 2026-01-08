@@ -298,5 +298,32 @@ export const nearbyStarSystemsData = [
                 }
             }
         ]
+    },
+    {
+        name: "Ross 248",
+        nameCH: "羅斯 248",
+        distanceFromSun: 651341, // 10.3 Light years in units
+        position: { x: 440000, y: 450000, z: -100000 },
+        stars: [
+            {
+                name: "Ross 248",
+                nameCH: "羅斯 248",
+                type: "star",
+                radius: 0.16, // Solar radii
+                color: 0xff4500, // Cool red dwarf
+                texture: "ross248.png",
+                emissiveIntensity: 0.7,
+                position: { x: 0, y: 0, z: 0 },
+                description: "羅斯 248（Ross 248）是一顆位於仙女座的紅矮星，距離地球約 10.3 光年。它是一顆典型的變星，預計在約 33,000 年後將取代比鄰星成為距離太陽最近的恆星。",
+                details: {
+                    "質量": "0.12 太陽質量",
+                    "直徑": "0.16 太陽直徑",
+                    "表面溫度": "2,800 K",
+                    "光度": "0.0011 太陽光度",
+                    "光譜類型": "M6.0V",
+                    "距離": "10.3 光年"
+                }
+            }
+        ]
     }
 ];

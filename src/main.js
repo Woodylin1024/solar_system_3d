@@ -827,6 +827,14 @@ systemMenu.querySelectorAll('.system-menu-item').forEach(item => {
       // Update UI state
       systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
       item.classList.add('active');
+    } else if (systemId === 'ross248') {
+      const starMeshes = interstellarSystems.getStarMeshes();
+      const ross = starMeshes.find(m => m.userData.name === "Ross 248");
+      if (ross) selectBody(ross);
+
+      // Update UI state
+      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
     }
 
     systemMenu.classList.add('hidden');
