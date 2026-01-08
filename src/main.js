@@ -811,6 +811,14 @@ systemMenu.querySelectorAll('.system-menu-item').forEach(item => {
       // Update UI state
       systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
       item.classList.add('active');
+    } else if (systemId === 'luyten') {
+      const starMeshes = interstellarSystems.getStarMeshes();
+      const blCeti = starMeshes.find(m => m.userData.name === "BL Ceti");
+      if (blCeti) selectBody(blCeti);
+
+      // Update UI state
+      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
     }
 
     systemMenu.classList.add('hidden');

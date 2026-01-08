@@ -224,5 +224,52 @@ export const nearbyStarSystemsData = [
                 }
             }
         ]
+    },
+    {
+        name: "Luyten 726-8",
+        nameCH: "魯坦 726-8",
+        distanceFromSun: 550000, // 8.7 Light years in units
+        position: { x: 120000, y: -500000, z: -150000 },
+        stars: [
+            {
+                name: "BL Ceti",
+                nameCH: "鯨魚座 BL (魯坦 726-8 A)",
+                type: "star",
+                radius: 0.14, // Solar radii
+                color: 0xff4d00,
+                texture: "luyten726_8a.png",
+                emissiveIntensity: 0.8,
+                position: { x: 0, y: 0, z: 0 },
+                description: "鯨魚座 BL 是拉蘭德 726-8 聯星系統的主星，是一顆光譜型 M5.5 的紅矮星。",
+                details: {
+                    "質量": "0.102 太陽質量",
+                    "直徑": "0.14 太陽直徑",
+                    "表面溫度": "2,670 K",
+                    "光度": "0.0006 太陽光度",
+                    "光譜類型": "M5.5V",
+                    "距離": "8.72 光年"
+                }
+            },
+            {
+                name: "UV Ceti",
+                nameCH: "鯨魚座 UV (魯坦 726-8 B)",
+                type: "star",
+                radius: 0.14, // Solar radii
+                color: 0xff3300,
+                texture: "luyten726_8b.png",
+                emissiveIntensity: 1.0,
+                position: { x: 800, y: 0, z: 0 },
+                orbit: { radius: 800, inclination: 35, speed: 0.15 },
+                description: "鯨魚座 UV 是著名的閃焰星原型，屬於光譜型 M6.0 的紅矮星。它會頻繁發生極其劇烈的能量噴發，在幾分鐘內亮度增加數十倍。",
+                details: {
+                    "質量": "0.100 太陽質量",
+                    "直徑": "0.14 太陽直徑",
+                    "表面溫度": "2,600 K",
+                    "光度": "0.0004 太陽光度",
+                    "光譜類型": "M6.0V",
+                    "距離": "8.72 光年"
+                }
+            }
+        ]
     }
 ];
