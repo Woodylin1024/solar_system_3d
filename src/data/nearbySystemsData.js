@@ -123,5 +123,32 @@ export const nearbyStarSystemsData = [
                 }
             }
         ]
+    },
+    {
+        name: "Wolf 359",
+        nameCH: "沃夫 359",
+        distanceFromSun: 497000,
+        position: { x: -472150, y: 134190, z: 59640 },
+        stars: [
+            {
+                name: "Wolf 359",
+                nameCH: "沃夫 359",
+                type: "star",
+                radius: 0.16, // Solar radii
+                color: 0xff3300, // Very cool red dwarf
+                texture: "wolf359.png",
+                emissiveIntensity: 0.7,
+                position: { x: 0, y: 0, z: 0 },
+                description: "沃夫 359 是一顆位於獅子座的紅矮星，距離太陽約 7.86 光年。它是最暗淡且質量最低的恆星之一，同時也是一顆非常活躍的噴發變星（閃焰星）。",
+                details: {
+                    "質量": "0.09 太陽質量",
+                    "直徑": "0.16 太陽直徑",
+                    "表面溫度": "2,800 K",
+                    "光度": "0.001 太陽光度",
+                    "光譜類型": "M6.5Ve",
+                    "距離": "7.86 光年"
+                }
+            }
+        ]
     }
 ];

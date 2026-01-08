@@ -787,6 +787,14 @@ systemMenu.querySelectorAll('.system-menu-item').forEach(item => {
       // Update UI state
       systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
       item.classList.add('active');
+    } else if (systemId === 'wolf359') {
+      const starMeshes = interstellarSystems.getStarMeshes();
+      const wolf = starMeshes.find(m => m.userData.name === "Wolf 359");
+      if (wolf) selectBody(wolf);
+
+      // Update UI state
+      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
     }
 
     systemMenu.classList.add('hidden');
