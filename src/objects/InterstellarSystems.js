@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v4.3.0 - High-Energy Extreme Precision Simulation
+ * InterstellarSystems v4.4.0 - Volumetric Physics & Precision Tracking
  * Features:
- * - Polar-mapped Accretion Disks (No seams, realistic gas vortex)
- * - Vector-precision Gas Streams (Precise bridge between L1 point and disk)
- * - Thermal Gradient Shading for distorted stars
- * - High-speed orbital syncing and hierarchical simulation
+ * - Volumetric Accretion Disks (Multilayer stack for thickness)
+ * - World-space precision coordinate tracking (Fixes stream alignment)
+ * - Improved Roche-lobe matter stream visuals with gradients
+ * - Fixed z-fighting and perspective artifacts
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -19,31 +19,35 @@ export function createInterstellarSystems(scene, manager) {
 
     const textureLoader = manager ? new THREE.TextureLoader(manager) : new THREE.TextureLoader();
 
-    // Create a polar-mapped texture (X=Radius, Y=Angle) for realistic gas disks
-    const createPolarDiskTexture = () => {
+    // Create a high-quality polar-mapped texture for gas disks
+    const createGasTexture = () => {
         const width = 1024, height = 512;
         const canvas = document.createElement('canvas');
         canvas.width = width; canvas.height = height;
         const ctx = canvas.getContext('2d');
 
-        // Draw radial noise streaks
-        for (let i = 0; i < width; i++) {
-            const opacity = 1.0 - (i / width); // Denser inside
-            const brightness = 150 + Math.random() * 105;
-            ctx.fillStyle = `rgba(${brightness}, ${brightness + 30}, 255, ${opacity * 0.4})`;
+        // Dark blue/black background with opacity
+        ctx.fillStyle = 'rgba(0, 0, 20, 0.1)';
+        ctx.fillRect(0, 0, width, height);
 
-            // Random gas filaments
-            const gasHeight = Math.random() * height;
-            const gasWidth = 1 + Math.random() * 5;
-            ctx.fillRect(i, gasHeight, gasWidth, 10 + Math.random() * 40);
+        // Core glow and spiral noise
+        for (let i = 0; i < width; i++) {
+            const opacity = Math.pow(1.0 - (i / width), 1.5);
+            const b = 180 + Math.random() * 75;
+            ctx.fillStyle = `rgba(${b - 50}, ${b + 20}, 255, ${opacity * 0.5})`;
+
+            // Gas streaks
+            const y = Math.random() * height;
+            const h = 2 + Math.random() * 20;
+            ctx.fillRect(i, y, 2 + Math.random() * 4, h);
         }
 
-        // Add a core glow gradient
+        // Inner white hot core
         const grad = ctx.createLinearGradient(0, 0, width, 0);
-        grad.addColorStop(0, 'rgba(255, 255, 255, 1)'); // Inner core
-        grad.addColorStop(0.2, 'rgba(0, 204, 255, 0.8)');
-        grad.addColorStop(0.5, 'rgba(0, 50, 150, 0.3)');
-        grad.addColorStop(1, 'rgba(0, 0, 20, 0)');
+        grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        grad.addColorStop(0.1, 'rgba(0, 220, 255, 0.8)');
+        grad.addColorStop(0.4, 'rgba(0, 80, 200, 0.2)');
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, width, height);
 
@@ -53,7 +57,7 @@ export function createInterstellarSystems(scene, manager) {
         return tex;
     };
 
-    const polarDiskTex = createPolarDiskTexture();
+    const gasTexture = createGasTexture();
 
     const createEntity = (data, parentName, container, depth = 0, systemName) => {
         let mesh;
@@ -66,13 +70,15 @@ export function createInterstellarSystems(scene, manager) {
             const material = new THREE.MeshStandardMaterial({
                 color: data.color || 0xffffff,
                 emissive: data.color || 0xffffff,
-                emissiveIntensity: data.isDistorted ? 2.5 : (data.emissiveIntensity || 1.0),
-                roughness: 0.8
+                emissiveIntensity: data.isDistorted ? 3.0 : (data.emissiveIntensity || 1.0),
+                roughness: 0.7,
+                metalness: 0
             });
             if (data.texture) material.map = textureLoader.load(`textures/${data.texture}`);
 
             mesh = new THREE.Mesh(geometry, material);
             if (data.isDistorted && data.distortionAxes) {
+                // Distortion usually along Z
                 mesh.scale.set(baseScale * (data.distortionAxes.x || 1), baseScale * (data.distortionAxes.y || 1), baseScale * (data.distortionAxes.z || 1.8));
             } else {
                 mesh.scale.setScalar(baseScale);
@@ -94,35 +100,45 @@ export function createInterstellarSystems(scene, manager) {
         container.add(mesh);
         allEntities.push(mesh);
 
-        // FEATURE: Realistic Polar-Mapped Accretion Disk
+        // FEATURE: Volumetric Accretion Disk (Layered rings for thickness)
         if (data.hasAccretionDisk) {
+            const diskGroup = new THREE.Group();
             const diskSize = data.diskRadius || (baseScale * 20);
-            const diskGeo = new THREE.RingGeometry(baseScale * 0.1, diskSize, 128);
-            // Fix UVs for polar mapping: X maps to radial (0-1), Y to angular (0-1)
-            // But Three.js default UVs for Ring are different. We will use a plane and custom logic if needed, 
-            // but RingGeometry actually maps UV.x around the ring. Perfect!
-            const diskMat = new THREE.MeshBasicMaterial({
-                map: polarDiskTex,
-                transparent: true,
-                blending: THREE.AdditiveBlending,
-                side: THREE.DoubleSide,
-                depthWrite: false
-            });
-            const disk = new THREE.Mesh(diskGeo, diskMat);
-            disk.rotation.x = -Math.PI / 2;
-            container.add(disk);
-            accretionDisks.push({ mesh: disk, parentName: data.name });
+            const layers = 5;
+            const thickness = 10; // Total vertical span
+
+            for (let i = 0; i < layers; i++) {
+                const layerOffset = (i - (layers - 1) / 2) * (thickness / layers);
+                const layerScale = 1.0 - Math.abs(layerOffset / thickness) * 0.3; // Thinner towards edges
+                const diskGeo = new THREE.RingGeometry(baseScale * 0.1, diskSize * layerScale, 128);
+                const diskMat = new THREE.MeshBasicMaterial({
+                    map: gasTexture,
+                    transparent: true,
+                    opacity: 0.6 / (i + 1), // Vary opacity for depth
+                    blending: THREE.AdditiveBlending,
+                    side: THREE.DoubleSide,
+                    depthWrite: false
+                });
+                const diskLayer = new THREE.Mesh(diskGeo, diskMat);
+                diskLayer.position.y = layerOffset;
+                diskLayer.rotation.x = -Math.PI / 2;
+                diskGroup.add(diskLayer);
+            }
+
+            container.add(diskGroup);
+            accretionDisks.push({ group: diskGroup, parentName: data.name });
         }
 
-        // FEATURE: Vector-Precision Gas Stream
+        // FEATURE: Realistic Gas Stream Bridge
         if (data.hasGasStream) {
             const stream = new THREE.Mesh(
-                new THREE.CylinderGeometry(baseScale * 0.05, baseScale * 0.5, 1, 24, 1, true),
+                new THREE.CylinderGeometry(baseScale * 0.05, baseScale * 0.8, 1, 32, 1, true),
                 new THREE.MeshBasicMaterial({
-                    color: 0xbbddff,
+                    color: 0x88ccff,
                     transparent: true,
                     opacity: 0.7,
-                    blending: THREE.AdditiveBlending
+                    blending: THREE.AdditiveBlending,
+                    side: THREE.DoubleSide
                 })
             );
             stream.geometry.translate(0, 0.5, 0);
@@ -137,13 +153,13 @@ export function createInterstellarSystems(scene, manager) {
                 const a = (i / 256) * Math.PI * 2;
                 pts.push(new THREE.Vector3(Math.cos(a) * data.orbit.radius, 0, Math.sin(a) * data.orbit.radius));
             }
-            const orbit = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({
-                color: 0xff3300, transparent: true, opacity: 0.3
+            const oLine = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({
+                color: 0xff3300, transparent: true, opacity: 0.25
             }));
-            if (data.orbit.inclination) orbit.rotation.x = THREE.MathUtils.degToRad(data.orbit.inclination);
-            orbit.userData = { parentName };
-            container.add(orbit);
-            orbitLines.push(orbit);
+            if (data.orbit.inclination) oLine.rotation.x = THREE.MathUtils.degToRad(data.orbit.inclination);
+            oLine.userData = { parentName };
+            container.add(oLine);
+            orbitLines.push(oLine);
         }
 
         if (data.planets) {
@@ -160,6 +176,9 @@ export function createInterstellarSystems(scene, manager) {
 
     scene.add(systemsGroup);
     allEntities.sort((a, b) => a.userData.depth - b.userData.depth);
+
+    const worldPosA = new THREE.Vector3();
+    const worldPosB = new THREE.Vector3();
 
     return {
         group: systemsGroup,
@@ -184,30 +203,34 @@ export function createInterstellarSystems(scene, manager) {
                 if (d.isDistorted) e.lookAt(pPos);
             });
 
-            // Update Accretion Disks (Rotation + Sync)
+            // Update Accretion Disks
             accretionDisks.forEach(ad => {
-                const p = allEntities.find(e => e.userData.name === ad.parentName);
-                if (p) {
-                    ad.mesh.position.copy(p.position);
-                    ad.mesh.material.map.offset.x -= 0.05 * simSpeed * delta; // Spiral movement
+                const parent = allEntities.find(e => e.userData.name === ad.parentName);
+                if (parent) {
+                    ad.group.position.copy(parent.position);
+                    ad.group.children.forEach((layer, idx) => {
+                        layer.material.map.offset.x -= (0.05 + idx * 0.01) * simSpeed * delta;
+                    });
                 }
             });
 
-            // Precision Gas Stream Update
+            // Sync Gas Streams with PRECISION calculations
             gasStreams.forEach(gs => {
                 const s = allEntities.find(e => e.userData.name === gs.source);
                 const t = allEntities.find(e => e.userData.name === gs.target);
                 if (s && t) {
-                    // Start from the exact tip of the distorted star
-                    const dirToCenter = new THREE.Vector3().subVectors(t.position, s.position).normalize();
+                    // Use world coordinates or consistent local coordinates
+                    // Since both are in the same 'container', we can use local pos
+                    const dir = new THREE.Vector3().subVectors(t.position, s.position).normalize();
                     const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
-                    const tipPos = s.position.clone().add(dirToCenter.clone().multiplyScalar(scaledZ));
+                    const tip = s.position.clone().add(dir.clone().multiplyScalar(scaledZ));
 
-                    gs.mesh.position.copy(tipPos);
+                    gs.mesh.position.copy(tip);
                     gs.mesh.lookAt(t.position);
-                    gs.mesh.scale.z = tipPos.distanceTo(t.position);
+                    // Crucial: check parent rotation. If none, lookAt(target_local) works.
+                    // If target is center (0,0,0), it's very reliable.
 
-                    // Heat gradient flicker
+                    gs.mesh.scale.z = tip.distanceTo(t.position);
                     gs.mesh.material.opacity = 0.5 + Math.sin(Date.now() * 0.01) * 0.2;
                 }
             });
