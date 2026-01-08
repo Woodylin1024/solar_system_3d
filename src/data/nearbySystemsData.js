@@ -97,5 +97,31 @@ export const nearbyStarSystemsData = [
                 ]
             }
         ]
+    },
+    {
+        name: "Barnard's Star",
+        nameCH: "巴納德星",
+        distanceFromSun: 376916, // 5.96 Light years in units
+        position: { x: -3600, y: -375400, z: 30800 },
+        stars: [
+            {
+                name: "Barnard's Star",
+                nameCH: "巴納德星",
+                type: "star",
+                radius: 0.196, // Solar radii
+                color: 0xff4500, // Red dwarf
+                texture: "barnard_star.png",
+                emissiveIntensity: 0.8,
+                position: { x: 0, y: 0, z: 0 },
+                description: "巴納德星是一顆位於蛇夫座的紅矮星，是目前已知自行運動最快的恆星（自行運動指恆星相對於太陽的運動）。",
+                details: {
+                    "質量": "0.144 太陽質量",
+                    "直徑": "0.196 太陽直徑",
+                    "表面溫度": "3,134 K",
+                    "光譜類型": "M4V",
+                    "距離": "5.96 光年"
+                }
+            }
+        ]
     }
 ];
