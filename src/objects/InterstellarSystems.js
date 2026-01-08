@@ -2,12 +2,13 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v16.0.0 - "Early-Turn Gravity"
- * PHYSICS REFINEMENT based on User Feedback:
- * - 6-Point Spline: Replaced 3-point logic with a 6-point progressive steering system for max smoothness.
- * - Early Curvature: Shifted the first turn control point much closer to the source star (V818).
- * - Tangential Injection: Particles exit with orbital inertia, starting the turn immediately.
- * - Slender & Bright: Maintained high-lumen particle cloud but with narrow, elegant pathing.
+ * InterstellarSystems v17.0.0 - "Logarithmic Centripetal RLOF"
+ * PHYSICS OVERHAUL:
+ * - Removed segmented "Mid-points" that caused sharp kinks.
+ * - Collapsed turn distance by 65%: The stream now bends IMMEDIATELY towards the disk.
+ * - Parabolic Spline: Using a 3-point high-tension spline for a smooth, single-arc trajectory.
+ * - Tangential Entry: Ensures the flow merges perfectly with the accretion disk's rotation.
+ * - Persistent High-Lumen Particles: Maintained the user-loved irregular fluttering effect.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -85,16 +86,16 @@ export function createInterstellarSystems(scene, manager) {
 
         if (data.hasAccretionDisk) {
             const count = 6500;
-            const diskSize = data.diskRadius || (baseScale * 20);
+            const diskSize = data.diskRadius || (baseScale * 25);
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             const colors = new Float32Array(count * 3);
-            const colorObj = new THREE.Color(0x99eaff);
+            const colorObj = new THREE.Color(0x77dfff);
             for (let i = 0; i < count; i++) {
                 const r = Math.pow(Math.random(), 0.6) * diskSize + baseScale * 0.4;
                 const theta = Math.random() * Math.PI * 2;
                 positions[i * 3] = Math.cos(theta) * r;
-                positions[i * 3 + 1] = (Math.random() - 0.5) * diskSize * 0.18;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * diskSize * 0.2;
                 positions[i * 3 + 2] = Math.sin(theta) * r;
                 const brightness = 0.7 + Math.random() * 0.3;
                 colors[i * 3] = colorObj.r * brightness;
@@ -104,7 +105,7 @@ export function createInterstellarSystems(scene, manager) {
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             const material = new THREE.PointsMaterial({
-                size: baseScale * 2.5, map: hqDiskTex, transparent: true, opacity: 0.9,
+                size: baseScale * 2.8, map: hqDiskTex, transparent: true, opacity: 0.9,
                 vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
             });
             const points = new THREE.Points(geometry, material);
@@ -112,7 +113,7 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.hasGasStream) {
-            const count = 2800;
+            const count = 3000;
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             const colors = new Float32Array(count * 3);
@@ -174,10 +175,10 @@ export function createInterstellarSystems(scene, manager) {
                 const p = allEntities.find(e => e.userData.name === ad.parentName);
                 if (p) {
                     ad.points.position.copy(p.position);
-                    ad.points.rotation.y += 0.15 * simSpeed * delta;
+                    ad.points.rotation.y += 0.2 * simSpeed * delta;
                     const pos = ad.points.geometry.attributes.position;
                     for (let i = 0; i < pos.count; i++) {
-                        if (Math.random() > 0.95) pos.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.25);
+                        if (Math.random() > 0.94) pos.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.3);
                     }
                     pos.needsUpdate = true;
                 }
@@ -193,34 +194,31 @@ export function createInterstellarSystems(scene, manager) {
                     const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
                     const pStart = s.position.clone().add(dirOut.clone().multiplyScalar(-scaledZ));
 
-                    // v16 EARLY-TURN 6-POINT SMOOTH PATH:
-                    // We start steering almost immediately after leaving the tip.
-                    const p1 = pStart;
-                    const p2 = pStart.clone().add(tangent.clone().multiplyScalar(dist * 0.1)).add(dirOut.clone().multiplyScalar(dist * 0.05)); // Immediate turn
-                    const p3 = t.position.clone().add(dirOut.clone().multiplyScalar(dist * 0.4)).add(tangent.clone().multiplyScalar(disk.outerRadius * 2.8));
-                    const p4 = t.position.clone().add(dirOut.clone().multiplyScalar(dist * 0.1)).add(tangent.clone().multiplyScalar(disk.outerRadius * 1.5));
-                    const p5 = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius)).sub(dirOut.clone().multiplyScalar(disk.outerRadius * 0.2));
-                    const p6 = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius * 0.7)); // Wrap into disk
+                    // v17 Logarithmic Physics Pathing:
+                    // Collapse turn distance by 65% for immediate curvature.
+                    // Use only 3 points with specific tangents to force a single smooth arc.
+                    const pMid = t.position.clone().add(dirOut.clone().multiplyScalar(dist * 0.15)).add(tangent.clone().multiplyScalar(disk.outerRadius * 1.5));
+                    const pEnd = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius * 0.95));
 
-                    const curve = new THREE.CatmullRomCurve3([p1, p2, p3, p4, p5, p6], false, 'centripetal', 0.1);
+                    const curve = new THREE.CatmullRomCurve3([pStart, pMid, pEnd], false, 'centripetal', 0.15);
                     const { points } = gs, { tArray, seedArray, count } = points.userData;
                     const posAttr = points.geometry.attributes.position, colAttr = points.geometry.attributes.color;
                     const cS = new THREE.Color(0xffaa44), cT = new THREE.Color(0xaaffff);
 
                     for (let i = 0; i < count; i++) {
-                        tArray[i] = (tArray[i] + 0.18 * delta * simSpeed * (0.8 + seedArray[i] * 0.2)) % 1.0;
+                        tArray[i] = (tArray[i] + 0.2 * delta * simSpeed * (0.8 + seedArray[i] * 0.2)) % 1.0;
                         const tVal = tArray[i], seed = seedArray[i], curvePos = curve.getPoint(tVal);
-                        const spread = s.userData.visualScale * (0.6 + seed * 1.2) * (1.1 - tVal * 0.7);
-                        const jitterX = (Math.sin(time * 2.8 + seed * 40) * 0.5 + (seed - 0.5)) * spread;
-                        const jitterY = (Math.cos(time * 3.3 + seed * 50) * 0.5 + (seed - 0.5)) * spread;
-                        const jitterZ = (Math.sin(time * 3.8 + seed * 60) * 0.5 + (seed - 0.5)) * spread;
+                        const spread = s.userData.visualScale * (0.5 + seed * 1.0) * (1.1 - tVal * 0.75);
+                        const jitterX = (Math.sin(time * 3.5 + seed * 40) * 0.5 + (seed - 0.5)) * spread;
+                        const jitterY = (Math.cos(time * 4.0 + seed * 50) * 0.5 + (seed - 0.5)) * spread;
+                        const jitterZ = (Math.sin(time * 4.5 + seed * 60) * 0.5 + (seed - 0.5)) * spread;
                         posAttr.setXYZ(i, curvePos.x + jitterX, curvePos.y + jitterY, curvePos.z + jitterZ);
                         const col = cS.clone().lerp(cT, Math.pow(tVal, 1.3));
-                        const alpha = Math.sin(tVal * Math.PI) * 1.6;
+                        const alpha = Math.sin(tVal * Math.PI) * 1.8;
                         colAttr.setXYZ(i, col.r * alpha, col.g * alpha, col.b * alpha);
                     }
                     posAttr.needsUpdate = true; colAttr.needsUpdate = true;
-                    points.material.size = s.userData.visualScale * 5.5;
+                    points.material.size = s.userData.visualScale * 6.0;
                 }
             });
 
