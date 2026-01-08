@@ -843,6 +843,14 @@ systemMenu.querySelectorAll('.system-menu-item').forEach(item => {
       // Update UI state
       systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
       item.classList.add('active');
+    } else if (systemId === 'lacaille') {
+      const starMeshes = interstellarSystems.getStarMeshes();
+      const lacaille = starMeshes.find(m => m.userData.name === "Lacaille 9352");
+      if (lacaille) selectBody(lacaille);
+
+      // Update UI state
+      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
     }
 
     systemMenu.classList.add('hidden');

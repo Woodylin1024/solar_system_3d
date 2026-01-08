@@ -365,5 +365,32 @@ export const nearbyStarSystemsData = [
                 ]
             }
         ]
+    },
+    {
+        name: "Lacaille 9352",
+        nameCH: "拉卡伊 9352",
+        distanceFromSun: 678000, // 10.74 Light years in units
+        position: { x: 500000, y: -400000, z: -250000 },
+        stars: [
+            {
+                name: "Lacaille 9352",
+                nameCH: "拉卡伊 9352",
+                type: "star",
+                radius: 0.46, // Solar radii
+                color: 0xff5a00, // Warm M0.5V orange-red
+                texture: "lacaille9352.png",
+                emissiveIntensity: 0.9,
+                position: { x: 0, y: 0, z: 0 },
+                description: "拉卡伊 9352（Lacaille 9352）是一顆位於南魚座的紅矮星，距離太陽約 10.7 光年。它是全天已知自行運動排名第四的恆星，也是已知體積較大的紅矮星之一，亮度在紅矮星中相對較高。",
+                details: {
+                    "質量": "0.48 太陽質量",
+                    "直徑": "0.46 太陽直徑",
+                    "表面溫度": "3,690 K",
+                    "光度": "0.033 太陽光度",
+                    "光譜類型": "M0.5V",
+                    "距離": "10.74 光年"
+                }
+            }
+        ]
     }
 ];
