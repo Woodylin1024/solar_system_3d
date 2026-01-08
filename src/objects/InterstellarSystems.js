@@ -2,12 +2,13 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v35.0.0 - "Deep Surface Integration"
- * ENHANCED INTEGRATION:
- * - Deeper Entry: Moved pEnd from 85% to 70% of the disk radius to sit firmly "on" the surface.
- * - Tangential Continuity: Refined Bezier handle to ensure the stream merges parallel to the internal flow of the disk.
+ * InterstellarSystems v36.0.0 - "Grazing Edge Integration"
+ * CORRECTED PATHING:
+ * - Edge Entry: Moved pEnd from 70% to 95% of the disk radius as per user request to graze the edge.
+ * - Tangential Continuity: Maintained the < 10 degree entry angle for a smooth "kissing" effect at the boundary.
  * - Ultra-Dense Disk: Maintained 300,000 particles with High-Temp Warm Gold (0xfff5cc).
  * - Grainy Parity: Synced particle scale and jitter for a unified plasma texture.
+ * - Gapless Connection: Maintained deep star-tip (V818) starting point.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -188,12 +189,12 @@ export function createInterstellarSystems(scene, manager) {
                     const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
                     const pStart = s.position.clone().add(dirToTarget.clone().multiplyScalar(scaledZ * 0.68));
 
-                    // v35: DEEP SURFACE INTEGRATION
-                    // Move pEnd further into the disk (70% instead of 85%) to sit firmly on the high-temp surface
+                    // v36: GRAZING EDGE INTEGRATION (95% Radius)
+                    // Move pEnd out to the very edge of the disk as requested
                     const pEnd = t.position.clone()
-                        .add(tangent.clone().multiplyScalar(disk.outerRadius * 0.7));
+                        .add(tangent.clone().multiplyScalar(disk.outerRadius * 0.95));
 
-                    // Maintain < 10 degree tangent angle
+                    // Maintain < 10 degree tangent angle for a smooth "kiss" entry
                     const ctrlHandle = pEnd.clone()
                         .sub(dirToTarget.clone().multiplyScalar(dist * 0.6));
 
