@@ -853,7 +853,7 @@ systemMenu.querySelectorAll('.system-menu-item').forEach(item => {
       item.classList.add('active');
     } else if (systemId === 'castor') {
       const starMeshes = interstellarSystems.getStarMeshes();
-      const castorA = starMeshes.find(m => m.userData.name === "Castor A1");
+      const castorA = starMeshes.find(m => m.userData.name === "Castor A1 (Aa)");
       if (castorA) selectBody(castorA);
 
       // Update UI state

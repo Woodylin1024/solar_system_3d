@@ -15,33 +15,69 @@ export function createInterstellarSystems(scene, manager) {
         systemGroup.position.set(systemData.position.x, systemData.position.y, systemData.position.z);
 
         systemData.stars.forEach(starData => {
-            const starMesh = new THREE.Mesh(
-                new THREE.SphereGeometry(1, 48, 48),
-                new THREE.MeshBasicMaterial({ color: 0xffffff })
-            );
+            let mesh;
+            if (starData.radius > 0) {
+                mesh = new THREE.Mesh(
+                    new THREE.SphereGeometry(1, 48, 48),
+                    new THREE.MeshBasicMaterial({ color: 0xffffff })
+                );
 
-            if (starData.texture) {
-                starMesh.material.map = textureLoader.load(`textures/${starData.texture}`);
+                if (starData.texture) {
+                    mesh.material.map = textureLoader.load(`textures/${starData.texture}`);
+                } else {
+                    mesh.material.color.set(starData.color);
+                }
+
+                const visualScale = starData.radius * 50;
+                mesh.scale.setScalar(visualScale);
+                mesh.userData = {
+                    ...starData,
+                    visualScale: visualScale,
+                    parentSystem: systemData.name,
+                    isInterstellar: true,
+                    angle: starData.orbit?.startAngle ?? Math.random() * Math.PI * 2
+                };
             } else {
-                starMesh.material.color.set(starData.color);
+                // Invisible Barycenter
+                mesh = new THREE.Object3D();
+                mesh.userData = {
+                    ...starData,
+                    parentSystem: systemData.name,
+                    isInterstellar: true,
+                    angle: starData.orbit?.startAngle ?? Math.random() * Math.PI * 2
+                };
             }
 
-            starMesh.position.set(starData.position.x, starData.position.y, starData.position.z);
-            const visualScale = starData.radius * 50;
-            starMesh.scale.setScalar(visualScale);
+            mesh.position.set(starData.position.x, starData.position.y, starData.position.z);
+            systemGroup.add(mesh);
+            starMeshes.push(mesh);
 
-            starMesh.userData = {
-                ...starData,
-                visualScale: visualScale,
-                parentSystem: systemData.name,
-                isInterstellar: true,
-                angle: Math.atan2(starData.position.z, starData.position.x)
-            };
+            // Add orbit line for star if it orbits a system barycenter
+            if (starData.orbit) {
+                const orbitPts = [];
+                const segments = 512;
+                for (let j = 0; j <= segments; j++) {
+                    const angle = (j / segments) * Math.PI * 2;
+                    orbitPts.push(new THREE.Vector3(
+                        starData.orbit.radius * Math.cos(angle),
+                        0,
+                        starData.orbit.radius * Math.sin(angle)
+                    ));
+                }
+                const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPts);
+                const orbitMat = new THREE.LineBasicMaterial({
+                    color: 0xff4400,
+                    transparent: true,
+                    opacity: 0.3,
+                    blending: THREE.NormalBlending
+                });
+                const orbitLine = new THREE.LineLoop(orbitGeo, orbitMat);
+                orbitLine.userData = { type: 'star_orbit', systemRadius: starData.orbit.radius };
+                systemGroup.add(orbitLine);
+                orbitLines.push(orbitLine);
+            }
 
-            systemGroup.add(starMesh);
-            starMeshes.push(starMesh);
-
-            // Handle Belts/Debris Disks (New Feature v3.8.2)
+            // Handle Belts/Debris Disks
             if (starData.belts) {
                 starData.belts.forEach((beltData) => {
                     const geometry = new THREE.BufferGeometry();
@@ -53,13 +89,10 @@ export function createInterstellarSystems(scene, manager) {
                         const radius = THREE.MathUtils.lerp(beltData.minRadius, beltData.maxRadius, Math.random());
                         const angle = Math.random() * Math.PI * 2;
                         const yCoord = (Math.random() - 0.5) * (beltData.minRadius * 0.02);
-
                         positions[i * 3] = Math.cos(angle) * radius;
                         positions[i * 3 + 1] = yCoord;
                         positions[i * 3 + 2] = Math.sin(angle) * radius;
-
                         sizes[i] = Math.random() * 2 + 1;
-
                         orbitPoints.push({ radius, angle, y: yCoord, speed: (0.05 / Math.sqrt(radius)) });
                     }
 
@@ -87,10 +120,10 @@ export function createInterstellarSystems(scene, manager) {
                 });
             }
 
-            // 1. Handle Planets for this Star
+            // Handle Planets/Companions
             if (starData.planets) {
                 starData.planets.forEach(planetData => {
-                    const planetGeometry = new THREE.SphereGeometry(1, 32, 32);
+                    const planetGeometry = new THREE.SphereGeometry(1, 48, 48);
                     const planetMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
                     if (planetData.texture) {
@@ -103,13 +136,13 @@ export function createInterstellarSystems(scene, manager) {
                     const pVisualScale = planetData.radius * 40;
                     pMesh.scale.setScalar(pVisualScale);
 
-                    const pAngle = Math.random() * Math.PI * 2;
+                    const pAngle = planetData.orbit?.startAngle ?? Math.random() * Math.PI * 2;
                     pMesh.userData = {
                         ...planetData,
                         visualScale: pVisualScale,
                         parentStar: starData.name,
                         isInterstellar: true,
-                        isExoplanet: true,
+                        isExoplanet: planetData.type !== 'star',
                         angle: pAngle
                     };
 
@@ -128,8 +161,6 @@ export function createInterstellarSystems(scene, manager) {
                         ));
                     }
                     const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPts);
-
-                    // Determine orbit style based on type
                     const isStarComp = planetData.type === 'star';
                     const orbitMat = new THREE.LineBasicMaterial({
                         color: isStarComp ? 0xff4400 : 0x00d2ff,
@@ -138,47 +169,13 @@ export function createInterstellarSystems(scene, manager) {
                         blending: THREE.NormalBlending
                     });
                     const orbitLine = new THREE.LineLoop(orbitGeo, orbitMat);
-
                     orbitLine.userData = {
                         type: isStarComp ? 'star_orbit' : 'planet_orbit',
                         parentStar: starData.name
                     };
-
-                    if (planetData.orbit.inclination) {
-                        orbitLine.rotation.x = THREE.MathUtils.degToRad(planetData.orbit.inclination);
-                    }
                     systemGroup.add(orbitLine);
                     orbitLines.push(orbitLine);
                 });
-            }
-
-            // 2. Handle Star Orbit
-            if (starData.orbit) {
-                const orbitPts = [];
-                const segments = 2048;
-                for (let j = 0; j <= segments; j++) {
-                    const angle = (j / segments) * Math.PI * 2;
-                    orbitPts.push(new THREE.Vector3(
-                        starData.orbit.radius * Math.cos(angle),
-                        0,
-                        starData.orbit.radius * Math.sin(angle)
-                    ));
-                }
-                const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPts);
-                const orbitMat = new THREE.LineBasicMaterial({
-                    color: 0xff4400,
-                    transparent: true,
-                    opacity: 0.4,
-                    blending: THREE.NormalBlending
-                });
-                const orbitLine = new THREE.LineLoop(orbitGeo, orbitMat);
-                orbitLine.userData = { type: 'star_orbit' };
-
-                if (starData.orbit.inclination) {
-                    orbitLine.rotation.x = THREE.MathUtils.degToRad(starData.orbit.inclination);
-                }
-                systemGroup.add(orbitLine);
-                orbitLines.push(orbitLine);
             }
         });
 
@@ -187,7 +184,7 @@ export function createInterstellarSystems(scene, manager) {
 
     scene.add(systemsGroup);
 
-    const allSelectable = [...starMeshes, ...planetMeshes];
+    const allSelectable = [...starMeshes, ...planetMeshes].filter(m => m.userData.radius > 0);
 
     return {
         group: systemsGroup,
@@ -213,7 +210,7 @@ export function createInterstellarSystems(scene, manager) {
                 }
             });
 
-            // Update Planet positions & Planet Orbit line positions
+            // Update Planet positions & Orbit line positions
             planetMeshes.forEach(pMesh => {
                 const pData = pMesh.userData;
                 const parentStar = starMeshes.find(s => s.userData.name === pData.parentStar);
@@ -236,13 +233,11 @@ export function createInterstellarSystems(scene, manager) {
                 }
             });
 
-            // Update Belts positions (Follow parent stars)
+            // Update Belts
             beltMeshes.forEach(belt => {
                 const parentStar = starMeshes.find(s => s.userData.name === belt.userData.parentStar);
                 if (parentStar) {
                     belt.position.copy(parentStar.position);
-
-                    // Optional: Animate belt rotation
                     const posAttr = belt.geometry.attributes.position;
                     const orbitPoints = belt.userData.orbitPoints;
                     for (let i = 0; i < orbitPoints.length; i++) {
@@ -254,6 +249,7 @@ export function createInterstellarSystems(scene, manager) {
                 }
             });
 
+            // Sync Orbit Line Positions
             orbitLines.forEach(line => {
                 if ((line.userData.type === 'planet_orbit' || line.userData.type === 'star_orbit') && line.userData.parentStar) {
                     const parentStar = starMeshes.find(s => s.userData.name === line.userData.parentStar);
@@ -264,18 +260,12 @@ export function createInterstellarSystems(scene, manager) {
         getStarMeshes: () => allSelectable,
         setVisible: (starOrbitsVisible, planetOrbitsVisible, beltVisible, kuiperVisible) => {
             orbitLines.forEach(line => {
-                if (line.userData.type === 'star_orbit') {
-                    line.visible = starOrbitsVisible;
-                } else if (line.userData.type === 'planet_orbit') {
-                    line.visible = planetOrbitsVisible;
-                }
+                if (line.userData.type === 'star_orbit') line.visible = starOrbitsVisible;
+                if (line.userData.type === 'planet_orbit') line.visible = planetOrbitsVisible;
             });
             beltMeshes.forEach(belt => {
-                if (belt.userData.type === 'interstellar_belt') {
-                    belt.visible = beltVisible;
-                } else if (belt.userData.type === 'interstellar_kuiper') {
-                    belt.visible = kuiperVisible;
-                }
+                if (belt.userData.type === 'interstellar_belt') belt.visible = beltVisible;
+                if (belt.userData.type === 'interstellar_kuiper') belt.visible = kuiperVisible;
             });
         }
     };
