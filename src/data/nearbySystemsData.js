@@ -17,9 +17,7 @@ export const nearbyStarSystemsData = [
                 description: "半人馬座 α A（南門二 A）是系統中的主星，其光譜類型 G2V 與太陽極其相似，是全天第四亮的恆星。",
                 details: {
                     "質量": "1.100 太陽質量",
-                    "直徑": "1.217 太陽直徑",
                     "表面溫度": "5,790 K",
-                    "光譜類型": "G2V",
                     "距離": "4.37 光年"
                 },
                 planets: [
@@ -31,8 +29,8 @@ export const nearbyStarSystemsData = [
                         color: 0xffd2a1,
                         texture: "alphacentauri_b.png",
                         orbit: { radius: 1265, inclination: 15, speed: 0.1 },
-                        description: "半人馬座 α B（南門二 B）是系統中的第二顆恆星，顏色稍橘，屬於 K 型主序星。",
-                        details: { "質量": "0.907 太陽質量", "表面溫度": "5,260 K", "光譜類型": "K1V" }
+                        description: "半人馬座 α B（南門二 B）是系統中的第二顆恆星。",
+                        details: { "質量": "0.907 太陽質量", "表面溫度": "5,260 K" }
                     }
                 ]
             }
@@ -54,7 +52,7 @@ export const nearbyStarSystemsData = [
                 emissiveIntensity: 2.0,
                 position: { x: 0, y: 0, z: 0 },
                 description: "全天最亮的恆星。",
-                details: { "質量": "2.06 太陽質量", "表面溫度": "9,940 K", "光譜類型": "A1V", "距離": "8.6 光年" },
+                details: { "質量": "2.06 太陽質量", "表面溫度": "9,940 K", "光譜類型": "A1V" },
                 planets: [
                     {
                         name: "Sirius B",
@@ -65,7 +63,7 @@ export const nearbyStarSystemsData = [
                         texture: "sirius_b.png",
                         orbit: { radius: 1100, inclination: 20, speed: 0.05 },
                         description: "著名的白矮星伴星。",
-                        details: { "質量": "1.02 太陽質量", "表面溫度": "25,200 K", "光譜類型": "DA2" }
+                        details: { "質量": "1.02 太陽質量", "表面溫度": "25,200 K" }
                     }
                 ]
             }
@@ -107,7 +105,7 @@ export const nearbyStarSystemsData = [
                                         texture: "castor_a.png",
                                         orbit: { radius: 800, speed: 0.3, inclination: 0, startAngle: 0 },
                                         description: "A1V 型藍白主序星。",
-                                        details: { "質量": "2.76 太陽質量", "光譜類型": "A1V" }
+                                        details: { "質量": "2.76 太陽質量" }
                                     },
                                     {
                                         name: "Castor A2 (Ab)",
@@ -117,8 +115,7 @@ export const nearbyStarSystemsData = [
                                         color: 0xff4500,
                                         texture: "castor_c.png",
                                         orbit: { radius: 800, speed: 0.3, inclination: 0, startAngle: Math.PI },
-                                        description: "紅矮星伴星，週期 9.2 天。",
-                                        details: { "光譜類型": "dM1e", "公轉週期": "9.2 天" }
+                                        description: "紅矮星伴星，週期 9.2 天。"
                                     }
                                 ]
                             }
@@ -139,8 +136,7 @@ export const nearbyStarSystemsData = [
                                 color: 0xff4500,
                                 texture: "castor_c.png",
                                 orbit: { radius: 800, speed: 0.8, inclination: 0, startAngle: 0 },
-                                description: "YY Gem 紅矮星。",
-                                details: { "質量": "0.6 太陽質量", "光譜類型": "M0.5Ve" }
+                                description: "YY Gem 紅矮星。"
                             }
                         ]
                     }
@@ -162,13 +158,12 @@ export const nearbyStarSystemsData = [
                 color: 0xe0ffff,
                 hasAccretionDisk: true,
                 diskColor: 0x00ccff,
+                diskRadius: 800, // Explicitly set to stay within 1500 orbit
                 position: { x: 0, y: 0, z: 0 },
-                description: "天蠍座 X-1 是一個高能 X 射線聯星，由中子星吸取伴星物質形成吸積盤。",
+                description: "由中子星吸取伴星物質形成吸積盤。",
                 details: {
-                    "類型": "低質量 X 射線聯星",
                     "核心天體": "中子星",
-                    "距離": "9,000 光年",
-                    "首例發現": "1962 年"
+                    "距離": "9,000 光年"
                 },
                 planets: [
                     {
@@ -178,13 +173,12 @@ export const nearbyStarSystemsData = [
                         radius: 1.2,
                         color: 0x4169e1,
                         isDistorted: true,
-                        distortionAxes: { x: 1.0, y: 1.0, z: 2.2 }, // Fixed: Scale along Z for orientation
+                        distortionAxes: { x: 1.0, y: 1.0, z: 2.2 },
                         hasGasStream: true,
                         orbit: { radius: 1500, speed: 1.5, inclination: 30, startAngle: 0 },
-                        description: "這顆伴星已被潮汐力拉伸成明顯的淚滴狀，並持續向中子星輸送物質流。",
+                        description: "已被潮汐力拉伸成明顯的淚滴狀，並向中子星輸送物質。",
                         details: {
                             "公轉週期": "18.9 小時",
-                            "形狀": "潮汐畸變 (淚滴狀)",
                             "系統類型": "低質量 X 射線聯星 (LMXB)"
                         }
                     }
