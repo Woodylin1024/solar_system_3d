@@ -325,5 +325,45 @@ export const nearbyStarSystemsData = [
                 }
             }
         ]
+    },
+    {
+        name: "Epsilon Eridani",
+        nameCH: "天苑四",
+        distanceFromSun: 661264, // 10.47 Light years in units
+        position: { x: 389800, y: 522300, z: -108400 },
+        stars: [
+            {
+                name: "Epsilon Eridani",
+                nameCH: "天苑四",
+                type: "star",
+                radius: 0.74, // Solar radii
+                color: 0xffa500, // K2V orange-red
+                texture: "epsilon_eridani.png",
+                emissiveIntensity: 1.2,
+                position: { x: 0, y: 0, z: 0 },
+                description: "天苑四（Epsilon Eridani）是一顆位於波江座、距離太陽約 10.5 光年的 K2V 型主序星。它是最靠近太陽的類太陽恆星之一且非常年輕（約 8 億年），擁有複雜的塵埃盤系統和至少一顆確定的行星。",
+                details: {
+                    "質量": "0.82 太陽質量",
+                    "直徑": "0.74 太陽直徑",
+                    "表面溫度": "5,084 K",
+                    "光度": "0.34 太陽光度",
+                    "光譜類型": "K2V",
+                    "距離": "10.47 光年"
+                },
+                planets: [
+                    {
+                        name: "Epsilon Eridani b",
+                        nameCH: "天苑四 b",
+                        type: "planet",
+                        radius: 1.2, // Jupiter-like scale
+                        color: 0x4682b4,
+                        texture: "epsilon_eridani_b.png",
+                        orbit: { radius: 600, speed: 0.15, inclination: 30 },
+                        description: "天苑四 b 是圍繞其母恆星運行的一顆氣態巨行星，質量約為木星的 1.55 倍。它的軌道環境充滿了塵埃碎屑。",
+                        details: { "質量": "1.55 木星質量", "距離恆星": "3.39 AU", "公轉週期": "7.3 年" }
+                    }
+                ]
+            }
+        ]
     }
 ];

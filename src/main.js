@@ -835,6 +835,14 @@ systemMenu.querySelectorAll('.system-menu-item').forEach(item => {
       // Update UI state
       systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
       item.classList.add('active');
+    } else if (systemId === 'epsilon') {
+      const starMeshes = interstellarSystems.getStarMeshes();
+      const epsilon = starMeshes.find(m => m.userData.name === "Epsilon Eridani");
+      if (epsilon) selectBody(epsilon);
+
+      // Update UI state
+      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
     }
 
     systemMenu.classList.add('hidden');
