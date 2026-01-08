@@ -2,13 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v25.0.0 - "High-Density Heavy Plasma"
- * FINAL DENSITY & SCALE CORRECTION:
- * - Slim Path: Reduced scatter radius to 0.7 to remove the "fat/thick" look.
- * - Massive Density: Increased particle count to 15,000 for a "heavy/solid" feel using small particles.
- * - Micro-Sparks: Significant reduction in particle size to achieve a grainy, realistic plasma texture.
- * - Consistent Visibility: Maintained frustumCulled=false and bounding logic for all-angle stability.
- * - Thermal Sync: Retained the high-contrast Gold-to-Cyan transition.
+ * InterstellarSystems v26.0.0 - "Accretion Flow Primacy"
+ * FINAL INTEGRATION & PATH CORRECTION:
+ * - Path Redesign: Pulled the mid-point inward to match the User's Yellow Line arc precisely.
+ * - Visual Unification: Shared the EXACT same "Sparkle" texture and jitter logic between Stream and Disk.
+ * - Seamless Merge: Extended the stream deeper and synced end-colors to the disk to eliminate the "boundary" in the yellow circle.
+ * - Heavy Density: Maintained 15,000+ particles for a solid, high-mass fluid feel.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -21,7 +20,8 @@ export function createInterstellarSystems(scene, manager) {
 
     const textureLoader = manager ? new THREE.TextureLoader(manager) : new THREE.TextureLoader();
 
-    const createNebulaTexture = () => {
+    // Unified "Hard Sparkle" Texture for both stream and disk
+    const createUnifiedSparkTexture = () => {
         const size = 512;
         const canvas = document.createElement('canvas');
         canvas.width = size; canvas.height = size;
@@ -30,15 +30,15 @@ export function createInterstellarSystems(scene, manager) {
 
         const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
         grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-        grad.addColorStop(0.1, 'rgba(255, 255, 255, 0.95)');
-        grad.addColorStop(0.3, 'rgba(140, 230, 255, 0.7)');
+        grad.addColorStop(0.1, 'rgba(255, 255, 255, 0.9)');
+        grad.addColorStop(0.4, 'rgba(120, 230, 255, 0.5)'); // Slightly hotter core
         grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
         ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
         return new THREE.CanvasTexture(canvas);
     };
 
-    const hqSparkTex = createNebulaTexture();
+    const unifiedSparkTex = createUnifiedSparkTexture();
 
     const createEntity = (data, parentName, container, depth = 0, systemName) => {
         let mesh;
@@ -70,7 +70,7 @@ export function createInterstellarSystems(scene, manager) {
             const jetGroup = new THREE.Group();
             const jetLen = baseScale * 1100;
             const jetGeo = new THREE.CylinderGeometry(baseScale * 0.1, baseScale * 5, jetLen, 32, 1, true);
-            const jetMat = new THREE.MeshBasicMaterial({ color: 0xc4f5ff, map: hqSparkTex, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false });
+            const jetMat = new THREE.MeshBasicMaterial({ color: 0xc4f5ff, map: unifiedSparkTex, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false });
             const jN = new THREE.Mesh(jetGeo, jetMat); jN.position.y = jetLen / 2;
             const jS = new THREE.Mesh(jetGeo, jetMat.clone()); jS.position.y = -jetLen / 2; jS.rotation.z = Math.PI;
             jetGroup.add(jN, jS); container.add(jetGroup); relativisticJets.push({ group: jetGroup, parentName: data.name });
@@ -97,7 +97,7 @@ export function createInterstellarSystems(scene, manager) {
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             const material = new THREE.PointsMaterial({
-                size: baseScale * 4.4, map: hqSparkTex, transparent: true, opacity: 1.0,
+                size: baseScale * 4.4, map: unifiedSparkTex, transparent: true, opacity: 1.0,
                 vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
             });
             const points = new THREE.Points(geometry, material);
@@ -105,14 +105,14 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.hasGasStream) {
-            const count = 15000; // MASSIVE DENSITY BOOST for "Heavy" feel
+            const count = 16000; // Even more density
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             const colors = new Float32Array(count * 3);
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             const material = new THREE.PointsMaterial({
-                size: 1.0, map: hqSparkTex, transparent: true, opacity: 1.0,
+                size: 1.0, map: unifiedSparkTex, transparent: true, opacity: 1.0,
                 vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
             });
             const points = new THREE.Points(geometry, material);
@@ -173,7 +173,7 @@ export function createInterstellarSystems(scene, manager) {
                     ad.points.rotation.y += 0.5 * simSpeed * delta;
                     const posSet = ad.points.geometry.attributes.position;
                     for (let i = 0; i < posSet.count; i++) {
-                        if (Math.random() > 0.82) posSet.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.85);
+                        if (Math.random() > 0.85) posSet.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.6);
                     }
                     posSet.needsUpdate = true;
                 }
@@ -189,23 +189,26 @@ export function createInterstellarSystems(scene, manager) {
 
                     const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
                     const p1 = s.position.clone().add(dirToTarget.clone().multiplyScalar(scaledZ));
-                    const pMid = s.position.clone().add(dirToTarget.clone().multiplyScalar(dist * 0.55)).add(tangent.clone().multiplyScalar(disk.outerRadius * 1.4));
-                    const pEnd = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius * 0.4));
+
+                    // v26: PATH REFRESH - Tighter turn radius to match User's Yellow Line
+                    const pMid = s.position.clone()
+                        .add(dirToTarget.clone().multiplyScalar(dist * 0.45)) // Start turn earlier
+                        .add(tangent.clone().multiplyScalar(disk.outerRadius * 0.9)); // Reduce tangential swing
+
+                    const pEnd = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius * 0.45)); // Deeper merge
 
                     const curve = new THREE.CatmullRomCurve3([p1, pMid, pEnd], false, 'centripetal', 0.2);
                     const { points } = gs, { tArray, seedArray, count } = points.userData;
                     const posAttr = points.geometry.attributes.position, colAttr = points.geometry.attributes.color;
-                    const cCool = new THREE.Color(0xff8822), cHot = new THREE.Color(0xd4f8ff);
+                    const cCool = new THREE.Color(0xff8822), cHot = new THREE.Color(0xbbf5ff); // Synced to disk hex
 
                     for (let i = 0; i < count; i++) {
                         tArray[i] = (tArray[i] + 0.28 * delta * simSpeed * (0.85 + seedArray[i] * 0.15)) % 1.0;
                         const tVal = tArray[i], seed = seedArray[i], curvePos = curve.getPoint(tVal);
 
-                        // v25: HIGH DENSITY SLIM CORE
-                        const baseSpread = s.userData.visualScale * 0.65; // Slimmed down significantly
-                        const spreadFactor = (0.2 + seed * 1.5) * (1.1 - tVal * 0.7);
+                        const baseSpread = s.userData.visualScale * 0.6; // Even tighter for density
+                        const spreadFactor = (0.2 + seed * 1.5) * (1.1 - tVal * 0.75);
 
-                        // Tight Isotropic Distribution
                         const angSeed = seed * Math.PI * 2;
                         const phiSeed = Math.acos(2 * Math.random() - 1);
                         const r = baseSpread * spreadFactor;
@@ -214,31 +217,30 @@ export function createInterstellarSystems(scene, manager) {
                         const randY = r * Math.sin(phiSeed) * Math.sin(angSeed);
                         const randZ = r * Math.cos(phiSeed);
 
-                        // Higher frequency but tighter jitter for "heavy fluid" feel
-                        let jitterX = randX, jitterY = randY, jitterZ = randZ;
-                        if (Math.random() > 0.90) {
-                            jitterX += (Math.random() - 0.5) * r * 0.5;
-                            jitterY += (Math.random() - 0.5) * r * 1.5;
-                            jitterZ += (Math.random() - 0.5) * r * 0.5;
+                        // SYNCED JITTER: Match the disk flutter style exactly
+                        let jX = randX, jY = randY, jZ = randZ;
+                        if (Math.random() > 0.88) {
+                            jX += (Math.random() - 0.5) * r * 0.4;
+                            jY += (Math.random() - 0.5) * r * (0.5 + tVal * 2.5); // More chaos at entry
+                            jZ += (Math.random() - 0.5) * r * 0.4;
                         }
 
-                        posAttr.setXYZ(i, curvePos.x + jitterX, curvePos.y + jitterY, curvePos.z + jitterZ);
+                        posAttr.setXYZ(i, curvePos.x + jX, curvePos.y + jY, curvePos.z + jZ);
 
-                        const col = cCool.clone().lerp(cHot, Math.pow(tVal, 1.4));
-                        const flicker = 0.8 + Math.random() * 0.4;
-                        const alpha = Math.sin(tVal * Math.PI) * 9.5 * flicker; // Boosted alpha to maintain slim visibility
+                        const col = cCool.clone().lerp(cHot, Math.pow(tVal, 1.3));
+                        const alpha = Math.sin(tVal * Math.PI) * 10.0 * (0.8 + Math.random() * 0.4);
                         colAttr.setXYZ(i, col.r * alpha, col.g * alpha, col.b * alpha);
                     }
                     posAttr.needsUpdate = true; colAttr.needsUpdate = true;
-                    // v25: Small, sharp particles for solid density
-                    points.material.size = s.userData.visualScale * 2.8;
+                    // v26: Micro-particles for solid-look density
+                    points.material.size = s.userData.visualScale * 2.2;
                 }
             });
 
             orbitLines.forEach(l => { const p = allEntities.find(e => e.userData.name === l.userData.parentName); if (p) l.position.copy(p.position); });
             relativisticJets.forEach(jet => {
                 const p = allEntities.find(e => e.userData.name === jet.parentName);
-                if (p) { jet.group.position.copy(p.position); jet.group.children.forEach(j => j.material.map.offset.y -= 4.0 * simSpeed * delta); }
+                if (p) { jet.group.position.copy(p.position); jet.group.children.forEach(j => j.material.map.offset.y -= 4.5 * simSpeed * delta); }
             });
         },
         getStarMeshes: () => selectable,
