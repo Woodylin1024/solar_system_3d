@@ -64,7 +64,7 @@ export function createInterstellarSystems(scene, manager) {
         } else { mesh = new THREE.Object3D(); }
 
         const maxD = data.distortionAxes ? Math.max(data.distortionAxes.x || 1, data.distortionAxes.y || 1, data.distortionAxes.z || 1.8) : 1;
-        mesh.userData = { ...data, name: data.name, visualScale: baseScale, maxVisualRadius: baseScale * maxD, parentName: parentName, depth: depth, angle: data.orbit?.startAngle ?? Math.random() * Math.PI * 2 };
+        mesh.userData = { ...data, isInterstellar: true, name: data.name, visualScale: baseScale, maxVisualRadius: baseScale * maxD, parentName: parentName, depth: depth, angle: data.orbit?.startAngle ?? Math.random() * Math.PI * 2 };
         container.add(mesh);
         allEntities.push(mesh);
 
