@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v21.0.0 - "Plasma Cloud Inflow"
- * VISUAL SYNC & CONNECTION FIX:
- * - Fluttering Gas Stream: Replaced smooth jitter with irregular particle "jumps" to match the accretion disk style.
- * - Gap Repair: Extended the stream path deeper into the accretion disk and adjusted alpha falloff to prevent "disconnection".
- * - High-Energy Plasma: Both stream and disk now share a consistent animated particle-cluster aesthetic.
- * - Brightness & Color: Maintained the thermal Gold-to-Cyan transition with boosted luminosity.
+ * InterstellarSystems v22.0.0 - "Universal Plasma Cloud"
+ * CRITICAL BUG FIXES:
+ * - Frustum Culling Fix: Set frustumCulled = false to prevent stream disappearing at odd angles.
+ * - De-Ribboning: Replaced smooth sine waves with 100% irregular "disk-style" particle fluttering.
+ * - Pointcloud Aesthetic: Increased particle scatter and size; removed the "smooth ribbon" look.
+ * - Gaseous Cohesion: Ensured stream and disk use the same visual noise language.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -35,7 +35,7 @@ export function createInterstellarSystems(scene, manager) {
             grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         } else {
             grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.8)');
+            grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
             grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         }
         ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
@@ -92,7 +92,7 @@ export function createInterstellarSystems(scene, manager) {
                 const r = Math.pow(Math.random(), 0.6) * diskSize + baseScale * 0.4;
                 const theta = Math.random() * Math.PI * 2;
                 positions[i * 3] = Math.cos(theta) * r;
-                positions[i * 3 + 1] = (Math.random() - 0.5) * diskSize * 0.32;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * diskSize * 0.35;
                 positions[i * 3 + 2] = Math.sin(theta) * r;
                 const brightness = 0.9 + Math.random() * 0.1;
                 colors[i * 3] = colorObj.r * brightness;
@@ -102,7 +102,7 @@ export function createInterstellarSystems(scene, manager) {
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             const material = new THREE.PointsMaterial({
-                size: baseScale * 4.2, map: hqDiskTex, transparent: true, opacity: 1.0,
+                size: baseScale * 4.5, map: hqDiskTex, transparent: true, opacity: 1.0,
                 vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
             });
             const points = new THREE.Points(geometry, material);
@@ -121,6 +121,10 @@ export function createInterstellarSystems(scene, manager) {
                 vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
             });
             const points = new THREE.Points(geometry, material);
+
+            // v22 Fix: Disable culling for dynamic gas streams to prevent disappearing
+            points.frustumCulled = false;
+
             const tArray = new Float32Array(count);
             const seedArray = new Float32Array(count);
             for (let i = 0; i < count; i++) {
@@ -173,11 +177,11 @@ export function createInterstellarSystems(scene, manager) {
                 if (p) {
                     ad.points.position.copy(p.position);
                     ad.points.rotation.y += 0.4 * simSpeed * delta;
-                    const pos = ad.points.geometry.attributes.position;
-                    for (let i = 0; i < pos.count; i++) {
-                        if (Math.random() > 0.90) pos.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.5);
+                    const posSet = ad.points.geometry.attributes.position;
+                    for (let i = 0; i < posSet.count; i++) {
+                        if (Math.random() > 0.85) posSet.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.6);
                     }
-                    pos.needsUpdate = true;
+                    posSet.needsUpdate = true;
                 }
             });
 
@@ -192,8 +196,7 @@ export function createInterstellarSystems(scene, manager) {
                     const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
                     const p1 = s.position.clone().add(dirToTarget.clone().multiplyScalar(scaledZ));
                     const pMid = s.position.clone().add(dirToTarget.clone().multiplyScalar(dist * 0.55)).add(tangent.clone().multiplyScalar(disk.outerRadius * 1.3));
-                    // v21: Extended pEnd deeper into the disk to prevent gaps
-                    const pEnd = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius * 0.7));
+                    const pEnd = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius * 0.65)); // Merge deep
 
                     const curve = new THREE.CatmullRomCurve3([p1, pMid, pEnd], false, 'centripetal', 0.15);
                     const { points } = gs, { tArray, seedArray, count } = points.userData;
@@ -201,38 +204,30 @@ export function createInterstellarSystems(scene, manager) {
                     const cCool = new THREE.Color(0xffaa22), cHot = new THREE.Color(0xbbf5ff);
 
                     for (let i = 0; i < count; i++) {
-                        tArray[i] = (tArray[i] + 0.22 * delta * simSpeed * (0.8 + seedArray[i] * 0.2)) % 1.0;
+                        tArray[i] = (tArray[i] + 0.25 * delta * simSpeed * (0.8 + seedArray[i] * 0.2)) % 1.0;
                         const tVal = tArray[i], seed = seedArray[i], curvePos = curve.getPoint(tVal);
 
-                        // v21: "Irregular Particle Movement" - Hybrid Sine + Random Pop
-                        const spread = s.userData.visualScale * (0.3 + seed * 0.8) * (1.1 - tVal * 0.7);
-                        let jitterX = (Math.sin(time * 4.5 + seed * 40) * 0.6 + (seed - 0.5)) * spread;
-                        let jitterY = (Math.cos(time * 5.0 + seed * 50) * 0.6 + (seed - 0.5)) * spread;
-                        let jitterZ = (Math.sin(time * 5.5 + seed * 60) * 0.6 + (seed - 0.5)) * spread;
+                        // v22: NO SINE WAVES. Using 100% irregular pops for true particle aesthetic.
+                        const spread = s.userData.visualScale * (0.6 + seed * 1.5) * (1.1 - tVal * 0.7);
+                        // Static offset + High frequency irregular pop
+                        let randX = (seed - 0.5) * spread * 2.0;
+                        let randY = (Math.random() - 0.5) * spread * 3.0; // Dynamic pop
+                        let randZ = (Math.random() - 0.5) * spread * 3.0;
 
-                        // Add the "irregular jump" similar to disk flutter
-                        if (Math.random() > 0.97) {
-                            jitterX += (Math.random() - 0.5) * spread * 2.5;
-                            jitterY += (Math.random() - 0.5) * spread * 2.5;
-                            jitterZ += (Math.random() - 0.5) * spread * 2.5;
+                        // Only "jump" occasionally like the disk
+                        if (Math.random() < 0.95) {
+                            randY *= 0.1; randZ *= 0.1; // Stay calm usually
                         }
 
-                        posAttr.setXYZ(i, curvePos.x + jitterX, curvePos.y + jitterY, curvePos.z + jitterZ);
+                        posAttr.setXYZ(i, curvePos.x + randX, curvePos.y + randY, curvePos.z + randZ);
 
                         const col = cCool.clone().lerp(cHot, Math.pow(tVal, 1.6));
-
-                        // v21: Repair Discontinuity - Adjusted Alpha to stay visible as it merges
-                        // Fade in at start (0-0.1), stay bright, then merge into disk (0.9-1.0)
-                        let alpha = 1.0;
-                        if (tVal < 0.1) alpha = tVal / 0.1;
-                        // No fade-out at the end, let it vanish inside the disk naturally
-
-                        const flicker = (1.0 + Math.sin(time * 8.0 + seed * 20.0) * 0.4);
-                        const finalAlpha = alpha * flicker * 4.5;
-                        colAttr.setXYZ(i, col.r * finalAlpha, col.g * finalAlpha, col.b * finalAlpha);
+                        const flicker = 1.0 + (Math.random() - 0.5) * 0.8; // Random brightness pop
+                        const alpha = Math.sin(tVal * Math.PI) * 4.5 * flicker;
+                        colAttr.setXYZ(i, col.r * alpha, col.g * alpha, col.b * alpha);
                     }
                     posAttr.needsUpdate = true; colAttr.needsUpdate = true;
-                    points.material.size = s.userData.visualScale * 11.0; // Optimized for "Cloud" look
+                    points.material.size = s.userData.visualScale * 14.0; // Max cloud pop
                 }
             });
 
