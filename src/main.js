@@ -366,7 +366,7 @@ function showInfo(data) {
   infoDetails.innerHTML = '';
 
   // Standardized order of detail fields
-  const labels = ["質量", "體積", "直徑", "光度", "核心溫度", "表面溫度"];
+  const labels = ["質量", "體積", "直徑", "光度", "核心溫度", "表面溫度", "光譜類型"];
 
   labels.forEach(label => {
     const value = (data.details && data.details[label]) ? data.details[label] : "N/A";
