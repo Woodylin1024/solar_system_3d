@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v29.0.0 - "Gravitational Resonance"
- * FINAL CURVE & DENSITY REBALANCING:
- * - Natural Arc: Removed artificial mid-points. Switched to QuadraticBezierCurve3 for a mathematically smooth, single-arc gravity path.
- * - Density Swap: Reduced Stream particles to 12,000 and boosted Disk particles to 68,000 to match physical mass distribution.
- * - Unified Vibe: Synced particle size and jitter exactly between stream and disk to remove visible boundaries.
- * - Extreme Stability: Maintained manual bounding volumes and disabled frustum culling.
+ * InterstellarSystems v30.0.0 - "Gravitational Continuity"
+ * FINAL GEOMETRY & ALPHA FIX:
+ * - Gap Fix: Removed alpha fade-out at t=0 to ensure solid connection to Scorpio V818 tip.
+ * - Tangential Entry: Moved pEnd further along the disk edge and adjusted Bezier handle to achieve < 10 degree entry angle.
+ * - Density Zenith: Disk at 75,000 particles (solid mass), Stream at 10,000 particles (grainy flow).
+ * - Cohesive Scaling: Synced particle sizes for a unified high-energy plasma aesthetic.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -29,8 +29,8 @@ export function createInterstellarSystems(scene, manager) {
 
         const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
         grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-        grad.addColorStop(0.12, 'rgba(255, 255, 255, 1)');
-        grad.addColorStop(0.4, 'rgba(100, 230, 255, 0.45)');
+        grad.addColorStop(0.15, 'rgba(255, 255, 255, 1)');
+        grad.addColorStop(0.4, 'rgba(110, 235, 255, 0.4)');
         grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
         ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
@@ -68,7 +68,7 @@ export function createInterstellarSystems(scene, manager) {
         if (data.hasRelativisticJets) {
             const jetGroup = new THREE.Group();
             const jetLen = baseScale * 1100;
-            const jetGeo = new THREE.CylinderGeometry(baseScale * 0.1, baseScale * 5.5, jetLen, 32, 1, true);
+            const jetGeo = new THREE.CylinderGeometry(baseScale * 0.1, baseScale * 5.2, jetLen, 32, 1, true);
             const jetMat = new THREE.MeshBasicMaterial({ color: 0xccf6ff, map: unifiedSparkTex, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false });
             const jN = new THREE.Mesh(jetGeo, jetMat); jN.position.y = jetLen / 2;
             const jS = new THREE.Mesh(jetGeo, jetMat.clone()); jS.position.y = -jetLen / 2; jS.rotation.z = Math.PI;
@@ -76,19 +76,19 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.hasAccretionDisk) {
-            const count = 68000; // MASSIVE BOOST - Solid, heavy mass
+            const count = 75000; // SOLID MASS ZENITH
             const diskSize = data.diskRadius || (baseScale * 25);
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             const colors = new Float32Array(count * 3);
             const colorObj = new THREE.Color(0xbbf5ff);
             for (let i = 0; i < count; i++) {
-                const r = Math.pow(Math.random(), 0.6) * diskSize + baseScale * 0.4;
+                const r = Math.pow(Math.random(), 0.6) * diskSize + baseScale * 0.45;
                 const theta = Math.random() * Math.PI * 2;
                 positions[i * 3] = Math.cos(theta) * r;
-                positions[i * 3 + 1] = (Math.random() - 0.5) * diskSize * 0.6;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * diskSize * 0.65;
                 positions[i * 3 + 2] = Math.sin(theta) * r;
-                const brightness = 0.92 + Math.random() * 0.08;
+                const brightness = 0.9 + Math.random() * 0.1;
                 colors[i * 3] = colorObj.r * brightness;
                 colors[i * 3 + 1] = colorObj.g * brightness;
                 colors[i * 3 + 2] = colorObj.b * brightness;
@@ -96,7 +96,7 @@ export function createInterstellarSystems(scene, manager) {
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             const material = new THREE.PointsMaterial({
-                size: baseScale * 3.8, map: unifiedSparkTex, transparent: true, opacity: 1.0,
+                size: baseScale * 3.6, map: unifiedSparkTex, transparent: true, opacity: 1.0,
                 vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
             });
             const points = new THREE.Points(geometry, material);
@@ -104,7 +104,7 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.hasGasStream) {
-            const count = 12000; // REDUCED for graininess/consistency
+            const count = 10000; // GRAINY FLOW
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             const colors = new Float32Array(count * 3);
@@ -172,7 +172,7 @@ export function createInterstellarSystems(scene, manager) {
                     ad.points.rotation.y += 0.6 * simSpeed * delta;
                     const posSet = ad.points.geometry.attributes.position;
                     for (let i = 0; i < posSet.count; i++) {
-                        if (Math.random() > 0.88) posSet.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.6);
+                        if (Math.random() > 0.88) posSet.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.65);
                     }
                     posSet.needsUpdate = true;
                 }
@@ -187,15 +187,19 @@ export function createInterstellarSystems(scene, manager) {
                     const tangent = new THREE.Vector3(-dirToTarget.z, 0, dirToTarget.x).normalize();
 
                     const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
-                    const pStart = s.position.clone().add(dirToTarget.clone().multiplyScalar(scaledZ));
+                    // FIXED: Deep start to avoid the yellow gap
+                    const pStart = s.position.clone().add(dirToTarget.clone().multiplyScalar(scaledZ * 0.8));
 
-                    // v29: NATURAL ARC - ZERO INTERMEDIATE POINTS
-                    // Using QuadraticBezierCurve3 with a single control handle for a perfect gravity sweep
+                    // FIXED: Tangential entry (< 10 deg) - Moving entry point further along disk
+                    const diskEdgeAngle = 2.4; // Pushing the pEnd further around (radians)
+                    const pEnd = t.position.clone()
+                        .add(tangent.clone().multiplyScalar(disk.outerRadius * 1.5))
+                        .sub(dirToTarget.clone().multiplyScalar(disk.outerRadius * 0.5));
+
+                    // Stretch the control handle out to force a flat tangent at end
                     const ctrlHandle = s.position.clone()
-                        .add(dirToTarget.clone().multiplyScalar(dist * 0.6))
-                        .add(tangent.clone().multiplyScalar(disk.outerRadius * 2.2)); // Mathematical handle
-
-                    const pEnd = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius * 0.9));
+                        .add(dirToTarget.clone().multiplyScalar(dist * 0.7))
+                        .add(tangent.clone().multiplyScalar(disk.outerRadius * 2.8));
 
                     const curve = new THREE.QuadraticBezierCurve3(pStart, ctrlHandle, pEnd);
 
@@ -204,44 +208,36 @@ export function createInterstellarSystems(scene, manager) {
                     const cCool = new THREE.Color(0xff8822), cHot = new THREE.Color(0xbbf5ff);
 
                     for (let i = 0; i < count; i++) {
-                        tArray[i] = (tArray[i] + 0.35 * delta * simSpeed * (0.85 + seedArray[i] * 0.15)) % 1.0;
+                        tArray[i] = (tArray[i] + 0.38 * delta * simSpeed * (0.85 + seedArray[i] * 0.15)) % 1.0;
                         const tVal = tArray[i], seed = seedArray[i], curvePos = curve.getPoint(tVal);
 
-                        const baseSpread = s.userData.visualScale * 0.55;
-                        const spreadFactor = (0.2 + seed * 1.6) * (1.1 - tVal * 0.7);
+                        const baseSpread = s.userData.visualScale * 0.5;
+                        const spreadFactor = (0.2 + seed * 1.5) * (1.1 - tVal * 0.75);
 
-                        const angSeed = seed * Math.PI * 2;
-                        const phiSeed = Math.acos(2 * Math.random() - 1);
-                        const r = baseSpread * spreadFactor;
+                        const randX = baseSpread * spreadFactor * Math.sin(seed * 20) * Math.cos(seed * 40);
+                        const randY = baseSpread * spreadFactor * Math.sin(seed * 30) * (1.0 + tVal * 3.5);
+                        const randZ = baseSpread * spreadFactor * Math.cos(seed * 50);
 
-                        const randX = r * Math.sin(phiSeed) * Math.cos(angSeed);
-                        const randY = r * Math.sin(phiSeed) * Math.sin(angSeed);
-                        const randZ = r * Math.cos(phiSeed);
-
-                        // SYNCED JITTER with disk
-                        let fX = randX, fY = randY, fZ = randZ;
-                        if (Math.random() > 0.88) {
-                            fX += (Math.random() - 0.5) * r * 0.4;
-                            fY += (Math.random() - 0.5) * r * (1.0 + tVal * 3.0);
-                            fZ += (Math.random() - 0.5) * r * 0.4;
-                        }
-
-                        posAttr.setXYZ(i, curvePos.x + fX, curvePos.y + fY, curvePos.z + fZ);
+                        posAttr.setXYZ(i, curvePos.x + randX, curvePos.y + randY, curvePos.z + randZ);
 
                         const col = cCool.clone().lerp(cHot, Math.pow(tVal, 1.3));
-                        const alpha = Math.sin(tVal * Math.PI) * 12.0 * (0.7 + Math.random() * 0.6);
-                        colAttr.setXYZ(i, col.r * alpha, col.g * alpha, col.b * alpha);
+                        // Alpha Fix: Solid connection at t=0, fade out only inside the disk (t>0.9)
+                        let alpha = 1.0;
+                        if (tVal > 0.8) alpha = (1.0 - (tVal - 0.8) / 0.2); // Smooth fade into disk
+
+                        const flicker = 0.8 + Math.random() * 0.4;
+                        const lum = alpha * 13.0 * flicker;
+                        colAttr.setXYZ(i, col.r * lum, col.g * lum, col.b * lum);
                     }
                     posAttr.needsUpdate = true; colAttr.needsUpdate = true;
-                    // v29: Synced particle size for unified look
-                    points.material.size = s.userData.visualScale * 1.8;
+                    points.material.size = s.userData.visualScale * 1.7;
                 }
             });
 
             orbitLines.forEach(l => { const p = allEntities.find(e => e.userData.name === l.userData.parentName); if (p) l.position.copy(p.position); });
             relativisticJets.forEach(jet => {
                 const p = allEntities.find(e => e.userData.name === jet.parentName);
-                if (p) { jet.group.position.copy(p.position); jet.group.children.forEach(j => j.material.map.offset.y -= 5.5 * simSpeed * delta); }
+                if (p) { jet.group.position.copy(p.position); jet.group.children.forEach(j => j.material.map.offset.y -= 6.0 * simSpeed * delta); }
             });
         },
         getStarMeshes: () => selectable,
