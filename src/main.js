@@ -803,6 +803,14 @@ systemMenu.querySelectorAll('.system-menu-item').forEach(item => {
       // Update UI state
       systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
       item.classList.add('active');
+    } else if (systemId === 'sirius') {
+      const starMeshes = interstellarSystems.getStarMeshes();
+      const siriusA = starMeshes.find(m => m.userData.name === "Sirius A");
+      if (siriusA) selectBody(siriusA);
+
+      // Update UI state
+      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
     }
 
     systemMenu.classList.add('hidden');

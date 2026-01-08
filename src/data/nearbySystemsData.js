@@ -177,5 +177,52 @@ export const nearbyStarSystemsData = [
                 }
             }
         ]
+    },
+    {
+        name: "Sirius",
+        nameCH: "天狼星系",
+        distanceFromSun: 543873, // 8.6 Light years in units
+        position: { x: -102000, y: -156000, z: 510000 },
+        stars: [
+            {
+                name: "Sirius A",
+                nameCH: "天狼星 A",
+                type: "star",
+                radius: 1.711, // Solar radii
+                color: 0xbbccff,
+                texture: "sirius_a.png",
+                emissiveIntensity: 2.0,
+                position: { x: 0, y: 0, z: 0 },
+                description: "天狼星 A 是全天最亮的恆星，光譜型為 A1V。它是一顆白色的主序星，亮度約為太陽的 25 倍。",
+                details: {
+                    "質量": "2.06 太陽質量",
+                    "直徑": "1.71 太陽直徑",
+                    "表面溫度": "9,940 K",
+                    "光度": "25.4 太陽光度",
+                    "光譜類型": "A1V",
+                    "距離": "8.6 光年"
+                }
+            },
+            {
+                name: "Sirius B",
+                nameCH: "天狼星 B",
+                type: "star",
+                radius: 0.1, // Solar radii (Enhanced for visibility, actual 0.0084)
+                color: 0xffffff,
+                texture: "sirius_b.png",
+                emissiveIntensity: 1.0,
+                position: { x: 1100, y: 0, z: 0 },
+                orbit: { radius: 1100, inclination: 20, speed: 0.1 },
+                description: "天狼星 B 是一顆與天狼星 A 成聯星系統的白矮星。它是已知第一顆被發現的白矮星，雖然體積只有地球大小，但質量與太陽相當。",
+                details: {
+                    "質量": "1.02 太陽質量",
+                    "直徑": "0.0084 太陽直徑",
+                    "表面溫度": "25,200 K",
+                    "光度": "0.026 太陽光度",
+                    "光譜類型": "DA2",
+                    "距離": "8.6 光年"
+                }
+            }
+        ]
     }
 ];
