@@ -795,6 +795,14 @@ systemMenu.querySelectorAll('.system-menu-item').forEach(item => {
       // Update UI state
       systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
       item.classList.add('active');
+    } else if (systemId === 'lalande') {
+      const starMeshes = interstellarSystems.getStarMeshes();
+      const lalande = starMeshes.find(m => m.userData.name === "Lalande 21185");
+      if (lalande) selectBody(lalande);
+
+      // Update UI state
+      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
     }
 
     systemMenu.classList.add('hidden');

@@ -150,5 +150,32 @@ export const nearbyStarSystemsData = [
                 }
             }
         ]
+    },
+    {
+        name: "Lalande 21185",
+        nameCH: "拉蘭德 21185",
+        distanceFromSun: 525500, // 8.31 Light years in units
+        position: { x: -412185, y: 308468, z: 104156 },
+        stars: [
+            {
+                name: "Lalande 21185",
+                nameCH: "拉蘭德 21185",
+                type: "star",
+                radius: 0.39, // Solar radii
+                color: 0xff6600, // Warm M2V orange-red
+                texture: "lalande21185.png",
+                emissiveIntensity: 0.9,
+                position: { x: 0, y: 0, z: 0 },
+                description: "拉蘭德 21185 是一顆位於大熊座的紅矮星。它是北天球距離太陽最近的紅矮星，也是已知體積和質量較大的紅矮星之一，亮度比典型的紅矮星高。",
+                details: {
+                    "質量": "0.46 太陽質量",
+                    "直徑": "0.39 太陽直徑",
+                    "表面溫度": "3,828 K",
+                    "光度": "0.025 太陽光度",
+                    "光譜類型": "M2V",
+                    "距離": "8.31 光年"
+                }
+            }
+        ]
     }
 ];
