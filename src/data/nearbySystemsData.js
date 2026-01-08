@@ -21,26 +21,20 @@ export const nearbyStarSystemsData = [
                     "表面溫度": "5,790 K",
                     "光譜類型": "G2V",
                     "距離": "4.37 光年"
-                }
-            },
-            {
-                name: "Alpha Centauri B",
-                nameCH: "南門二 B",
-                type: "star",
-                radius: 0.86,
-                color: 0xffd2a1,
-                texture: "alphacentauri_b.png",
-                emissiveIntensity: 1.2,
-                position: { x: 1265, y: 0, z: 0 },
-                orbit: { radius: 1265, inclination: 15, speed: 0.2 },
-                description: "半人馬座 α B（南門二 B）是系統中的第二顆恆星，顏色稍橘，屬於 K 型主序星。",
-                details: {
-                    "質量": "0.907 太陽質量",
-                    "直徑": "0.865 太陽直徑",
-                    "表面溫度": "5,260 K",
-                    "光譜類型": "K1V",
-                    "距離": "4.37 光年"
-                }
+                },
+                planets: [
+                    {
+                        name: "Alpha Centauri B",
+                        nameCH: "南門二 B",
+                        type: "star",
+                        radius: 0.86,
+                        color: 0xffd2a1,
+                        texture: "alphacentauri_b.png",
+                        orbit: { radius: 1265, inclination: 15, speed: 0.2 },
+                        description: "半人馬座 α B（南門二 B）是系統中的第二顆恆星，顏色稍橘，屬於 K 型主序星。",
+                        details: { "質量": "0.907 太陽質量", "表面溫度": "5,260 K", "光譜類型": "K1V" }
+                    }
+                ]
             },
             {
                 name: "Proxima Centauri",
@@ -52,10 +46,9 @@ export const nearbyStarSystemsData = [
                 emissiveIntensity: 0.8,
                 position: { x: -9912, y: 0, z: 0 },
                 orbit: { radius: 9912, inclination: 45, speed: 0.05 },
-                description: "比鄰星是一顆紅矮星，是目前已知距離太陽最近的個別恆星。它擁有至少三顆已被證實或候選的行星。",
+                description: "比鄰星是一顆紅矮星，是目前已知距離太陽最近的個別恆星。",
                 details: {
                     "質量": "0.122 太陽質量",
-                    "直徑": "0.154 太陽直徑",
                     "表面溫度": "3,042 K",
                     "光譜類型": "M6Ve",
                     "距離": "4.24 光年"
@@ -69,7 +62,7 @@ export const nearbyStarSystemsData = [
                         color: 0x8b4513,
                         texture: "proxima_d.png",
                         orbit: { radius: 15, speed: 1.5, inclination: 0 },
-                        description: "一顆極靠近恆星的岩石行星，公轉週期僅 5.1 天。",
+                        description: "岩石行星，公轉週期僅 5.1 天。",
                         details: { "質量": "0.26 地球質量", "距離恆星": "0.029 AU" }
                     },
                     {
@@ -80,19 +73,8 @@ export const nearbyStarSystemsData = [
                         color: 0xcd5c5c,
                         texture: "proxima_b.png",
                         orbit: { radius: 30, speed: 0.8, inclination: 0 },
-                        description: "位於適居帶內的類地行星，是尋找外星生命的首選目標。",
+                        description: "適居帶內的類地行星。",
                         details: { "質量": "1.07 地球質量", "距離恆星": "0.048 AU" }
-                    },
-                    {
-                        name: "Proxima Centauri c",
-                        nameCH: "比鄰星 c",
-                        type: "planet",
-                        radius: 0.5,
-                        color: 0x483d8b,
-                        texture: "proxima_c.png",
-                        orbit: { radius: 150, speed: 0.05, inclination: 10 },
-                        description: "一顆距離較遠的寒冷超級地球，公轉週期約 5.2 年。",
-                        details: { "質量": "7 地球質量", "距離恆星": "1.48 AU" }
                     }
                 ]
             }
@@ -113,14 +95,8 @@ export const nearbyStarSystemsData = [
                 texture: "barnard_star.png",
                 emissiveIntensity: 0.8,
                 position: { x: 0, y: 0, z: 0 },
-                description: "巴納德星是一顆位於蛇夫座的紅矮星，是目前已知自行運動最快的恆星（自行運動指恆星相對於太陽的運動）。",
-                details: {
-                    "質量": "0.144 太陽質量",
-                    "直徑": "0.196 太陽直徑",
-                    "表面溫度": "3,134 K",
-                    "光譜類型": "M4V",
-                    "距離": "5.96 光年"
-                }
+                description: "巴納德星是一顆紅矮星，擁有已知最快的自行運動。",
+                details: { "質量": "0.144 太陽質量", "表面溫度": "3,134 K", "光譜類型": "M4V", "距離": "5.96 光年" }
             }
         ]
     },
@@ -139,42 +115,8 @@ export const nearbyStarSystemsData = [
                 texture: "wolf359.png",
                 emissiveIntensity: 0.7,
                 position: { x: 0, y: 0, z: 0 },
-                description: "沃夫 359 是一顆位於獅子座的紅矮星，距離太陽約 7.86 光年。它是最暗淡且質量最低的恆星之一，同時也是一顆非常活躍的噴發變星（閃焰星）。",
-                details: {
-                    "質量": "0.09 太陽質量",
-                    "直徑": "0.16 太陽直徑",
-                    "表面溫度": "2,800 K",
-                    "光度": "0.001 太陽光度",
-                    "光譜類型": "M6.5Ve",
-                    "距離": "7.86 光年"
-                }
-            }
-        ]
-    },
-    {
-        name: "Lalande 21185",
-        nameCH: "拉蘭德 21185",
-        distanceFromSun: 525500,
-        position: { x: -412185, y: 308468, z: 104156 },
-        stars: [
-            {
-                name: "Lalande 21185",
-                nameCH: "拉蘭德 21185",
-                type: "star",
-                radius: 0.39,
-                color: 0xff6600,
-                texture: "lalande21185.png",
-                emissiveIntensity: 0.9,
-                position: { x: 0, y: 0, z: 0 },
-                description: "拉蘭德 21185 是一顆位於大熊座的紅矮星。它是北天球距離太陽最近的紅矮星，也是已知體積和質量較大的紅矮星之一，亮度比典型的紅矮星高。",
-                details: {
-                    "質量": "0.46 太陽質量",
-                    "直徑": "0.39 太陽直徑",
-                    "表面溫度": "3,828 K",
-                    "光度": "0.025 太陽光度",
-                    "光譜類型": "M2V",
-                    "距離": "8.31 光年"
-                }
+                description: "極暗淡且質量最低、活躍的閃焰星。",
+                details: { "質量": "0.09 太陽質量", "表面溫度": "2,800 K", "光譜類型": "M6.5Ve", "距離": "7.86 光年" }
             }
         ]
     },
@@ -193,136 +135,21 @@ export const nearbyStarSystemsData = [
                 texture: "sirius_a.png",
                 emissiveIntensity: 2.0,
                 position: { x: 0, y: 0, z: 0 },
-                description: "天狼星 A 是全天最亮的恆星，光譜型為 A1V。它是一顆白色的主序星，亮度約為太陽的 25 倍。",
-                details: {
-                    "質量": "2.06 太陽質量",
-                    "直徑": "1.71 太陽直徑",
-                    "表面溫度": "9,940 K",
-                    "光度": "25.4 太陽光度",
-                    "光譜類型": "A1V",
-                    "距離": "8.6 光年"
-                }
-            },
-            {
-                name: "Sirius B",
-                nameCH: "天狼星 B",
-                type: "star",
-                radius: 0.1,
-                color: 0xffffff,
-                texture: "sirius_b.png",
-                emissiveIntensity: 1.0,
-                position: { x: 1100, y: 0, z: 0 },
-                orbit: { radius: 1100, inclination: 20, speed: 0.1 },
-                description: "天狼星 B 是一顆與天狼星 A 成聯星系統的白矮星。它是已知第一顆被發現的白矮星，雖然體積只有地球大小，但質量與太陽相當。",
-                details: {
-                    "質量": "1.02 太陽質量",
-                    "直徑": "0.0084 太陽直徑",
-                    "表面溫度": "25,200 K",
-                    "光度": "0.026 太陽光度",
-                    "光譜類型": "DA2",
-                    "距離": "8.6 光年"
-                }
-            }
-        ]
-    },
-    {
-        name: "Luyten 726-8",
-        nameCH: "魯坦 726-8",
-        distanceFromSun: 550000,
-        position: { x: 120000, y: -500000, z: -150000 },
-        stars: [
-            {
-                name: "BL Ceti",
-                nameCH: "鯨魚座 BL (魯坦 726-8 A)",
-                type: "star",
-                radius: 0.14,
-                color: 0xff4d00,
-                texture: "luyten726_8a.png",
-                emissiveIntensity: 0.8,
-                position: { x: 0, y: 0, z: 0 },
-                description: "鯨魚座 BL 是拉蘭德 726-8 聯星系統的主星，是一顆光譜型 M5.5 的紅矮星。",
-                details: {
-                    "質量": "0.102 太陽質量",
-                    "直徑": "0.14 太陽直徑",
-                    "表面溫度": "2,670 K",
-                    "光度": "0.0006 太陽光度",
-                    "光譜類型": "M5.5V",
-                    "距離": "8.72 光年"
-                }
-            },
-            {
-                name: "UV Ceti",
-                nameCH: "鯨魚座 UV (魯坦 726-8 B)",
-                type: "star",
-                radius: 0.14,
-                color: 0xff3300,
-                texture: "luyten726_8b.png",
-                emissiveIntensity: 1.0,
-                position: { x: 800, y: 0, z: 0 },
-                orbit: { radius: 800, inclination: 35, speed: 0.15 },
-                description: "鯨魚座 UV 是著名的閃焰星原型，屬於光譜型 M6.0 的紅矮星。它會頻繁發生極其劇烈的能量噴發，在幾分鐘內亮度增加數十倍。",
-                details: {
-                    "質量": "0.100 太陽質量",
-                    "直徑": "0.14 太陽直徑",
-                    "表面溫度": "2,600 K",
-                    "光度": "0.0004 太陽光度",
-                    "光譜類型": "M6.0V",
-                    "距離": "8.72 光年"
-                }
-            }
-        ]
-    },
-    {
-        name: "Ross 154",
-        nameCH: "羅斯 154",
-        distanceFromSun: 611800,
-        position: { x: -300000, y: -450000, z: -314000 },
-        stars: [
-            {
-                name: "Ross 154",
-                nameCH: "羅斯 154",
-                type: "star",
-                radius: 0.24,
-                color: 0xff3d00,
-                texture: "ross154.png",
-                emissiveIntensity: 0.8,
-                position: { x: 0, y: 0, z: 0 },
-                description: "羅斯 154（Ross 154）是一顆位於人馬座的紅矮星，距離地球約 9.68 光年。它是一顆活躍的閃焰星，旋轉速度相對較快。",
-                details: {
-                    "質量": "0.17 太陽質量",
-                    "直徑": "0.24 太陽直徑",
-                    "表面溫度": "3,340 K",
-                    "光度": "0.0038 太陽光度",
-                    "光譜類型": "M3.5Ve",
-                    "距離": "9.68 光年"
-                }
-            }
-        ]
-    },
-    {
-        name: "Ross 248",
-        nameCH: "羅斯 248",
-        distanceFromSun: 651341,
-        position: { x: 440000, y: 450000, z: -100000 },
-        stars: [
-            {
-                name: "Ross 248",
-                nameCH: "羅斯 248",
-                type: "star",
-                radius: 0.16,
-                color: 0xff4500,
-                texture: "ross248.png",
-                emissiveIntensity: 0.7,
-                position: { x: 0, y: 0, z: 0 },
-                description: "羅斯 248（Ross 248）是一顆位於仙女座的紅矮星，距離地球約 10.3 光年。它是一顆典型的變星，預計在約 33,000 年後將取代比鄰星成為距離太陽最近的恆星。",
-                details: {
-                    "質量": "0.12 太陽質量",
-                    "直徑": "0.16 太陽直徑",
-                    "表面溫度": "2,800 K",
-                    "光度": "0.0011 太陽光度",
-                    "光譜類型": "M6.0V",
-                    "距離": "10.3 光年"
-                }
+                description: "全天最亮的恆星。",
+                details: { "質量": "2.06 太陽質量", "表面溫度": "9,940 K", "光譜類型": "A1V", "距離": "8.6 光年" },
+                planets: [
+                    {
+                        name: "Sirius B",
+                        nameCH: "天狼星 B",
+                        type: "star",
+                        radius: 0.1,
+                        color: 0xffffff,
+                        texture: "sirius_b.png",
+                        orbit: { radius: 1100, inclination: 20, speed: 0.1 },
+                        description: "著名的白矮星伴星。",
+                        details: { "質量": "1.02 太陽質量", "表面溫度": "25,200 K", "光譜類型": "DA2" }
+                    }
+                ]
             }
         ]
     },
@@ -341,15 +168,8 @@ export const nearbyStarSystemsData = [
                 texture: "epsilon_eridani.png",
                 emissiveIntensity: 1.2,
                 position: { x: 0, y: 0, z: 0 },
-                description: "天苑四（Epsilon Eridani）是一顆位於波江座、距離太陽約 10.5 光年的 K2V 型主序星。它是最靠近太陽的類太陽恆星之一且非常年輕（約 8 億年），擁有複雜的塵埃盤系統和至少一顆確定的行星。",
-                details: {
-                    "質量": "0.82 太陽質量",
-                    "直徑": "0.74 太陽直徑",
-                    "表面溫度": "5,084 K",
-                    "光度": "0.34 太陽光度",
-                    "光譜類型": "K2V",
-                    "距離": "10.47 光年"
-                },
+                description: "年輕的類太陽恆星，擁有兩個碎屑盤。",
+                details: { "質量": "0.82 太陽質量", "表面溫度": "5,084 K", "光譜類型": "K2V", "距離": "10.47 光年" },
                 planets: [
                     {
                         name: "Epsilon Eridani b",
@@ -359,29 +179,13 @@ export const nearbyStarSystemsData = [
                         color: 0x4682b4,
                         texture: "epsilon_eridani_b.png",
                         orbit: { radius: 600, speed: 0.15, inclination: 30 },
-                        description: "天苑四 b 是圍繞其母恆星運行的一顆氣態巨行星，質量約為木星的 1.55 倍。它的軌道環境充滿了塵埃碎屑。",
-                        details: { "質量": "1.55 木星質量", "距離恆星": "3.39 AU", "公轉週期": "7.3 年" }
+                        description: "氣態巨行星。",
+                        details: { "質量": "1.55 木星質量", "公轉週期": "7.3 年" }
                     }
                 ],
                 belts: [
-                    {
-                        name: "Inner Debris Disk",
-                        nameCH: "內碎屑盤 (35 AU)",
-                        minRadius: 5500,
-                        maxRadius: 6500,
-                        count: 1000,
-                        color: 0x888888,
-                        opacity: 0.6
-                    },
-                    {
-                        name: "Outer Debris Disk",
-                        nameCH: "外碎屑盤 (65 AU)",
-                        minRadius: 10500,
-                        maxRadius: 12500,
-                        count: 1500,
-                        color: 0x778899,
-                        opacity: 0.5
-                    }
+                    { nameCH: "內碎屑盤", minRadius: 5500, maxRadius: 6500, count: 1000, color: 0x888888, opacity: 0.6 },
+                    { nameCH: "外碎屑盤", minRadius: 10500, maxRadius: 12500, count: 1500, color: 0x778899, opacity: 0.5 }
                 ]
             }
         ]
@@ -401,15 +205,8 @@ export const nearbyStarSystemsData = [
                 texture: "lacaille9352.png",
                 emissiveIntensity: 0.9,
                 position: { x: 0, y: 0, z: 0 },
-                description: "拉卡伊 9352（Lacaille 9352）是一顆位於南魚座的紅矮星，距離太陽約 10.7 光年。它是全天已知自行運動排名第四的恆星，也是已知體積較大的紅矮星之一，亮度在紅矮星中相對較高。",
-                details: {
-                    "質量": "0.48 太陽質量",
-                    "直徑": "0.46 太陽直徑",
-                    "表面溫度": "3,690 K",
-                    "光度": "0.033 太陽光度",
-                    "光譜類型": "M0.5V",
-                    "距離": "10.74 光年"
-                }
+                description: "高自行的明亮紅矮星。",
+                details: { "質量": "0.48 太陽質量", "直徑": "0.46 太陽直徑", "光譜類型": "M0.5V", "距離": "10.74 光年" }
             }
         ]
     },
@@ -420,98 +217,113 @@ export const nearbyStarSystemsData = [
         position: { x: 1500000, y: 1200000, z: -2500000 },
         stars: [
             {
-                name: "Castor A Barycenter",
-                nameCH: "北河二 A 質心",
+                name: "Castor Systems Barycenter",
+                nameCH: "北河二總質心",
                 type: "star",
                 radius: 0,
                 position: { x: 0, y: 0, z: 0 },
-                orbit: { radius: 10000, speed: 0.05, inclination: 15, startAngle: 0 },
                 planets: [
                     {
-                        name: "Castor A1",
-                        nameCH: "北河二 A1 (Aa)",
+                        name: "Castor AB Barycenter",
+                        nameCH: "北河二 AB 共同質心",
                         type: "star",
-                        radius: 2.3,
-                        color: 0xffffff,
-                        texture: "castor_a.png",
-                        orbit: { radius: 1000, speed: 0.4, inclination: 5, startAngle: 0 },
-                        description: "北河二 A1 (Aa) 是一顆輝煌的 A1V 型藍白主序星。",
-                        details: { "質量": "2.76 太陽質量", "表面溫度": "9,500 K", "光譜類型": "A1V" }
+                        radius: 0,
+                        orbit: { radius: 15000, speed: 0.05, inclination: 10, startAngle: 0 },
+                        planets: [
+                            {
+                                name: "Castor A Barycenter",
+                                nameCH: "北河二 A 系統質心",
+                                type: "star",
+                                radius: 0,
+                                orbit: { radius: 6000, speed: 0.1, inclination: 5, startAngle: 0 },
+                                planets: [
+                                    {
+                                        name: "Castor A1 (Aa)",
+                                        nameCH: "北河二 A1",
+                                        type: "star",
+                                        radius: 2.3,
+                                        color: 0xffffff,
+                                        texture: "castor_a.png",
+                                        orbit: { radius: 600, speed: 0.6, inclination: 0, startAngle: 0 },
+                                        description: "A1V 型藍白主序星。",
+                                        details: { "質量": "2.76 太陽質量", "光譜類型": "A1V" }
+                                    },
+                                    {
+                                        name: "Castor A2 (Ab)",
+                                        nameCH: "北河二 A2",
+                                        type: "star",
+                                        radius: 0.5,
+                                        color: 0xff4500,
+                                        texture: "castor_c.png",
+                                        orbit: { radius: 600, speed: 0.6, inclination: 0, startAngle: Math.PI },
+                                        description: "與 A1 互繞的紅矮星，週期約 9.2 天。",
+                                        details: { "光譜類型": "dM1e", "公轉週期": "9.2 天" }
+                                    }
+                                ]
+                            },
+                            {
+                                name: "Castor B Barycenter",
+                                nameCH: "北河二 B 系統質心",
+                                type: "star",
+                                radius: 0,
+                                orbit: { radius: 6000, speed: 0.1, inclination: 5, startAngle: Math.PI },
+                                planets: [
+                                    {
+                                        name: "Castor B1 (Ba)",
+                                        nameCH: "北河二 B1",
+                                        type: "star",
+                                        radius: 1.6,
+                                        color: 0xffffff,
+                                        texture: "castor_a.png",
+                                        orbit: { radius: 500, speed: 0.8, inclination: 0, startAngle: 0 },
+                                        description: "A5V 型白主序星。",
+                                        details: { "質量": "2.14 太陽質量", "光譜類型": "A5V" }
+                                    },
+                                    {
+                                        name: "Castor B2 (Bb)",
+                                        nameCH: "北河二 B2",
+                                        type: "star",
+                                        radius: 0.4,
+                                        color: 0xff4500,
+                                        texture: "castor_c.png",
+                                        orbit: { radius: 500, speed: 0.8, inclination: 0, startAngle: Math.PI },
+                                        description: "與 B1 互繞的紅矮星，週期約 2.9 天。",
+                                        details: { "光譜類型": "dM1e", "公轉週期": "2.9 天" }
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        name: "Castor A2",
-                        nameCH: "北河二 A2 (Ab)",
+                        name: "Castor C Barycenter",
+                        nameCH: "北河二 C 系統質心",
                         type: "star",
-                        radius: 0.5,
-                        color: 0xff4500,
-                        texture: "castor_c.png",
-                        orbit: { radius: 1000, speed: 0.4, inclination: 5, startAngle: Math.PI },
-                        description: "北河二 A2 (Ab) 是一顆與 A1 互繞的紅矮星，互繞週期約 9.2 天。",
-                        details: { "光譜類型": "dM1e", "公轉週期": "9.2 天" }
-                    }
-                ]
-            },
-            {
-                name: "Castor B Barycenter",
-                nameCH: "北河二 B 質心",
-                type: "star",
-                radius: 0,
-                position: { x: 0, y: 0, z: 0 },
-                orbit: { radius: 10000, speed: 0.05, inclination: 15, startAngle: Math.PI },
-                planets: [
-                    {
-                        name: "Castor B1",
-                        nameCH: "北河二 B1 (Ba)",
-                        type: "star",
-                        radius: 1.6,
-                        color: 0xffffff,
-                        texture: "castor_a.png",
-                        orbit: { radius: 1000, speed: 0.6, inclination: 10, startAngle: 0 },
-                        description: "北河二 B1 (Ba) 是一顆 A5V 型白主序星。",
-                        details: { "質量": "2.14 太陽質量", "表面溫度": "8,300 K", "光譜類型": "A5V" }
-                    },
-                    {
-                        name: "Castor B2",
-                        nameCH: "北河二 B2 (Bb)",
-                        type: "star",
-                        radius: 0.4,
-                        color: 0xff4500,
-                        texture: "castor_c.png",
-                        orbit: { radius: 1000, speed: 0.6, inclination: 10, startAngle: Math.PI },
-                        description: "北河二 B2 (Bb) 是一顆與 B1 互繞的紅矮星，互繞週期約 2.9 天。",
-                        details: { "光譜類型": "dM1e", "公轉週期": "2.9 天" }
-                    }
-                ]
-            },
-            {
-                name: "Castor C Barycenter",
-                nameCH: "北河二 C 質心",
-                type: "star",
-                radius: 0,
-                position: { x: 0, y: 0, z: 0 },
-                orbit: { radius: 180000, speed: 0.001, inclination: 35, startAngle: 0.5 },
-                planets: [
-                    {
-                        name: "Castor C1",
-                        nameCH: "北河二 C1 (Ca)",
-                        type: "star",
-                        radius: 0.62,
-                        color: 0xff4500,
-                        texture: "castor_c.png",
-                        orbit: { radius: 800, speed: 0.8, inclination: 2, startAngle: 0 },
-                        description: "北河二 C1 (Ca) 是一顆紅矮星，屬於 YY Gem 系統。",
-                        details: { "質量": "0.6 太陽質量", "表面溫度": "3,820 K", "光譜類型": "M0.5Ve" }
-                    },
-                    {
-                        name: "Castor C2",
-                        nameCH: "北河二 C2 (Cb)",
-                        type: "star",
-                        radius: 0.62,
-                        color: 0xff4500,
-                        texture: "castor_c.png",
-                        orbit: { radius: 800, speed: 0.8, inclination: 2, startAngle: Math.PI },
-                        description: "北河二 C2 (Cb) 與 C1 互繞週期僅 19.5 小時。",
-                        details: { "光譜類型": "M0.5Ve", "公轉週期": "19.5 小時" }
+                        radius: 0,
+                        orbit: { radius: 180000, speed: 0.005, inclination: 35, startAngle: Math.PI },
+                        planets: [
+                            {
+                                name: "Castor C1 (Ca)",
+                                nameCH: "北河二 C1",
+                                type: "star",
+                                radius: 0.62,
+                                color: 0xff4500,
+                                texture: "castor_c.png",
+                                orbit: { radius: 800, speed: 1.2, inclination: 0, startAngle: 0 },
+                                description: "YY Gem 紅矮星。",
+                                details: { "質量": "0.6 太陽質量", "光譜類型": "M0.5Ve" }
+                            },
+                            {
+                                name: "Castor C2 (Cb)",
+                                nameCH: "北河二 C2",
+                                type: "star",
+                                radius: 0.62,
+                                color: 0xff4500,
+                                texture: "castor_c.png",
+                                orbit: { radius: 800, speed: 1.2, inclination: 0, startAngle: Math.PI },
+                                description: "互繞週期僅 19.5 小時。",
+                                details: { "光譜類型": "M0.5Ve", "公轉週期": "19.5 小時" }
+                            }
+                        ]
                     }
                 ]
             }
