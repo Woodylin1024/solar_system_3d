@@ -2,15 +2,15 @@ export const nearbyStarSystemsData = [
     {
         name: "Alpha Centauri",
         nameCH: "半人馬座 α",
-        distanceFromSun: 276000, // Roughly 4.37 light years in AU/Units
-        position: { x: -103000, y: -241000, z: -86000 }, // Exact astronomical vector relative to Sun
+        distanceFromSun: 276000,
+        position: { x: -103000, y: -241000, z: -86000 },
         stars: [
             {
                 name: "Alpha Centauri A",
                 nameCH: "南門二 A",
                 type: "star",
-                radius: 1.1, // Solar radii
-                color: 0xfff4e1, // Warm white (G2V)
+                radius: 1.1,
+                color: 0xfff4e1,
                 texture: "alphacentauri_a.png",
                 emissiveIntensity: 1.5,
                 position: { x: 0, y: 0, z: 0 },
@@ -27,11 +27,11 @@ export const nearbyStarSystemsData = [
                 name: "Alpha Centauri B",
                 nameCH: "南門二 B",
                 type: "star",
-                radius: 0.86, // Solar radii
-                color: 0xffd2a1, // Pale orange (K1V)
+                radius: 0.86,
+                color: 0xffd2a1,
                 texture: "alphacentauri_b.png",
                 emissiveIntensity: 1.2,
-                position: { x: 1265, y: 0, z: 0 }, // Positioned exactly on orbit radius
+                position: { x: 1265, y: 0, z: 0 },
                 orbit: { radius: 1265, inclination: 15, speed: 0.2 },
                 description: "半人馬座 α B（南門二 B）是系統中的第二顆恆星，顏色稍橘，屬於 K 型主序星。",
                 details: {
@@ -46,11 +46,11 @@ export const nearbyStarSystemsData = [
                 name: "Proxima Centauri",
                 nameCH: "比鄰星",
                 type: "star",
-                radius: 0.15, // Red dwarf size
-                color: 0xff4500, // Deep red (M6Ve)
+                radius: 0.15,
+                color: 0xff4500,
                 texture: "proxima.png",
                 emissiveIntensity: 0.8,
-                position: { x: -9912, y: 0, z: 0 }, // Positioned exactly on orbit radius
+                position: { x: -9912, y: 0, z: 0 },
                 orbit: { radius: 9912, inclination: 45, speed: 0.05 },
                 description: "比鄰星是一顆紅矮星，是目前已知距離太陽最近的個別恆星。它擁有至少三顆已被證實或候選的行星。",
                 details: {
@@ -65,10 +65,10 @@ export const nearbyStarSystemsData = [
                         name: "Proxima Centauri d",
                         nameCH: "比鄰星 d",
                         type: "planet",
-                        radius: 0.1, // Approx 0.26 Earth radius
+                        radius: 0.1,
                         color: 0x8b4513,
                         texture: "proxima_d.png",
-                        orbit: { radius: 15, speed: 1.5, inclination: 0 }, // Very close
+                        orbit: { radius: 15, speed: 1.5, inclination: 0 },
                         description: "一顆極靠近恆星的岩石行星，公轉週期僅 5.1 天。",
                         details: { "質量": "0.26 地球質量", "距離恆星": "0.029 AU" }
                     },
@@ -76,7 +76,7 @@ export const nearbyStarSystemsData = [
                         name: "Proxima Centauri b",
                         nameCH: "比鄰星 b",
                         type: "planet",
-                        radius: 0.2, // Approx 1.07 Earth radius
+                        radius: 0.2,
                         color: 0xcd5c5c,
                         texture: "proxima_b.png",
                         orbit: { radius: 30, speed: 0.8, inclination: 0 },
@@ -87,7 +87,7 @@ export const nearbyStarSystemsData = [
                         name: "Proxima Centauri c",
                         nameCH: "比鄰星 c",
                         type: "planet",
-                        radius: 0.5, // Super-Earth / Mini-Neptune
+                        radius: 0.5,
                         color: 0x483d8b,
                         texture: "proxima_c.png",
                         orbit: { radius: 150, speed: 0.05, inclination: 10 },
@@ -101,15 +101,15 @@ export const nearbyStarSystemsData = [
     {
         name: "Barnard's Star",
         nameCH: "巴納德星",
-        distanceFromSun: 376916, // 5.96 Light years in units
+        distanceFromSun: 376916,
         position: { x: -3600, y: -375400, z: 30800 },
         stars: [
             {
                 name: "Barnard's Star",
                 nameCH: "巴納德星",
                 type: "star",
-                radius: 0.196, // Solar radii
-                color: 0xff4500, // Red dwarf
+                radius: 0.196,
+                color: 0xff4500,
                 texture: "barnard_star.png",
                 emissiveIntensity: 0.8,
                 position: { x: 0, y: 0, z: 0 },
@@ -134,8 +134,8 @@ export const nearbyStarSystemsData = [
                 name: "Wolf 359",
                 nameCH: "沃夫 359",
                 type: "star",
-                radius: 0.16, // Solar radii
-                color: 0xff3300, // Very cool red dwarf
+                radius: 0.16,
+                color: 0xff3300,
                 texture: "wolf359.png",
                 emissiveIntensity: 0.7,
                 position: { x: 0, y: 0, z: 0 },
@@ -154,15 +154,15 @@ export const nearbyStarSystemsData = [
     {
         name: "Lalande 21185",
         nameCH: "拉蘭德 21185",
-        distanceFromSun: 525500, // 8.31 Light years in units
+        distanceFromSun: 525500,
         position: { x: -412185, y: 308468, z: 104156 },
         stars: [
             {
                 name: "Lalande 21185",
                 nameCH: "拉蘭德 21185",
                 type: "star",
-                radius: 0.39, // Solar radii
-                color: 0xff6600, // Warm M2V orange-red
+                radius: 0.39,
+                color: 0xff6600,
                 texture: "lalande21185.png",
                 emissiveIntensity: 0.9,
                 position: { x: 0, y: 0, z: 0 },
@@ -181,14 +181,14 @@ export const nearbyStarSystemsData = [
     {
         name: "Sirius",
         nameCH: "天狼星系",
-        distanceFromSun: 543873, // 8.6 Light years in units
+        distanceFromSun: 543873,
         position: { x: -102000, y: -156000, z: 510000 },
         stars: [
             {
                 name: "Sirius A",
                 nameCH: "天狼星 A",
                 type: "star",
-                radius: 1.711, // Solar radii
+                radius: 1.711,
                 color: 0xbbccff,
                 texture: "sirius_a.png",
                 emissiveIntensity: 2.0,
@@ -207,7 +207,7 @@ export const nearbyStarSystemsData = [
                 name: "Sirius B",
                 nameCH: "天狼星 B",
                 type: "star",
-                radius: 0.1, // Solar radii (Enhanced for visibility, actual 0.0084)
+                radius: 0.1,
                 color: 0xffffff,
                 texture: "sirius_b.png",
                 emissiveIntensity: 1.0,
@@ -228,14 +228,14 @@ export const nearbyStarSystemsData = [
     {
         name: "Luyten 726-8",
         nameCH: "魯坦 726-8",
-        distanceFromSun: 550000, // 8.7 Light years in units
+        distanceFromSun: 550000,
         position: { x: 120000, y: -500000, z: -150000 },
         stars: [
             {
                 name: "BL Ceti",
                 nameCH: "鯨魚座 BL (魯坦 726-8 A)",
                 type: "star",
-                radius: 0.14, // Solar radii
+                radius: 0.14,
                 color: 0xff4d00,
                 texture: "luyten726_8a.png",
                 emissiveIntensity: 0.8,
@@ -254,7 +254,7 @@ export const nearbyStarSystemsData = [
                 name: "UV Ceti",
                 nameCH: "鯨魚座 UV (魯坦 726-8 B)",
                 type: "star",
-                radius: 0.14, // Solar radii
+                radius: 0.14,
                 color: 0xff3300,
                 texture: "luyten726_8b.png",
                 emissiveIntensity: 1.0,
@@ -275,15 +275,15 @@ export const nearbyStarSystemsData = [
     {
         name: "Ross 154",
         nameCH: "羅斯 154",
-        distanceFromSun: 611800, // 9.68 Light years in units
+        distanceFromSun: 611800,
         position: { x: -300000, y: -450000, z: -314000 },
         stars: [
             {
                 name: "Ross 154",
                 nameCH: "羅斯 154",
                 type: "star",
-                radius: 0.24, // Solar radii
-                color: 0xff3d00, // Red dwarf
+                radius: 0.24,
+                color: 0xff3d00,
                 texture: "ross154.png",
                 emissiveIntensity: 0.8,
                 position: { x: 0, y: 0, z: 0 },
@@ -302,15 +302,15 @@ export const nearbyStarSystemsData = [
     {
         name: "Ross 248",
         nameCH: "羅斯 248",
-        distanceFromSun: 651341, // 10.3 Light years in units
+        distanceFromSun: 651341,
         position: { x: 440000, y: 450000, z: -100000 },
         stars: [
             {
                 name: "Ross 248",
                 nameCH: "羅斯 248",
                 type: "star",
-                radius: 0.16, // Solar radii
-                color: 0xff4500, // Cool red dwarf
+                radius: 0.16,
+                color: 0xff4500,
                 texture: "ross248.png",
                 emissiveIntensity: 0.7,
                 position: { x: 0, y: 0, z: 0 },
@@ -329,15 +329,15 @@ export const nearbyStarSystemsData = [
     {
         name: "Epsilon Eridani",
         nameCH: "天苑四",
-        distanceFromSun: 661264, // 10.47 Light years in units
+        distanceFromSun: 661264,
         position: { x: 389800, y: 522300, z: -108400 },
         stars: [
             {
                 name: "Epsilon Eridani",
                 nameCH: "天苑四",
                 type: "star",
-                radius: 0.74, // Solar radii
-                color: 0xffa500, // K2V orange-red
+                radius: 0.74,
+                color: 0xffa500,
                 texture: "epsilon_eridani.png",
                 emissiveIntensity: 1.2,
                 position: { x: 0, y: 0, z: 0 },
@@ -355,7 +355,7 @@ export const nearbyStarSystemsData = [
                         name: "Epsilon Eridani b",
                         nameCH: "天苑四 b",
                         type: "planet",
-                        radius: 1.2, // Jupiter-like scale
+                        radius: 1.2,
                         color: 0x4682b4,
                         texture: "epsilon_eridani_b.png",
                         orbit: { radius: 600, speed: 0.15, inclination: 30 },
@@ -389,15 +389,15 @@ export const nearbyStarSystemsData = [
     {
         name: "Lacaille 9352",
         nameCH: "拉卡伊 9352",
-        distanceFromSun: 678000, // 10.74 Light years in units
+        distanceFromSun: 678000,
         position: { x: 500000, y: -400000, z: -250000 },
         stars: [
             {
                 name: "Lacaille 9352",
                 nameCH: "拉卡伊 9352",
                 type: "star",
-                radius: 0.46, // Solar radii
-                color: 0xff5a00, // Warm M0.5V orange-red
+                radius: 0.46,
+                color: 0xff5a00,
                 texture: "lacaille9352.png",
                 emissiveIntensity: 0.9,
                 position: { x: 0, y: 0, z: 0 },
@@ -416,7 +416,7 @@ export const nearbyStarSystemsData = [
     {
         name: "Castor",
         nameCH: "北河二 (雙子座 α)",
-        distanceFromSun: 3225291, // 51 Light years in units
+        distanceFromSun: 3225291,
         position: { x: 1500000, y: 1200000, z: -2500000 },
         stars: [
             {
@@ -428,8 +428,8 @@ export const nearbyStarSystemsData = [
                 texture: "castor_a.png",
                 emissiveIntensity: 1.5,
                 position: { x: 0, y: 0, z: 0 },
-                orbit: { radius: 15500, speed: 0.05, inclination: 15 },
-                description: "北河二 A 是系統中最大的聯星組件。A1 是一顆輝煌的 A1V 型藍白主序星。",
+                orbit: { radius: 7600, speed: 0.05, inclination: 15 },
+                description: "北河二 A 是系統中最大的聯星組件。A1 (Aa) 是一顆輝煌的 A1V 型藍白主序星，與 A2 (Ab) 組成緊密對。",
                 details: {
                     "質量": "2.76 太陽質量",
                     "直徑": "2.3 太陽直徑",
@@ -446,8 +446,8 @@ export const nearbyStarSystemsData = [
                         radius: 0.5,
                         color: 0xff4500,
                         texture: "castor_c.png",
-                        orbit: { radius: 1500, speed: 0.4, inclination: 5 },
-                        description: "北河二 A2 是一顆與 A1 緊密運行的紅矮星（分光雙星）。",
+                        orbit: { radius: 500, speed: 0.4, inclination: 5 },
+                        description: "北河二 A2 (Ab) 是一顆與 A1 緊密運行的紅矮星，互繞週期為 9.2 天。",
                         details: { "光譜類型": "dM1e", "公轉週期": "9.2 天" }
                     }
                 ]
@@ -461,8 +461,8 @@ export const nearbyStarSystemsData = [
                 texture: "castor_a.png",
                 emissiveIntensity: 1.3,
                 position: { x: 0, y: 0, z: 0 },
-                orbit: { radius: 19900, speed: 0.05, inclination: 195 }, // Wider orbit due to lower mass
-                description: "北河二 B 是系統中的第二組聯星。B1 是一顆 A5V 型白主序星。",
+                orbit: { radius: 10000, speed: 0.05, inclination: 195 },
+                description: "北河二 B 是系統中的第二組聯星。B1 (Ba) 與 B2 (Bb) 組成緊密對，軌道週期 2.9 天。",
                 details: {
                     "質量": "2.14 太陽質量",
                     "直徑": "1.6 太陽直徑",
@@ -479,8 +479,8 @@ export const nearbyStarSystemsData = [
                         radius: 0.4,
                         color: 0xff4500,
                         texture: "castor_c.png",
-                        orbit: { radius: 1200, speed: 0.5, inclination: 10 },
-                        description: "北河二 B2 是一顆與 B1 緊密運行的紅矮星。",
+                        orbit: { radius: 500, speed: 0.6, inclination: 10 },
+                        description: "北河二 B2 (Bb) 是一顆與 B1 緊密運行的紅矮星，互繞週期為 2.9 天。",
                         details: { "光譜類型": "dM1e", "公轉週期": "2.9 天" }
                     }
                 ]
@@ -494,8 +494,8 @@ export const nearbyStarSystemsData = [
                 texture: "castor_c.png",
                 emissiveIntensity: 1.0,
                 position: { x: 0, y: 0, z: 0 },
-                orbit: { radius: 194700, speed: 0.01, inclination: 45 },
-                description: "北河二 C (又名雙子座 YY) 是一組由兩顆紅矮星組成的食雙星，在極遠軌道上環繞 A-B 對運行。",
+                orbit: { radius: 177000, speed: 0.001, inclination: 35 },
+                description: "北河二 C (YY Gem) 是由兩顆紅矮星 (C1, C2) 組成的食雙星，在約 1,000 AU 的廣大軌道上環繞 A-B 中心運行。",
                 details: {
                     "質量": "0.6 太陽質量",
                     "直徑": "0.62 太陽直徑",
@@ -512,9 +512,9 @@ export const nearbyStarSystemsData = [
                         radius: 0.62,
                         color: 0xff4500,
                         texture: "castor_c.png",
-                        orbit: { radius: 1000, speed: 0.6, inclination: 2 },
-                        description: "北河二 C2 是 YY Gem 系統中的第二顆紅矮星。",
-                        details: { "光譜類型": "M0.5Ve", "公轉週期": "0.8 天" }
+                        orbit: { radius: 400, speed: 0.8, inclination: 2 },
+                        description: "北河二 C2 是 YY Gem 中的第二顆紅矮星，與 C1 的互繞週期僅 19.5 小時。",
+                        details: { "光譜類型": "M0.5Ve", "公轉週期": "19.5 小時" }
                     }
                 ]
             }
