@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v5.4.0 - Ultimate Matter Stream & Volumetric Synthesis
+ * InterstellarSystems v5.5.0 - Volumetric Nebula & Plasma Overhaul
  * Features:
- * - Thick Volumetric Matter Stream (Gaseous plasma bridge)
- * - Improved Spiral Spline (Natural Roche-lobe to Accretion Disk entry)
- * - Enhanced Nebula Envelopes for accretion disks
- * - HD Color Gradients (Gold/Orange -> Electric Blue)
+ * - High-Quality "Wispy Nebula" procedural textures.
+ * - Multi-layered Volumetric Matter Stream (No more geometric pipes).
+ * - Integrated "Cloud-based" Accretion Disks (Cohesive visual language).
+ * - Advanced Spline Dynamics with "Fluid Jitter".
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -20,47 +20,65 @@ export function createInterstellarSystems(scene, manager) {
 
     const textureLoader = manager ? new THREE.TextureLoader(manager) : new THREE.TextureLoader();
 
-    // High-resolution Volumetric Gas Texture
-    const createGasTexture = (type = 'disk') => {
-        const size = 512;
+    // Advanced "Nebula/Wispy" Noise Texture Generator
+    const createNebulaTexture = (type = 'disk') => {
+        const size = 1024;
         const canvas = document.createElement('canvas');
         canvas.width = size; canvas.height = size;
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, size, size);
 
         if (type === 'disk') {
-            const grad = ctx.createRadialGradient(size / 2, size / 2, size * 0.05, size / 2, size / 2, size / 2);
+            // Core Disk Texture: Swirly nebula
+            const grad = ctx.createRadialGradient(size / 2, size / 2, size * 0.02, size / 2, size / 2, size / 2);
             grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            grad.addColorStop(0.2, 'rgba(0, 230, 255, 0.7)');
-            grad.addColorStop(0.5, 'rgba(0, 80, 255, 0.3)');
+            grad.addColorStop(0.1, 'rgba(100, 240, 255, 0.8)');
+            grad.addColorStop(0.3, 'rgba(0, 150, 255, 0.4)');
+            grad.addColorStop(0.6, 'rgba(0, 50, 150, 0.2)');
             grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, size, size);
+
+            // Add high-freq wisps
+            ctx.globalCompositeOperation = 'lighter';
+            for (let i = 0; i < 4000; i++) {
+                const a = Math.random() * Math.PI * 2;
+                const r = Math.pow(Math.random(), 0.5) * size / 2;
+                const s = Math.random() * 3 + 1;
+                ctx.fillStyle = `rgba(180, 230, 255, ${Math.random() * 0.1})`;
+                ctx.beginPath();
+                ctx.arc(size / 2 + Math.cos(a) * r, size / 2 + Math.sin(a) * r, s, 0, Math.PI * 2);
+                ctx.fill();
+            }
         } else {
-            // Wispy Cloud for Stream
+            // "Gas Stream" texture: Longitudinal wisps and noise
             const grad = ctx.createLinearGradient(0, 0, 0, size);
             grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
-            grad.addColorStop(0.5, 'rgba(255, 255, 255, 1)');
+            grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.6)');
             grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, size, size);
 
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-            for (let i = 0; i < 20; i++) {
-                ctx.beginPath();
-                ctx.moveTo(Math.random() * size, 0);
-                ctx.lineTo(Math.random() * size, size);
-                ctx.stroke();
+            ctx.globalCompositeOperation = 'lighter';
+            for (let i = 0; i < 1500; i++) {
+                const x = Math.random() * size;
+                const y = Math.random() * size;
+                const w = Math.random() * 100 + 10;
+                const h = 1 + Math.random() * 2;
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.05})`;
+                ctx.fillRect(x, y, w, h);
             }
         }
 
         const tex = new THREE.CanvasTexture(canvas);
+        tex.wrapS = THREE.RepeatWrapping;
         tex.wrapT = THREE.RepeatWrapping;
+        tex.anisotropy = 16;
         return tex;
     };
 
-    const hqDiskTex = createGasTexture('disk');
-    const hqStreamTex = createGasTexture('stream');
+    const hqDiskTex = createNebulaTexture('disk');
+    const hqStreamTex = createNebulaTexture('stream');
 
     const createEntity = (data, parentName, container, depth = 0, systemName) => {
         let mesh;
@@ -99,12 +117,12 @@ export function createInterstellarSystems(scene, manager) {
         container.add(mesh);
         allEntities.push(mesh);
 
-        // FEATURE: Realistic Jets
+        // FEATURE: Relativistic Jets (Wispy Particle Beams)
         if (data.hasRelativisticJets) {
             const jetGroup = new THREE.Group();
-            const jetLen = baseScale * 600;
-            const jetGeo = new THREE.CylinderGeometry(baseScale * 0.2, baseScale * 5, jetLen, 32, 1, true);
-            const jetMat = new THREE.MeshBasicMaterial({ color: 0x00ccff, map: hqStreamTex, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending });
+            const jetLen = baseScale * 800;
+            const jetGeo = new THREE.CylinderGeometry(baseScale * 0.1, baseScale * 4, jetLen, 32, 1, true);
+            const jetMat = new THREE.MeshBasicMaterial({ color: 0x00ccff, map: hqStreamTex, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
 
             const jN = new THREE.Mesh(jetGeo, jetMat); jN.position.y = jetLen / 2;
             const jS = new THREE.Mesh(jetGeo, jetMat.clone()); jS.position.y = -jetLen / 2; jS.rotation.z = Math.PI;
@@ -113,21 +131,25 @@ export function createInterstellarSystems(scene, manager) {
             relativisticJets.push({ group: jetGroup, parentName: data.name });
         }
 
-        // FEATURE: Volumetric Accretion Disk (misty, not a donut)
+        // FEATURE: Integrated Nebula Accretion Disk (No more donut)
         if (data.hasAccretionDisk) {
             const diskSize = data.diskRadius || (baseScale * 20);
             const diskGroup = new THREE.Group();
 
-            // Layer 1: The Gas Envelope (Soft volumetric haze)
-            const envGeo = new THREE.SphereGeometry(1, 64, 32);
-            const envMat = new THREE.MeshBasicMaterial({ color: 0x0044ff, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false });
-            const env = new THREE.Mesh(envGeo, envMat);
-            env.scale.set(diskSize, diskSize * 0.2, diskSize);
-            diskGroup.add(env);
+            // Layer 1: The "Haze" (Soft volumetric shroud)
+            const hazeGeo = new THREE.SphereGeometry(1, 64, 32);
+            const hazeMat = new THREE.MeshBasicMaterial({
+                color: 0x0055ff, transparent: true, opacity: 0.15, blending: THREE.AdditiveBlending, depthWrite: false
+            });
+            const haze = new THREE.Mesh(hazeGeo, hazeMat);
+            haze.scale.set(diskSize * 1.2, diskSize * 0.25, diskSize * 1.2);
+            diskGroup.add(haze);
 
-            // Layer 2: Detailed Rotating Plane
+            // Layer 2: Core Spinning Nebula Detail
             const ringGeo = new THREE.RingGeometry(baseScale * 0.1, diskSize, 128);
-            const ringMat = new THREE.MeshBasicMaterial({ map: hqDiskTex, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false });
+            const ringMat = new THREE.MeshBasicMaterial({
+                map: hqDiskTex, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false
+            });
             const ring = new THREE.Mesh(ringGeo, ringMat);
             ring.rotation.x = -Math.PI / 2;
             diskGroup.add(ring);
@@ -136,14 +158,25 @@ export function createInterstellarSystems(scene, manager) {
             accretionDisks.push({ group: diskGroup, parentName: data.name, outerRadius: diskSize });
         }
 
-        // FEATURE: Ultimate Thick Matter Stream
+        // FEATURE: Multi-Layered Wispy Matter Stream (Volumetric Cloud Bridge)
         if (data.hasGasStream) {
-            const streamMat = new THREE.MeshBasicMaterial({
-                map: hqStreamTex, vertexColors: true, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false
-            });
-            const sMesh = new THREE.Mesh(new THREE.BufferGeometry(), streamMat);
-            container.add(sMesh);
-            gasStreams.push({ mesh: sMesh, source: data.name, target: parentName });
+            const streamGroup = new THREE.Group();
+
+            // We use 3 layers of "Wisps" to avoid the pipe look
+            const layers = 3;
+            for (let i = 0; i < layers; i++) {
+                const mat = new THREE.MeshBasicMaterial({
+                    map: hqStreamTex, vertexColors: true, transparent: true,
+                    opacity: 0.7 - (i * 0.15), blending: THREE.AdditiveBlending,
+                    side: THREE.DoubleSide, depthWrite: false
+                });
+                const sMesh = new THREE.Mesh(new THREE.BufferGeometry(), mat);
+                sMesh.userData = { layerIndex: i };
+                streamGroup.add(sMesh);
+            }
+
+            container.add(streamGroup);
+            gasStreams.push({ group: streamGroup, source: data.name, target: parentName });
         }
 
         if (data.orbit) {
@@ -201,7 +234,7 @@ export function createInterstellarSystems(scene, manager) {
                 const p = allEntities.find(e => e.userData.name === ad.parentName);
                 if (p) {
                     ad.group.position.copy(p.position);
-                    ad.group.children[1].rotation.z += 0.03 * simSpeed;
+                    ad.group.children[1].rotation.z += 0.04 * simSpeed;
                 }
             });
 
@@ -209,11 +242,11 @@ export function createInterstellarSystems(scene, manager) {
                 const p = allEntities.find(e => e.userData.name === jet.parentName);
                 if (p) {
                     jet.group.position.copy(p.position);
-                    jet.group.children.forEach(j => j.material.map.offset.y -= 3.0 * simSpeed * delta);
+                    jet.group.children.forEach(j => j.material.map.offset.y -= 4.0 * simSpeed * delta);
                 }
             });
 
-            // UPDATE: Thick Matter Stream with HD Curves
+            // UPDATE: Volumetric Multi-Layered Wispy Stream
             gasStreams.forEach(gs => {
                 const s = allEntities.find(e => e.userData.name === gs.source);
                 const t = allEntities.find(e => e.userData.name === gs.target);
@@ -227,29 +260,36 @@ export function createInterstellarSystems(scene, manager) {
                     const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
                     const tip = s.position.clone().add(dir.clone().multiplyScalar(scaledZ));
 
-                    // SMOOTH SPIRAL BRIDGE
                     const p1 = tip;
-                    const p2 = s.position.clone().add(dir.clone().multiplyScalar(dist * 0.45)).add(perp.clone().multiplyScalar(disk.outerRadius * 1.8));
+                    const p2 = s.position.clone().add(dir.clone().multiplyScalar(dist * 0.45)).add(perp.clone().multiplyScalar(disk.outerRadius * 2.1));
                     const p3 = t.position.clone().add(dir.clone().multiplyScalar(-disk.outerRadius * 0.5)).add(perp.clone().multiplyScalar(disk.outerRadius * 1.2));
-                    const p4 = t.position.clone().add(perp.clone().multiplyScalar(disk.outerRadius * 0.4));
+                    const p4 = t.position.clone().add(perp.clone().multiplyScalar(disk.outerRadius * 0.3));
 
                     const curve = new THREE.CatmullRomCurve3([p1, p2, p3, p4]);
-                    const pipeGeo = new THREE.TubeGeometry(curve, 64, s.userData.visualScale * 0.8, 12, false); // MUCH THICKER
 
-                    const colors = [];
-                    const cS = new THREE.Color(0xff8822); // Hot Orange
-                    const cT = new THREE.Color(0x22aaff); // Cool Blue
-                    const count = pipeGeo.attributes.position.count;
-                    for (let i = 0; i < count; i++) {
-                        const tVal = (i / count);
-                        const c = cS.clone().lerp(cT, tVal);
-                        colors.push(c.r, c.g, c.b);
-                    }
-                    pipeGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+                    gs.group.children.forEach((mesh, idx) => {
+                        // Each layer has slight thickness variation and jitter
+                        const thickness = s.userData.visualScale * (1.2 - idx * 0.3);
+                        const pipeGeo = new THREE.TubeGeometry(curve, 64, thickness, 8, false);
 
-                    if (gs.mesh.geometry) gs.mesh.geometry.dispose();
-                    gs.mesh.geometry = pipeGeo;
-                    gs.mesh.material.map.offset.y -= 2.0 * simSpeed * delta; // Faster pulsing flow
+                        const colors = [];
+                        const cS = new THREE.Color(0xff9922); // Hot Solar Orange
+                        const cT = new THREE.Color(0x33b0ff); // Ionized Blue
+                        const count = pipeGeo.attributes.position.count;
+                        for (let i = 0; i < count; i++) {
+                            const tVal = i / count;
+                            const c = cS.clone().lerp(cT, tVal);
+                            // Add slight alpha/brightness variance per vertex for noise
+                            colors.push(c.r, c.g, c.b);
+                        }
+                        pipeGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+                        if (mesh.geometry) mesh.geometry.dispose();
+                        mesh.geometry = pipeGeo;
+
+                        mesh.material.map.offset.y -= (2.0 + idx * 0.5) * simSpeed * delta;
+                        mesh.material.opacity = (0.6 - idx * 0.2) + Math.sin(Date.now() * 0.005 + idx) * 0.1;
+                    });
                 }
             });
 
