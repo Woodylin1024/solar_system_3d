@@ -14,7 +14,7 @@ const scene = new THREE.Scene();
 // ... (camera setup)
 
 // Add Stars
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000000); // Increased far plane for distant stars
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000000000); // Massive far plane for deep space objects like Scorpius X-1
 const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance while keeping sharpness
@@ -855,6 +855,11 @@ systemMenu.querySelectorAll('.system-menu-item').forEach(item => {
       const starMeshes = interstellarSystems.getStarMeshes();
       const castorA = starMeshes.find(m => m.userData.name === "Castor A1 (Aa)");
       if (castorA) selectBody(castorA);
+
+    } else if (systemId === 'scorpius') {
+      const starMeshes = interstellarSystems.getStarMeshes();
+      const x1 = starMeshes.find(m => m.userData.name === "Scorpius X-1 (Neutron Star)");
+      if (x1) selectBody(x1);
 
       // Update UI state
       systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
