@@ -362,6 +362,26 @@ export const nearbyStarSystemsData = [
                         description: "天苑四 b 是圍繞其母恆星運行的一顆氣態巨行星，質量約為木星的 1.55 倍。它的軌道環境充滿了塵埃碎屑。",
                         details: { "質量": "1.55 木星質量", "距離恆星": "3.39 AU", "公轉週期": "7.3 年" }
                     }
+                ],
+                belts: [
+                    {
+                        name: "Inner Debris Disk",
+                        nameCH: "內碎屑盤 (35 AU)",
+                        minRadius: 5500,
+                        maxRadius: 6500,
+                        count: 1000,
+                        color: 0x888888,
+                        opacity: 0.6
+                    },
+                    {
+                        name: "Outer Debris Disk",
+                        nameCH: "外碎屑盤 (65 AU)",
+                        minRadius: 10500,
+                        maxRadius: 12500,
+                        count: 1500,
+                        color: 0x778899,
+                        opacity: 0.5
+                    }
                 ]
             }
         ]

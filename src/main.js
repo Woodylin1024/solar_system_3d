@@ -174,7 +174,7 @@ const syncOrbitVisibility = () => {
   }
   if (interstellarSystems) {
     // Synchronize both star and planet orbits in interstellar systems
-    interstellarSystems.setVisible(starOrbitsVisible, planetOrbitsVisible);
+    interstellarSystems.setVisible(starOrbitsVisible, planetOrbitsVisible, beltVisible, kuiperVisible);
   }
   if (asteroidBelt) {
     asteroidBelt.setVisible(beltVisible);
