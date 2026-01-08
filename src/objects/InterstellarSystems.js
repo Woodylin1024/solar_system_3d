@@ -116,7 +116,7 @@ export function createInterstellarSystems(scene, manager) {
                     systemGroup.add(pMesh);
                     planetMeshes.push(pMesh);
 
-                    // Add planet orbit line
+                    // Add planet/companion orbit line
                     const orbitPts = [];
                     const segments = 512;
                     for (let j = 0; j <= segments; j++) {
@@ -128,16 +128,19 @@ export function createInterstellarSystems(scene, manager) {
                         ));
                     }
                     const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPts);
+
+                    // Determine orbit style based on type
+                    const isStarComp = planetData.type === 'star';
                     const orbitMat = new THREE.LineBasicMaterial({
-                        color: 0x00d2ff,
+                        color: isStarComp ? 0xff4400 : 0x00d2ff,
                         transparent: true,
-                        opacity: 0.15,
+                        opacity: isStarComp ? 0.4 : 0.15,
                         blending: THREE.NormalBlending
                     });
                     const orbitLine = new THREE.LineLoop(orbitGeo, orbitMat);
 
                     orbitLine.userData = {
-                        type: 'planet_orbit',
+                        type: isStarComp ? 'star_orbit' : 'planet_orbit',
                         parentStar: starData.name
                     };
 
@@ -252,7 +255,7 @@ export function createInterstellarSystems(scene, manager) {
             });
 
             orbitLines.forEach(line => {
-                if (line.userData.type === 'planet_orbit' && line.userData.parentStar) {
+                if ((line.userData.type === 'planet_orbit' || line.userData.type === 'star_orbit') && line.userData.parentStar) {
                     const parentStar = starMeshes.find(s => s.userData.name === line.userData.parentStar);
                     if (parentStar) line.position.copy(parentStar.position);
                 }
