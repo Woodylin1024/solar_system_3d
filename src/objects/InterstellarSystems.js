@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v32.0.0 - "Plasma Density Parity"
- * FINAL SYNC & MASSIVE DENSITY:
- * - Density Parity: Boosted Accretion Disk to 300,000 particles to match the "solid/heavy" look of RLOF.
- * - Grainy Sync: Scaled particle sizes of both systems to 1.5x for identical visual graininess.
- * - Erased Boundaries: Combined tangential entry with density matching to make the transition invisible.
- * - Performance Stability: Maintained high-performance buffers and manual bounding volumes.
+ * InterstellarSystems v33.0.0 - "Thermal Gold Accretion"
+ * WARM COLOR & DENSITY FINAL TOUCH:
+ * - Warm Tone Disk: Shifted Accretion Disk color to Brilliant Warm White/Gold (0xfff5cc) for "High Temp" feeling.
+ * - Flow Sync: Matched RLOF target color to the same warm white for a seamless thermal transition.
+ * - 300k Density: Maintained the massive particle count for a solid, opaque disk mass.
+ * - Tangential Perfection: Kept the < 10 deg entry angle and gapless star connection.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -30,7 +30,7 @@ export function createInterstellarSystems(scene, manager) {
         const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
         grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
         grad.addColorStop(0.1, 'rgba(255, 255, 255, 1)');
-        grad.addColorStop(0.32, 'rgba(120, 240, 255, 0.45)');
+        grad.addColorStop(0.35, 'rgba(255, 240, 180, 0.5)'); // Warm glow
         grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
         ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
@@ -76,17 +76,17 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.hasAccretionDisk) {
-            const count = 300000; // EPIC DENSITY SYNC - 300k Particles
+            const count = 300000; // Hyper-density maintained
             const diskSize = data.diskRadius || (baseScale * 25);
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             const colors = new Float32Array(count * 3);
-            const colorObj = new THREE.Color(0xbbf5ff);
+            const colorObj = new THREE.Color(0xfff5cc); // WARM GOLD-WHITE FOR HIGH TEMP
             for (let i = 0; i < count; i++) {
                 const r = Math.pow(Math.random(), 0.6) * diskSize + baseScale * 0.45;
                 const theta = Math.random() * Math.PI * 2;
                 positions[i * 3] = Math.cos(theta) * r;
-                positions[i * 3 + 1] = (Math.random() - 0.5) * diskSize * 0.6;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * diskSize * 0.58;
                 positions[i * 3 + 2] = Math.sin(theta) * r;
                 const brightness = 0.92 + Math.random() * 0.08;
                 colors[i * 3] = colorObj.r * brightness;
@@ -96,8 +96,7 @@ export function createInterstellarSystems(scene, manager) {
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             const material = new THREE.PointsMaterial({
-                size: baseScale * 1.5, // Much smaller, sharper particles
-                map: unifiedSparkTex, transparent: true, opacity: 1.0,
+                size: baseScale * 1.5, map: unifiedSparkTex, transparent: true, opacity: 1.0,
                 vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
             });
             const points = new THREE.Points(geometry, material);
@@ -105,7 +104,7 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.hasGasStream) {
-            const count = 12000; // Optimal flow density
+            const count = 12000;
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             const colors = new Float32Array(count * 3);
@@ -131,7 +130,7 @@ export function createInterstellarSystems(scene, manager) {
 
         if (data.orbit) {
             const pts = []; for (let i = 0; i <= 128; i++) { const a = (i / 128) * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * data.orbit.radius, 0, Math.sin(a) * data.orbit.radius)); }
-            const o = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.25 }));
+            const o = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.2 }));
             if (data.orbit.inclination) o.rotation.x = THREE.MathUtils.degToRad(data.orbit.inclination);
             o.userData = { parentName }; container.add(o); orbitLines.push(o);
         }
@@ -187,23 +186,23 @@ export function createInterstellarSystems(scene, manager) {
                     const tangent = new THREE.Vector3(-dirToTarget.z, 0, dirToTarget.x).normalize();
 
                     const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
-                    const pStart = s.position.clone().add(dirToTarget.clone().multiplyScalar(scaledZ * 0.68)); // Solid star tip connection
+                    const pStart = s.position.clone().add(dirToTarget.clone().multiplyScalar(scaledZ * 0.68));
 
-                    const pEnd = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius * 0.85)); // Precision circle entry
+                    const pEnd = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius * 0.85));
 
-                    const ctrlHandle = pEnd.clone().sub(dirToTarget.clone().multiplyScalar(dist * 0.6)); // Flat tangent (< 10 deg)
+                    const ctrlHandle = pEnd.clone().sub(dirToTarget.clone().multiplyScalar(dist * 0.6));
 
                     const curve = new THREE.QuadraticBezierCurve3(pStart, ctrlHandle, pEnd);
 
                     const { points } = gs, { tArray, seedArray, count } = points.userData;
                     const posAttr = points.geometry.attributes.position, colAttr = points.geometry.attributes.color;
-                    const cCool = new THREE.Color(0xff8822), cHot = new THREE.Color(0xbbf5ff);
+                    const cCool = new THREE.Color(0xff8822), cHot = new THREE.Color(0xfff5cc); // WARM TARGET SYNC
 
                     for (let i = 0; i < count; i++) {
                         tArray[i] = (tArray[i] + 0.35 * delta * simSpeed * (0.85 + seedArray[i] * 0.15)) % 1.0;
                         const tVal = tArray[i], seed = seedArray[i], curvePos = curve.getPoint(tVal);
 
-                        const baseSpread = s.userData.visualScale * 0.48; // High-density core
+                        const baseSpread = s.userData.visualScale * 0.48;
                         const spreadFactor = (0.2 + seed * 1.5) * (1.1 - tVal * 0.75);
 
                         const randX = baseSpread * spreadFactor * Math.sin(seed * 20) * Math.cos(seed * 40);
@@ -216,11 +215,10 @@ export function createInterstellarSystems(scene, manager) {
                         let lumMultiplier = 15.0;
                         if (tVal > 0.9) lumMultiplier *= (1.0 - (tVal - 0.9) * 10);
 
-                        const flicker = 0.82 + Math.random() * 0.45;
+                        const flicker = 0.82 + Math.random() * 0.48;
                         colAttr.setXYZ(i, col.r * lumMultiplier * flicker, col.g * lumMultiplier * flicker, col.b * lumMultiplier * flicker);
                     }
                     posAttr.needsUpdate = true; colAttr.needsUpdate = true;
-                    // v32 Sync size to match disk graininess
                     points.material.size = s.userData.visualScale * 1.5;
                 }
             });
