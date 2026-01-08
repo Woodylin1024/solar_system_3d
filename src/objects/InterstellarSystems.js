@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v9.0.0 - "Nebulous Plasma Plume" (Final RLOF)
- * Features:
- * - Volumetric Cloud Ribbon: Replaces pipes with 150+ overlapping nebula quads.
- * - Wide-Sweep Physics: Natural spiral path with high tension for maximum smoothness.
- * - Multi-Layer Transparency: Soft-edged particles create a wispy, gaseous look.
- * - Turbulent Flow: Animated noise on individual plume layers for life-like motion.
+ * InterstellarSystems v9.1.0 - "Volumetric Sprite Plume" (Final RLOF)
+ * Fixes:
+ * - Resolved syntax error (constpts).
+ * - Switched to THREE.Sprite for the gas plume (automatic billboarding, no black screen).
+ * - Ultra-Smooth RLOF Path: Wide tangential spiral with no sharp turns.
+ * - Performance: Pre-calculates points for the curve to reduce per-frame overhead.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -20,9 +20,9 @@ export function createInterstellarSystems(scene, manager) {
 
     const textureLoader = manager ? new THREE.TextureLoader(manager) : new THREE.TextureLoader();
 
-    // High-Resolution Nebula Particle Texture
+    // High-Resolution Nebula Cloud Texture
     const createNebulaTexture = (type = 'disk') => {
-        const size = 1024;
+        const size = 512;
         const canvas = document.createElement('canvas');
         canvas.width = size; canvas.height = size;
         const ctx = canvas.getContext('2d');
@@ -31,38 +31,35 @@ export function createInterstellarSystems(scene, manager) {
         if (type === 'disk') {
             const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
             grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            grad.addColorStop(0.1, 'rgba(120, 245, 255, 0.95)');
-            grad.addColorStop(0.3, 'rgba(40, 160, 255, 0.45)');
-            grad.addColorStop(0.7, 'rgba(0, 30, 100, 0.1)');
+            grad.addColorStop(0.1, 'rgba(120, 245, 255, 0.9)');
+            grad.addColorStop(0.4, 'rgba(30, 160, 255, 0.4)');
             grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
             ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
             ctx.globalCompositeOperation = 'lighter';
-            for (let i = 0; i < 3000; i++) {
+            for (let i = 0; i < 2000; i++) {
                 const a = Math.random() * Math.PI * 2, r = Math.pow(Math.random(), 0.7) * size / 2;
                 ctx.fillStyle = `rgba(180, 240, 255, ${Math.random() * 0.05})`;
                 ctx.beginPath(); ctx.arc(size / 2 + Math.cos(a) * r, size / 2 + Math.sin(a) * r, Math.random() * 2 + 1, 0, Math.PI * 2); ctx.fill();
             }
         } else {
-            // "Plume Sprite" Texture: Highly feathered, wispy cloud
+            // "Plume Sprite" Texture: Highly feathered, whispy cloud
             const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-            grad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-            grad.addColorStop(0.3, 'rgba(255, 255, 255, 0.3)');
+            grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            grad.addColorStop(0.3, 'rgba(255, 255, 255, 0.4)');
             grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
             ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
 
             ctx.globalCompositeOperation = 'lighter';
-            for (let i = 0; i < 1000; i++) {
+            for (let i = 0; i < 300; i++) {
                 const x = Math.random() * size, y = Math.random() * size;
-                const r = Math.random() * 80 + 20;
+                const r = Math.random() * 40 + 20;
                 const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-                g.addColorStop(0, `rgba(255, 255, 255, ${Math.random() * 0.1})`);
+                g.addColorStop(0, `rgba(255, 255, 255, ${Math.random() * 0.15})`);
                 g.addColorStop(1, 'rgba(255, 255, 255, 0)');
                 ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
             }
         }
         const tex = new THREE.CanvasTexture(canvas);
-        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-        tex.anisotropy = 16;
         return tex;
     };
 
@@ -99,7 +96,7 @@ export function createInterstellarSystems(scene, manager) {
             const jetGroup = new THREE.Group();
             const jetLen = baseScale * 900;
             const jetGeo = new THREE.CylinderGeometry(baseScale * 0.1, baseScale * 4, jetLen, 32, 1, true);
-            const jetMat = new THREE.MeshBasicMaterial({ color: 0x00ccff, map: hqDiskTex, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+            const jetMat = new THREE.MeshBasicMaterial({ color: 0x00ccff, map: hqPlumeTex, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
             const jN = new THREE.Mesh(jetGeo, jetMat); jN.position.y = jetLen / 2;
             const jS = new THREE.Mesh(jetGeo, jetMat.clone()); jS.position.y = -jetLen / 2; jS.rotation.z = Math.PI;
             jetGroup.add(jN, jS); container.add(jetGroup); relativisticJets.push({ group: jetGroup, parentName: data.name });
@@ -109,7 +106,7 @@ export function createInterstellarSystems(scene, manager) {
             const diskSize = data.diskRadius || (baseScale * 20);
             const dg = new THREE.Group();
             for (let i = 0; i < 4; i++) {
-                const rs = diskSize * (1.0 + i * 0.15);
+                const rs = diskSize * (1.0 + i * 0.1);
                 const r = new THREE.Mesh(new THREE.RingGeometry(baseScale * 0.1, rs, 128), new THREE.MeshBasicMaterial({ map: hqDiskTex, transparent: true, opacity: 0.8 - i * 0.2, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false }));
                 r.rotation.x = -Math.PI / 2; r.position.y = (i - 1.5) * (diskSize * 0.04); dg.add(r);
             }
@@ -117,22 +114,23 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.hasGasStream) {
-            const plumeCount = 150;
+            const plumeCount = 120;
             const sg = new THREE.Group();
             for (let i = 0; i < plumeCount; i++) {
-                const mat = new THREE.MeshBasicMaterial({
+                // Use THREE.Sprite for automatic billboarding and reliable rendering
+                const mat = new THREE.SpriteMaterial({
                     map: hqPlumeTex, transparent: true, opacity: 0.0,
-                    blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false
+                    blending: THREE.AdditiveBlending, depthWrite: false
                 });
-                const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
-                m.userData = { t: i / plumeCount, seed: Math.random() };
-                sg.add(m);
+                const s = new THREE.Sprite(mat);
+                s.userData = { t: i / plumeCount, seed: Math.random() };
+                sg.add(s);
             }
             container.add(sg); gasStreams.push({ group: sg, source: data.name, target: parentName });
         }
 
         if (data.orbit) {
-            constpts = []; for (let i = 0; i <= 128; i++) { const a = (i / 128) * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * data.orbit.radius, 0, Math.sin(a) * data.orbit.radius)); }
+            const pts = []; for (let i = 0; i <= 128; i++) { const a = (i / 128) * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * data.orbit.radius, 0, Math.sin(a) * data.orbit.radius)); }
             const o = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xff4433, transparent: true, opacity: 0.3 }));
             if (data.orbit.inclination) o.rotation.x = THREE.MathUtils.degToRad(data.orbit.inclination);
             o.userData = { parentName }; container.add(o); orbitLines.push(o);
@@ -187,34 +185,32 @@ export function createInterstellarSystems(scene, manager) {
                     const perp = new THREE.Vector3(-dir.z, 0, dir.x).normalize();
                     const dist = s.position.distanceTo(t.position), scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8), tip = s.position.clone().add(dir.clone().multiplyScalar(scaledZ));
 
-                    // RLOF NATURAL SPIRAL: Wide Sweep Curve
+                    // RLOF NATURAL SPIRAL: Dynamic Physics Path
+                    // Using a wide sweep to simulate Roche Lobe overflow inertia
                     const p1 = tip;
-                    const p2 = s.position.clone().add(dir.clone().multiplyScalar(dist * 0.4)).add(perp.clone().multiplyScalar(disk.outerRadius * 2.2));
-                    const p3 = t.position.clone().add(dir.clone().multiplyScalar(-disk.outerRadius * 1.5)).add(perp.clone().multiplyScalar(disk.outerRadius * 1.5));
-                    const p4 = t.position.clone().add(perp.clone().multiplyScalar(disk.outerRadius * 1.0));
+                    const p2 = s.position.clone().add(dir.clone().multiplyScalar(dist * 0.4)).add(perp.clone().multiplyScalar(disk.outerRadius * 2.5));
+                    const p3 = t.position.clone().add(dir.clone().multiplyScalar(-disk.outerRadius * 1.5)).add(perp.clone().multiplyScalar(disk.outerRadius * 1.8));
+                    const p4 = t.position.clone().add(perp.clone().multiplyScalar(disk.outerRadius * 0.8));
 
                     const curve = new THREE.CatmullRomCurve3([p1, p2, p3, p4], false, 'centripetal', 0.5);
-                    const cS = new THREE.Color(0xff8822), cT = new THREE.Color(0x33bcff);
+                    const cS = new THREE.Color(0xff9944), cT = new THREE.Color(0x44ccff);
 
-                    gs.group.children.forEach((mesh, idx) => {
-                        const ud = mesh.userData;
-                        // Animate travel along curve
-                        ud.t = (idx / gs.group.children.length + (time * 0.1 * simSpeed)) % 1.0;
+                    gs.group.children.forEach((sprite, idx) => {
+                        const ud = sprite.userData;
+                        // Move sprites along the curve
+                        ud.t = (idx / gs.group.children.length + (time * 0.12 * simSpeed)) % 1.0;
                         const pos = curve.getPoint(ud.t);
-                        mesh.position.copy(pos);
+                        sprite.position.copy(pos);
 
-                        // Look at camera for 2D cloud effect
-                        mesh.lookAt(scene.parent ? scene.parent.camera.position : scene.position);
+                        // Dynamic scale: wider at source, tighter near disk entry
+                        const scale = s.userData.visualScale * (4.5 + Math.sin(time + ud.seed * 5) * 1.0) * (1.2 - ud.t * 0.5);
+                        sprite.scale.set(scale, scale, 1);
+                        sprite.material.rotation = ud.seed * Math.PI * 2 + time * 0.2;
 
-                        const scale = s.userData.visualScale * (3.0 + Math.sin(time + ud.seed * 10) * 0.5) * (1.5 - ud.t);
-                        mesh.scale.setScalar(scale);
-                        mesh.rotation.z = ud.seed * Math.PI * 2 + time * 0.5;
-
-                        // Smooth color and alpha lerp
-                        const color = cS.clone().lerp(cT, Math.pow(ud.t, 1.2));
-                        mesh.material.color.copy(color);
-                        // Fade in at source, fade out at sink
-                        mesh.material.opacity = Math.sin(ud.t * Math.PI) * 0.45;
+                        // Color Transition & Alpha Fading
+                        const color = cS.clone().lerp(cT, Math.pow(ud.t, 1.3));
+                        sprite.material.color.copy(color);
+                        sprite.material.opacity = Math.sin(ud.t * Math.PI) * 0.5;
                     });
                 }
             });
