@@ -14,7 +14,7 @@ const scene = new THREE.Scene();
 // ... (camera setup)
 
 // Add Stars
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000000000); // Massive far plane for deep space objects like Scorpius X-1
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.5, 1000000000); // 0.5 near plane to reduce jitter at extreme dist
 const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance while keeping sharpness
@@ -975,7 +975,7 @@ function animate() {
         currentRadius = selectedTarget.userData.maxVisualRadius || selectedTarget.userData.visualScale;
       }
 
-      const multiplier = isInter ? 25 : (window.innerWidth <= 480 ? 18 : (window.innerWidth <= 1100 ? 12 : 6));
+      const multiplier = isInter ? 45 : (window.innerWidth <= 480 ? 18 : (window.innerWidth <= 1100 ? 12 : 6));
       const zoomDist = currentRadius * multiplier;
       const currentDist = camera.position.distanceTo(_v1);
       const newDist = THREE.MathUtils.lerp(currentDist, zoomDist, 0.05);

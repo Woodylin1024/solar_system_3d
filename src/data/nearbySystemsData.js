@@ -148,7 +148,7 @@ export const nearbyStarSystemsData = [
         name: "Scorpius X-1",
         nameCH: "天蠍座 X-1",
         distanceFromSun: 569000000,
-        position: { x: 200000000, y: -450000000, z: 250000000 },
+        position: { x: 200000, y: -450000, z: 250000 },
         stars: [
             {
                 name: "Scorpius X-1 (Neutron Star)",

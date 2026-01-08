@@ -50,7 +50,10 @@ export function createInterstellarSystems(scene, manager) {
             const material = new THREE.MeshStandardMaterial({
                 color: data.color || 0xffffff,
                 emissive: data.color || 0xffffff,
-                emissiveIntensity: 8.0
+                emissiveIntensity: 8.0,
+                side: THREE.DoubleSide, // Prevent disappearing when inside
+                transparent: false,
+                depthWrite: true
             });
             if (data.texture) material.map = textureLoader.load(`textures/${data.texture}`);
             mesh = new THREE.Mesh(geometry, material);
