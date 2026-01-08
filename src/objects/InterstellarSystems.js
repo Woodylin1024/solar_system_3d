@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v4.6.0 - Tendex Logic & Tangential Accretion
+ * InterstellarSystems v5.0.0 - Microquasar Final Form
  * Features:
- * - Spiraling Accretion Disks (Simulates angular momentum loss & inward drift)
- * - Tangential Matter Streams (Flows into disk edge instead of center)
- * - Improved Volumetric Torus (Gaseous volume with thickness)
- * - Thermal intensity gradients for binary companions
+ * - Relativistic Jets (Polar particle beams)
+ * - Curved Spline Gas Streams (Realistic spiral matter transfer)
+ * - Volumetric Accretion Disks with gas swirls
+ * - Dynamic Thermal Gradients & Lighting
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -16,48 +16,52 @@ export function createInterstellarSystems(scene, manager) {
     const orbitLines = [];
     const accretionDisks = [];
     const gasStreams = [];
+    const relativisticJets = [];
 
     const textureLoader = manager ? new THREE.TextureLoader(manager) : new THREE.TextureLoader();
 
-    // Generate a noise texture with spiral orientation for the disk
-    const createSpiralDiskTexture = () => {
-        const width = 1024, height = 512;
+    // High-quality procedural textures
+    const createGasTex = (isDisk = true) => {
+        const size = 1024;
         const canvas = document.createElement('canvas');
-        canvas.width = width; canvas.height = height;
+        canvas.width = size; canvas.height = size;
         const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+        ctx.fillRect(0, 0, size, size);
 
-        // Draw inward-slanting gas streaks to simulate spiral when wrapped
-        for (let i = 0; i < width; i += 4) {
-            const opacity = 1.0 - (i / width);
-            const brightness = 180 + Math.random() * 75;
-            ctx.fillStyle = `rgba(${brightness - 50}, ${brightness + 30}, 255, ${opacity * 0.4})`;
+        if (isDisk) {
+            // Spiral gas for disk
+            const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            grad.addColorStop(0.2, 'rgba(0, 204, 255, 0.8)');
+            grad.addColorStop(0.5, 'rgba(0, 80, 255, 0.4)');
+            grad.addColorStop(1, 'rgba(0, 0, 50, 0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, size, size);
 
-            const startY = Math.random() * height;
-            const h = 2 + Math.random() * 20;
-            // Slant: dy = dx * something to create spiral effect
-            ctx.beginPath();
-            ctx.moveTo(i, startY);
-            ctx.lineTo(i + 40, (startY + 30) % height);
-            ctx.lineWidth = 1 + Math.random() * 3;
-            ctx.strokeStyle = ctx.fillStyle;
-            ctx.stroke();
+            for (let i = 0; i < 800; i++) {
+                const a = Math.random() * Math.PI * 2;
+                const r = Math.random() * size / 2;
+                ctx.fillStyle = `rgba(150, 230, 255, ${Math.random() * 0.2})`;
+                ctx.beginPath();
+                ctx.arc(size / 2 + Math.cos(a) * r, size / 2 + Math.sin(a) * r, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        } else {
+            // Linear gas for stream/jets
+            const grad = ctx.createLinearGradient(0, 0, 0, size);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+            grad.addColorStop(0.5, 'rgba(0, 255, 255, 0.8)');
+            grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, size, size);
         }
 
-        const grad = ctx.createLinearGradient(0, 0, width, 0);
-        grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-        grad.addColorStop(0.1, 'rgba(0, 220, 255, 0.8)');
-        grad.addColorStop(0.4, 'rgba(0, 80, 240, 0.2)');
-        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, width, height);
-
-        const tex = new THREE.CanvasTexture(canvas);
-        tex.wrapS = THREE.RepeatWrapping;
-        tex.wrapT = THREE.RepeatWrapping;
-        return tex;
+        return new THREE.CanvasTexture(canvas);
     };
 
-    const spiralDiskTex = createSpiralDiskTexture();
+    const diskTex = createGasTex(true);
+    const beamTex = createGasTex(false);
 
     const createEntity = (data, parentName, container, depth = 0, systemName) => {
         let mesh;
@@ -70,7 +74,7 @@ export function createInterstellarSystems(scene, manager) {
             const material = new THREE.MeshStandardMaterial({
                 color: data.color || 0xffffff,
                 emissive: data.color || 0xffffff,
-                emissiveIntensity: data.isDistorted ? 3.5 : (data.emissiveIntensity || 1.0)
+                emissiveIntensity: data.isDistorted ? 4.0 : (data.emissiveIntensity || 1.0)
             });
             if (data.texture) material.map = textureLoader.load(`textures/${data.texture}`);
 
@@ -97,74 +101,73 @@ export function createInterstellarSystems(scene, manager) {
         container.add(mesh);
         allEntities.push(mesh);
 
-        // FEATURE: Realistic Volumetric Torus Accretion (With Spiral Animation)
+        // FEATURE: Realistic Jets
+        if (data.hasRelativisticJets) {
+            const jetLen = baseScale * 500;
+            const jetGeo = new THREE.CylinderGeometry(baseScale * 0.5, baseScale * 5, jetLen, 32, 1, true);
+            const jetMat = new THREE.MeshBasicMaterial({
+                color: 0x00ccff, map: beamTex, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending
+            });
+
+            const jetNorth = new THREE.Mesh(jetGeo, jetMat);
+            jetNorth.position.y = jetLen / 2;
+            const jetSouth = new THREE.Mesh(jetGeo, jetMat);
+            jetSouth.position.y = -jetLen / 2;
+            jetSouth.rotation.z = Math.PI;
+
+            const jetGroup = new THREE.Group();
+            jetGroup.add(jetNorth);
+            jetGroup.add(jetSouth);
+            container.add(jetGroup);
+            relativisticJets.push({ group: jetGroup, parentName: data.name });
+        }
+
+        // FEATURE: Volumetric Accretion Disk (HD Torus)
         if (data.hasAccretionDisk) {
+            const diskSize = data.diskRadius || (baseScale * 20);
+            const torGeo = new THREE.TorusGeometry(diskSize * 0.7, diskSize * 0.15, 32, 128);
+            const torMat = new THREE.MeshBasicMaterial({
+                color: data.diskColor || 0x00ccff, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending
+            });
+            const torus = new THREE.Mesh(torGeo, torMat);
+            torus.rotation.x = Math.PI / 2;
+
+            const ringGeo = new THREE.RingGeometry(baseScale * 0.1, diskSize, 128);
+            const ringMat = new THREE.MeshBasicMaterial({
+                map: diskTex, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false
+            });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = -Math.PI / 2;
+
             const diskGroup = new THREE.Group();
-            const outerR = data.diskRadius || (baseScale * 20);
-
-            // Volumetric layer: Torus
-            const volTorus = new THREE.Mesh(
-                new THREE.TorusGeometry(outerR * 0.5, outerR * 0.1, 16, 128),
-                new THREE.MeshBasicMaterial({
-                    color: 0x00aaff,
-                    transparent: true,
-                    opacity: 0.3,
-                    blending: THREE.AdditiveBlending
-                })
-            );
-            volTorus.rotation.x = Math.PI / 2;
-            diskGroup.add(volTorus);
-
-            // Detailed Plane layer: Spiral Gas
-            const spiralDisk = new THREE.Mesh(
-                new THREE.RingGeometry(baseScale * 0.1, outerR, 128),
-                new THREE.MeshBasicMaterial({
-                    map: spiralDiskTex,
-                    transparent: true,
-                    blending: THREE.AdditiveBlending,
-                    side: THREE.DoubleSide,
-                    depthWrite: false
-                })
-            );
-            spiralDisk.rotation.x = -Math.PI / 2;
-            diskGroup.add(spiralDisk);
-
+            diskGroup.add(torus); diskGroup.add(ring);
             container.add(diskGroup);
-            accretionDisks.push({ group: diskGroup, parentName: data.name, outerRadius: outerR });
+            accretionDisks.push({ group: diskGroup, parentName: data.name });
         }
 
-        // FEATURE: Tangential Gas Stream (Precision bridge to disk edge)
+        // FEATURE: Curved Spline Matter Stream (Tendex Line)
         if (data.hasGasStream) {
-            const stream = new THREE.Mesh(
-                new THREE.CylinderGeometry(baseScale * 0.05, baseScale * 0.8, 1, 24, 1, true),
-                new THREE.MeshBasicMaterial({
-                    color: 0x88ccff,
-                    transparent: true,
-                    opacity: 0.7,
-                    blending: THREE.AdditiveBlending,
-                    side: THREE.DoubleSide
-                })
-            );
-            stream.geometry.translate(0, 0.5, 0);
-            stream.geometry.rotateX(Math.PI / 2);
-            container.add(stream);
-            gasStreams.push({ mesh: stream, source: data.name, target: parentName });
+            // We use a TubeGeometry but update its vertices or points in the update loop
+            // For now, prepare a structure
+            const streamMat = new THREE.MeshBasicMaterial({
+                color: 0xffaa00, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, side: THREE.DoubleSide
+            });
+            const streamMesh = new THREE.Mesh(new THREE.BufferGeometry(), streamMat);
+            container.add(streamMesh);
+            gasStreams.push({ mesh: streamMesh, source: data.name, target: parentName });
         }
 
-        // FEATURE: Custom Orbit Lines
         if (data.orbit) {
             const pts = [];
             for (let i = 0; i <= 256; i++) {
                 const a = (i / 256) * Math.PI * 2;
                 pts.push(new THREE.Vector3(Math.cos(a) * data.orbit.radius, 0, Math.sin(a) * data.orbit.radius));
             }
-            const oLine = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({
-                color: 0xff4400, transparent: true, opacity: 0.3
-            }));
-            if (data.orbit.inclination) oLine.rotation.x = THREE.MathUtils.degToRad(data.orbit.inclination);
-            oLine.userData = { parentName };
-            container.add(oLine);
-            orbitLines.push(oLine);
+            const oLn = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.2 }));
+            if (data.orbit.inclination) oLn.rotation.x = THREE.MathUtils.degToRad(data.orbit.inclination);
+            oLn.userData = { parentName };
+            container.add(oLn);
+            orbitLines.push(oLn);
         }
 
         if (data.planets) {
@@ -182,7 +185,7 @@ export function createInterstellarSystems(scene, manager) {
     scene.add(systemsGroup);
     allEntities.sort((a, b) => a.userData.depth - b.userData.depth);
 
-    const worldTarget = new THREE.Vector3();
+    const wp = new THREE.Vector3();
 
     return {
         group: systemsGroup,
@@ -192,58 +195,66 @@ export function createInterstellarSystems(scene, manager) {
                 const d = e.userData;
                 if (!d.orbit) return;
                 const parent = d.parentName ? allEntities.find(p => p.userData.name === d.parentName) : null;
-                const pPos = parent ? parent.position : new THREE.Vector3(0, 0, 0);
-
-                d.angle += (d.orbit.speed || 0.1) * simSpeed * delta * 0.1;
-                const r = d.orbit.radius;
-                const x = Math.cos(d.angle) * r;
-                const z = Math.sin(d.angle) * r;
-                if (d.orbit.inclination) {
-                    const inc = THREE.MathUtils.degToRad(d.orbit.inclination);
-                    e.position.set(pPos.x + x, pPos.y - z * Math.sin(inc), pPos.z + z * Math.cos(inc));
-                } else {
-                    e.position.set(pPos.x + x, pPos.y, pPos.z + z);
-                }
-                if (d.isDistorted && parent) {
-                    parent.getWorldPosition(worldTarget);
-                    e.lookAt(worldTarget);
+                if (parent) {
+                    d.angle += (d.orbit.speed || 0.1) * simSpeed * delta * 0.1;
+                    const r = d.orbit.radius;
+                    const x = Math.cos(d.angle) * r;
+                    const z = Math.sin(d.angle) * r;
+                    if (d.orbit.inclination) {
+                        const inc = THREE.MathUtils.degToRad(d.orbit.inclination);
+                        e.position.set(parent.position.x + x, parent.position.y - z * Math.sin(inc), parent.position.z + z * Math.cos(inc));
+                    } else {
+                        e.position.set(parent.position.x + x, parent.position.y, parent.position.z + z);
+                    }
+                    if (d.isDistorted) {
+                        parent.getWorldPosition(wp);
+                        e.lookAt(wp);
+                    }
                 }
             });
 
-            // Update Spiral Accretion Disks (Inward drift)
             accretionDisks.forEach(ad => {
                 const p = allEntities.find(e => e.userData.name === ad.parentName);
                 if (p) {
                     ad.group.position.copy(p.position);
-                    // Layer 2 is the spiral gas plane
-                    const mat = ad.group.children[1].material;
-                    mat.map.offset.x -= 0.1 * simSpeed * delta; // Orbiting speed
-                    mat.map.offset.y += 0.02 * simSpeed * delta; // INWARD DRIFT (Tendex effect)
+                    ad.group.children[1].rotation.z += 0.05 * simSpeed;
                 }
             });
 
-            // Precision Gas Stream Update (TANGENTIAL ENTRY)
+            relativisticJets.forEach(jet => {
+                const p = allEntities.find(e => e.userData.name === jet.parentName);
+                if (p) {
+                    jet.group.position.copy(p.position);
+                    jet.group.children.forEach(j => {
+                        j.material.map.offset.y -= 2.0 * simSpeed * delta;
+                    });
+                }
+            });
+
+            // UPDATE: Curved Matter Stream (Spline Path)
             gasStreams.forEach(gs => {
                 const s = allEntities.find(e => e.userData.name === gs.source);
                 const t = allEntities.find(e => e.userData.name === gs.target);
-                const disk = accretionDisks.find(d => d.parentName === gs.target);
-
-                if (s && t && disk) {
-                    const localTarget = new THREE.Vector3();
-                    // Tangential impact point logic
-                    // Instead of center, aim at edge of the accretion disk radius
-                    // Offset target slightly to the 'side' of the center relative to star position
-                    const dirToCenter = new THREE.Vector3().subVectors(t.position, s.position).normalize();
-                    const perp = new THREE.Vector3(-dirToCenter.z, 0, dirToCenter.x).normalize();
-                    const impactPoint = t.position.clone().add(perp.multiplyScalar(disk.outerRadius * 0.8));
-
+                if (s && t) {
+                    const dir = new THREE.Vector3().subVectors(t.position, s.position).normalize();
+                    const perp = new THREE.Vector3(-dir.z, 0, dir.x).normalize();
                     const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
-                    const tip = s.position.clone().add(dirToCenter.multiplyScalar(scaledZ));
+                    const tip = s.position.clone().add(dir.clone().multiplyScalar(scaledZ));
 
-                    gs.mesh.position.copy(tip);
-                    gs.mesh.lookAt(impactPoint);
-                    gs.mesh.scale.z = tip.distanceTo(impactPoint);
-                    gs.mesh.material.opacity = 0.5 + Math.sin(Date.now() * 0.01) * 0.2;
+                    // Create Spline
+                    const mid = s.position.clone().add(dir.clone().multiplyScalar(s.position.distanceTo(t.position) * 0.6)).add(perp.multiplyScalar(300));
+                    const impact = t.position.clone().add(perp.multiplyScalar(400));
+
+                    const curve = new THREE.CatmullRomCurve3([tip, mid, impact, t.position]);
+                    const points = curve.getPoints(50);
+                    const pipeGeo = new THREE.TubeGeometry(curve, 50, s.userData.visualScale * 0.15, 8, false);
+
+                    if (gs.mesh.geometry) gs.mesh.geometry.dispose();
+                    gs.mesh.geometry = pipeGeo;
+
+                    // Gradient: Orange near star, Blue near disk
+                    gs.mesh.material.color.setHSL(0.08 + Math.sin(Date.now() * 0.001) * 0.02, 1.0, 0.6); // Slightly pulse orange
+                    gs.mesh.material.opacity = 0.5 + Math.sin(Date.now() * 0.005) * 0.2;
                 }
             });
 

@@ -158,7 +158,9 @@ export const nearbyStarSystemsData = [
                 color: 0xe0ffff,
                 hasAccretionDisk: true,
                 diskColor: 0x00ccff,
-                diskRadius: 800, // Explicitly set to stay within 1500 orbit
+                diskRadius: 800,
+                hasRelativisticJets: true,
+                jetColor: 0x00ccff,
                 position: { x: 0, y: 0, z: 0 },
                 description: "由中子星吸取伴星物質形成吸積盤。",
                 details: {
