@@ -158,7 +158,7 @@ export const nearbyStarSystemsData = [
                 color: 0xe0ffff,
                 hasAccretionDisk: true,
                 diskColor: 0x00ccff,
-                diskRadius: 800,
+                diskRadius: 667,
                 hasRelativisticJets: true,
                 jetColor: 0x00ccff,
                 position: { x: 0, y: 0, z: 0 },
