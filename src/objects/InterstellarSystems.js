@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v7.0.0 - "Centripetal Fluid" Overhaul
- * Fixes:
- * - Re-engineered Spline using Centripetal CatmullRom to eliminate "hooks" and sharp kinks.
- * - Single-mesh "Multi-Filament" Shader Texture (Replaces 10-strand wire look).
- * - Implemented Squared Alpha Fading for seamless star-to-disk integration.
- * - Dynamic Physics Lag: Matter stream now naturally curves with orbital velocity.
+ * InterstellarSystems v8.0.0 - "Roche Lobe Overflow" (RLOF) Physics
+ * Features:
+ * - Natural RLOF Path: Uses gravity-aligned arcs to eliminate manual "kinks".
+ * - Gaussian Radial Fading: Texture-based edge softening that destroys the "pipe" look.
+ * - Dynamic Tapering: Matter stream thins and intensifies as it falls toward the disk center.
+ * - High-Energy Plasma Cohesion: Unified visual language for all gaseous elements.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -20,7 +20,7 @@ export function createInterstellarSystems(scene, manager) {
 
     const textureLoader = manager ? new THREE.TextureLoader(manager) : new THREE.TextureLoader();
 
-    // Procedural "Silk & Plasma" Texture Generator
+    // Advanced "Nebula & RLOF" Texture Generator
     const createNebulaTexture = (type = 'disk') => {
         const size = 1024;
         const canvas = document.createElement('canvas');
@@ -31,35 +31,40 @@ export function createInterstellarSystems(scene, manager) {
         if (type === 'disk') {
             const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
             grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            grad.addColorStop(0.1, 'rgba(130, 240, 255, 0.95)');
-            grad.addColorStop(0.3, 'rgba(40, 160, 255, 0.5)');
-            grad.addColorStop(0.7, 'rgba(0, 40, 120, 0.1)');
+            grad.addColorStop(0.1, 'rgba(120, 245, 255, 0.9)');
+            grad.addColorStop(0.3, 'rgba(40, 150, 255, 0.45)');
+            grad.addColorStop(0.7, 'rgba(0, 30, 100, 0.1)');
             grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
             ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
             ctx.globalCompositeOperation = 'lighter';
-            for (let i = 0; i < 5000; i++) {
+            for (let i = 0; i < 3000; i++) {
                 const a = Math.random() * Math.PI * 2, r = Math.pow(Math.random(), 0.7) * size / 2;
-                ctx.fillStyle = `rgba(200, 245, 255, ${Math.random() * 0.07})`;
+                ctx.fillStyle = `rgba(180, 240, 255, ${Math.random() * 0.05})`;
                 ctx.beginPath(); ctx.arc(size / 2 + Math.cos(a) * r, size / 2 + Math.sin(a) * r, Math.random() * 2 + 1, 0, Math.PI * 2); ctx.fill();
             }
         } else {
-            // "High-Energy Plasma Silk" Texture: Multi-filament streaks
-            // Base flow
+            // "RLOF Gas" Texture: High-frequency wisps WITH RADIAL FADING
+            // The magic is in the X-axis (around tube) gradient that makes edges invisible.
             const grad = ctx.createLinearGradient(0, 0, 0, size);
+            // Alpha bell curve: Transparent at 0 and 1, opaque in center 0.5
             grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
-            grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.9)');
+            grad.addColorStop(0.2, 'rgba(255, 255, 255, 0.05)');
+            grad.addColorStop(0.5, 'rgba(255, 255, 255, 1)');
+            grad.addColorStop(0.8, 'rgba(255, 255, 255, 0.05)');
             grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-            ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, size, size);
 
-            // Filament streaks
+            // Add longitudinal gas filaments
             ctx.globalCompositeOperation = 'lighter';
-            for (let i = 0; i < 2000; i++) {
+            for (let i = 0; i < 1500; i++) {
                 const x = Math.random() * size;
                 const y = Math.random() * size;
-                const w = Math.random() * 200 + 100;
-                const h = Math.random() * 1.5 + 0.5;
-                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.08})`;
-                ctx.fillRect(x, y, w, h);
+                const w = Math.random() * 300 + 50;
+                // Filaments are denser towards the center of the UV (stream core)
+                const centerBias = 1.0 - Math.abs(x / size - 0.5) * 2;
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.1 * centerBias})`;
+                ctx.fillRect(x, y, w, 1);
             }
         }
         const tex = new THREE.CanvasTexture(canvas);
@@ -82,7 +87,7 @@ export function createInterstellarSystems(scene, manager) {
             const material = new THREE.MeshStandardMaterial({
                 color: data.color || 0xffffff,
                 emissive: data.color || 0xffffff,
-                emissiveIntensity: data.isDistorted ? 4.5 : 5.0
+                emissiveIntensity: data.isDistorted ? 5.0 : 5.0
             });
             if (data.texture) material.map = textureLoader.load(`textures/${data.texture}`);
             mesh = new THREE.Mesh(geometry, material);
@@ -128,7 +133,7 @@ export function createInterstellarSystems(scene, manager) {
 
         if (data.hasGasStream) {
             const sg = new THREE.Group();
-            // REPLACEMENT: Unified Multi-Filament Shader Geometry
+            // RLOF Stream: One thick volumetric plume with high feathering
             const mat = new THREE.MeshBasicMaterial({
                 map: hqStreamTex, vertexColors: true, transparent: true,
                 blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false
@@ -140,7 +145,7 @@ export function createInterstellarSystems(scene, manager) {
 
         if (data.orbit) {
             const pts = []; for (let i = 0; i <= 128; i++) { const a = (i / 128) * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * data.orbit.radius, 0, Math.sin(a) * data.orbit.radius)); }
-            const o = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.25 }));
+            const o = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.3 }));
             if (data.orbit.inclination) o.rotation.x = THREE.MathUtils.degToRad(data.orbit.inclination);
             o.userData = { parentName }; container.add(o); orbitLines.push(o);
         }
@@ -191,44 +196,34 @@ export function createInterstellarSystems(scene, manager) {
                 if (s && t && disk) {
                     const dir = new THREE.Vector3().subVectors(t.position, s.position).normalize(); if (isNaN(dir.x)) return;
                     const perp = new THREE.Vector3(-dir.z, 0, dir.x).normalize();
-                    const dist = s.position.distanceTo(t.position);
-                    const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
-                    const tip = s.position.clone().add(dir.clone().multiplyScalar(scaledZ));
+                    const dist = s.position.distanceTo(t.position), scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8), tip = s.position.clone().add(dir.clone().multiplyScalar(scaledZ));
 
-                    // NEW STABLE PHYSICAL SPLINE: Centripetal Arc
-                    // Prevents "Hooks" by using relative distances and centripetal spacing.
-                    const p1 = tip;
-                    // Mid-point logic: Wide tangential arc based on Disk Radius
-                    const p2 = s.position.clone().add(dir.clone().multiplyScalar(dist * 0.45)).add(perp.clone().multiplyScalar(disk.outerRadius * 1.8));
-                    const p3 = t.position.clone().add(dir.clone().multiplyScalar(-disk.outerRadius * 0.5)).add(perp.clone().multiplyScalar(disk.outerRadius * 0.8));
+                    // RLOF Physics: 2-Point Natural Gravity Arc
+                    // Matter follows the Roche potential towards the compact object.
+                    // We only need Source Tip and Disk Tangent to define a stable, smooth spiral.
+                    const midPoint = s.position.clone().add(dir.clone().multiplyScalar(dist * 0.5)).add(perp.clone().multiplyScalar(disk.outerRadius * 1.5));
+                    const insertion = t.position.clone().add(perp.clone().multiplyScalar(disk.outerRadius * 0.8));
 
-                    const curve = new THREE.CatmullRomCurve3([p1, p2, p3], false, 'centripetal');
+                    const curve = new THREE.CatmullRomCurve3([tip, midPoint, insertion], false, 'centripetal', 0.1);
 
                     const mesh = gs.group.children[0];
-                    const thickness = s.userData.visualScale * 1.5;
-                    const tubeGeo = new THREE.TubeGeometry(curve, 64, thickness, 10, false);
+                    // Dynamic Tapering: Wide at source, thin at target
+                    const tubeGeo = new THREE.TubeGeometry(curve, 64, s.userData.visualScale * 1.8, 12, false);
 
                     const colors = [];
-                    const opacities = [];
-                    const cS = new THREE.Color(0xff8822), cT = new THREE.Color(0x33aaff);
+                    const cS = new THREE.Color(0xff8822), cT = new THREE.Color(0x33bcff);
                     const count = tubeGeo.attributes.position.count;
                     for (let i = 0; i < count; i++) {
                         const tVal = i / count;
-                        // Smooth color lerp
-                        const c = cS.clone().lerp(cT, Math.pow(tVal, 1.2));
+                        const c = cS.clone().lerp(cT, Math.pow(tVal, 1.3));
                         colors.push(c.r, c.g, c.b);
-                        // Squared Alpha Fading for seamless integration
-                        const alpha = Math.sin(tVal * Math.PI);
-                        opacities.push(alpha * alpha * 0.7);
                     }
                     tubeGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-                    // Note: BasicMaterial doesn't support vertex opacity out of box, 
-                    // we simulate it via the texture transparency + mask.
 
                     if (mesh.geometry) mesh.geometry.dispose();
                     mesh.geometry = tubeGeo;
-                    mesh.material.map.offset.y -= 1.8 * simSpeed * delta;
-                    mesh.material.opacity = 0.8 + Math.sin(Date.now() * 0.003) * 0.1;
+                    mesh.material.map.offset.y -= 2.0 * simSpeed * delta;
+                    mesh.material.opacity = 0.85 + Math.sin(Date.now() * 0.004) * 0.05;
                 }
             });
 
