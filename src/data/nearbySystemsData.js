@@ -428,7 +428,7 @@ export const nearbyStarSystemsData = [
                 texture: "castor_a.png",
                 emissiveIntensity: 1.5,
                 position: { x: 0, y: 0, z: 0 },
-                orbit: { radius: 17700, speed: 0.05, inclination: 15 },
+                orbit: { radius: 15500, speed: 0.05, inclination: 15 },
                 description: "北河二 A 是系統中最大的聯星組件。A1 是一顆輝煌的 A1V 型藍白主序星。",
                 details: {
                     "質量": "2.76 太陽質量",
@@ -461,7 +461,7 @@ export const nearbyStarSystemsData = [
                 texture: "castor_a.png",
                 emissiveIntensity: 1.3,
                 position: { x: 0, y: 0, z: 0 },
-                orbit: { radius: 17700, speed: 0.05, inclination: 195 }, // Opposite side
+                orbit: { radius: 19900, speed: 0.05, inclination: 195 }, // Wider orbit due to lower mass
                 description: "北河二 B 是系統中的第二組聯星。B1 是一顆 A5V 型白主序星。",
                 details: {
                     "質量": "2.14 太陽質量",
