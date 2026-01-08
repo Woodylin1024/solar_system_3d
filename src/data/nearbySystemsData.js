@@ -412,5 +412,112 @@ export const nearbyStarSystemsData = [
                 }
             }
         ]
+    },
+    {
+        name: "Castor",
+        nameCH: "北河二 (雙子座 α)",
+        distanceFromSun: 3225291, // 51 Light years in units
+        position: { x: 1500000, y: 1200000, z: -2500000 },
+        stars: [
+            {
+                name: "Castor A1",
+                nameCH: "北河二 A1",
+                type: "star",
+                radius: 2.3,
+                color: 0xffffff,
+                texture: "castor_a.png",
+                emissiveIntensity: 1.5,
+                position: { x: 0, y: 0, z: 0 },
+                orbit: { radius: 17700, speed: 0.05, inclination: 15 },
+                description: "北河二 A 是系統中最大的聯星組件。A1 是一顆輝煌的 A1V 型藍白主序星。",
+                details: {
+                    "質量": "2.76 太陽質量",
+                    "直徑": "2.3 太陽直徑",
+                    "表面溫度": "9,500 K",
+                    "光度": "37 太陽光度",
+                    "光譜類型": "A1V",
+                    "距離": "51 光年"
+                },
+                planets: [
+                    {
+                        name: "Castor A2",
+                        nameCH: "北河二 A2",
+                        type: "star",
+                        radius: 0.5,
+                        color: 0xff4500,
+                        texture: "castor_c.png",
+                        orbit: { radius: 1500, speed: 0.4, inclination: 5 },
+                        description: "北河二 A2 是一顆與 A1 緊密運行的紅矮星（分光雙星）。",
+                        details: { "光譜類型": "dM1e", "公轉週期": "9.2 天" }
+                    }
+                ]
+            },
+            {
+                name: "Castor B1",
+                nameCH: "北河二 B1",
+                type: "star",
+                radius: 1.6,
+                color: 0xffffff,
+                texture: "castor_a.png",
+                emissiveIntensity: 1.3,
+                position: { x: 0, y: 0, z: 0 },
+                orbit: { radius: 17700, speed: 0.05, inclination: 195 }, // Opposite side
+                description: "北河二 B 是系統中的第二組聯星。B1 是一顆 A5V 型白主序星。",
+                details: {
+                    "質量": "2.14 太陽質量",
+                    "直徑": "1.6 太陽直徑",
+                    "表面溫度": "8,300 K",
+                    "光度": "13 太陽光度",
+                    "光譜類型": "A5V",
+                    "距離": "51 光年"
+                },
+                planets: [
+                    {
+                        name: "Castor B2",
+                        nameCH: "北河二 B2",
+                        type: "star",
+                        radius: 0.4,
+                        color: 0xff4500,
+                        texture: "castor_c.png",
+                        orbit: { radius: 1200, speed: 0.5, inclination: 10 },
+                        description: "北河二 B2 是一顆與 B1 緊密運行的紅矮星。",
+                        details: { "光譜類型": "dM1e", "公轉週期": "2.9 天" }
+                    }
+                ]
+            },
+            {
+                name: "Castor C1",
+                nameCH: "北河二 C1 (YY Gem)",
+                type: "star",
+                radius: 0.62,
+                color: 0xff4500,
+                texture: "castor_c.png",
+                emissiveIntensity: 1.0,
+                position: { x: 0, y: 0, z: 0 },
+                orbit: { radius: 194700, speed: 0.01, inclination: 45 },
+                description: "北河二 C (又名雙子座 YY) 是一組由兩顆紅矮星組成的食雙星，在極遠軌道上環繞 A-B 對運行。",
+                details: {
+                    "質量": "0.6 太陽質量",
+                    "直徑": "0.62 太陽直徑",
+                    "表面溫度": "3,820 K",
+                    "光度": "0.07 太陽光度",
+                    "光譜類型": "M0.5Ve",
+                    "距離": "51 光年"
+                },
+                planets: [
+                    {
+                        name: "Castor C2",
+                        nameCH: "北河二 C2",
+                        type: "star",
+                        radius: 0.62,
+                        color: 0xff4500,
+                        texture: "castor_c.png",
+                        orbit: { radius: 1000, speed: 0.6, inclination: 2 },
+                        description: "北河二 C2 是 YY Gem 系統中的第二顆紅矮星。",
+                        details: { "光譜類型": "M0.5Ve", "公轉週期": "0.8 天" }
+                    }
+                ]
+            }
+        ]
     }
 ];

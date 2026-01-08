@@ -14,7 +14,7 @@ const scene = new THREE.Scene();
 // ... (camera setup)
 
 // Add Stars
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 500000); // Lower FOV to reduce edge distortion
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000000); // Increased far plane for distant stars
 const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance while keeping sharpness
@@ -847,6 +847,14 @@ systemMenu.querySelectorAll('.system-menu-item').forEach(item => {
       const starMeshes = interstellarSystems.getStarMeshes();
       const lacaille = starMeshes.find(m => m.userData.name === "Lacaille 9352");
       if (lacaille) selectBody(lacaille);
+
+      // Update UI state
+      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    } else if (systemId === 'castor') {
+      const starMeshes = interstellarSystems.getStarMeshes();
+      const castorA = starMeshes.find(m => m.userData.name === "Castor A1");
+      if (castorA) selectBody(castorA);
 
       // Update UI state
       systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
