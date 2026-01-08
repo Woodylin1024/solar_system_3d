@@ -970,9 +970,9 @@ function animate() {
       const isInter = selectedTarget.userData.isInterstellar;
       let currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
 
-      // If interstellar, account for the visualScale (50x)
+      // If interstellar, account for the visualScale or maxVisualRadius
       if (isInter) {
-        currentRadius = selectedTarget.userData.visualScale;
+        currentRadius = selectedTarget.userData.maxVisualRadius || selectedTarget.userData.visualScale;
       }
 
       const multiplier = isInter ? 25 : (window.innerWidth <= 480 ? 18 : (window.innerWidth <= 1100 ? 12 : 6));
@@ -1014,10 +1014,10 @@ function animate() {
         let currentRadius = isReal ? (selectedTarget.userData.realScaleRadius || selectedTarget.userData.radius) : selectedTarget.userData.radius;
 
         if (isInter) {
-          currentRadius = selectedTarget.userData.visualScale;
+          currentRadius = selectedTarget.userData.maxVisualRadius || selectedTarget.userData.visualScale;
         }
 
-        const multiplier = isPhone ? 22 : 12;
+        const multiplier = isPhone ? 25 : 15; // Increased slightly for safety
         const zoomDist = currentRadius * multiplier;
 
         if (isLandscape) {
