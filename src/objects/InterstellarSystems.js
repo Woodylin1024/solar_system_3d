@@ -2,47 +2,64 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v4.2.1 - Emergency Stability & Visual Polish
- * Fixed module-level crashes and restored render loop stability.
+ * InterstellarSystems v4.2.5 - High-Energy Visual Polish
+ * Features:
+ * - Circular Accretion Disks (No square seams)
+ * - Improved Matter Stream (Tapered, glowing gas effect)
+ * - Enhanced Distorted Star (Vibrant temperature gradients)
+ * - Fixed z-fighting and scaling inheritance
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
     const allEntities = [];
     const selectable = [];
     const orbitLines = [];
-    const beltMeshes = [];
     const accretionDisks = [];
     const gasStreams = [];
 
     const textureLoader = manager ? new THREE.TextureLoader(manager) : new THREE.TextureLoader();
 
-    // Procedural glowing disk texture
+    // Procedural textured ring for accretion disks
     const createDiskTexture = () => {
-        const size = 512;
+        const size = 1024;
         const canvas = document.createElement('canvas');
         canvas.width = size;
         canvas.height = size;
         const ctx = canvas.getContext('2d');
-        const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+
+        // Transparent background
+        ctx.clearRect(0, 0, size, size);
+
+        // Circular gradient for gas density
+        const grad = ctx.createRadialGradient(size / 2, size / 2, size * 0.05, size / 2, size / 2, size / 2);
         grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-        grad.addColorStop(0.1, 'rgba(0, 200, 255, 0.9)');
-        grad.addColorStop(0.3, 'rgba(0, 100, 255, 0.4)');
-        grad.addColorStop(0.6, 'rgba(0, 50, 150, 0.1)');
+        grad.addColorStop(0.1, 'rgba(100, 240, 255, 0.9)');
+        grad.addColorStop(0.2, 'rgba(0, 150, 255, 0.6)');
+        grad.addColorStop(0.5, 'rgba(0, 40, 150, 0.2)');
         grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, size, size);
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+        ctx.fill();
 
-        // Grainy noise for gas texture
-        for (let i = 0; i < 1500; i++) {
-            const a = Math.random() * Math.PI * 2;
+        // Add spiral streaks manually
+        ctx.strokeStyle = 'rgba(200, 250, 255, 0.1)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 300; i++) {
             const r = Math.random() * size / 2;
-            ctx.fillStyle = `rgba(200, 240, 255, ${Math.random() * 0.2})`;
-            ctx.fillRect(size / 2 + Math.cos(a) * r, size / 2 + Math.sin(a) * r, 1, 1);
+            const a = Math.random() * Math.PI * 2;
+            const len = Math.random() * 100 + 20;
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, r, a, a + (len / r));
+            ctx.stroke();
         }
-        return new THREE.CanvasTexture(canvas);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.anisotropy = 16;
+        return texture;
     };
 
-    const diskTexture = createDiskTexture();
+    const diskTex = createDiskTexture();
 
     const createEntity = (data, parentName, container, depth = 0, systemName) => {
         let mesh;
@@ -51,8 +68,13 @@ export function createInterstellarSystems(scene, manager) {
         const baseScale = radius * scaleFactor;
 
         if (radius > 0) {
-            const geometry = data.isDistorted ? new THREE.SphereGeometry(1, 64, 64) : new THREE.SphereGeometry(1, 32, 32);
-            const material = new THREE.MeshBasicMaterial({ color: data.color || 0xffffff });
+            const geometry = data.isDistorted ? new THREE.SphereGeometry(1, 64, 64) : new THREE.SphereGeometry(1, 48, 48);
+            // Use high emissive color for distorted stars to simulate heat
+            const material = new THREE.MeshStandardMaterial({
+                color: data.color || 0xffffff,
+                emissive: data.color || 0xffffff,
+                emissiveIntensity: data.isDistorted ? 1.5 : (data.emissiveIntensity || 1.0)
+            });
             if (data.texture) material.map = textureLoader.load(`textures/${data.texture}`);
 
             mesh = new THREE.Mesh(geometry, material);
@@ -78,22 +100,36 @@ export function createInterstellarSystems(scene, manager) {
         container.add(mesh);
         allEntities.push(mesh);
 
-        // Specialized Features
+        // FEATURE: Circular Accretion Disk (No square seams)
         if (data.hasAccretionDisk) {
             const diskSize = data.diskRadius || (baseScale * 20);
-            const disk = new THREE.Mesh(
-                new THREE.PlaneGeometry(diskSize * 2, diskSize * 2),
-                new THREE.MeshBasicMaterial({ map: diskTexture, transparent: true, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
-            );
+            const diskGeo = new THREE.RingGeometry(baseScale * 0.1, diskSize, 128);
+            const diskMat = new THREE.MeshBasicMaterial({
+                map: diskTex,
+                transparent: true,
+                opacity: 0.9,
+                blending: THREE.AdditiveBlending,
+                side: THREE.DoubleSide,
+                depthWrite: false
+            });
+            const disk = new THREE.Mesh(diskGeo, diskMat);
             disk.rotation.x = -Math.PI / 2;
-            container.add(disk); // Add to system container for correct scaling
-            accretionDisks.push({ mesh: disk, parentName: data.name });
+            container.add(disk);
+            accretionDisks.push({ mesh: disk, parentName: data.name, speed: 2.0 });
         }
 
+        // FEATURE: Enhanced Gas Stream (Tapered glowing effect)
         if (data.hasGasStream) {
+            // Cone-like cylinder for matter transfer
             const stream = new THREE.Mesh(
-                new THREE.CylinderGeometry(baseScale * 0.05, baseScale * 0.3, 1, 12, 1, true),
-                new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending })
+                new THREE.CylinderGeometry(baseScale * 0.02, baseScale * 0.4, 1, 16, 1, true),
+                new THREE.MeshBasicMaterial({
+                    color: 0xaaccff,
+                    transparent: true,
+                    opacity: 0.7,
+                    blending: THREE.AdditiveBlending,
+                    side: THREE.DoubleSide
+                })
             );
             stream.geometry.translate(0, 0.5, 0);
             stream.geometry.rotateX(Math.PI / 2);
@@ -101,13 +137,18 @@ export function createInterstellarSystems(scene, manager) {
             gasStreams.push({ mesh: stream, source: data.name, target: parentName });
         }
 
+        // FEATURE: Improved Orbit Lines
         if (data.orbit) {
             const pts = [];
             for (let i = 0; i <= 256; i++) {
                 const a = (i / 256) * Math.PI * 2;
                 pts.push(new THREE.Vector3(Math.cos(a) * data.orbit.radius, 0, Math.sin(a) * data.orbit.radius));
             }
-            const orbit = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xff4400, transparent: true, opacity: 0.3 }));
+            const orbit = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({
+                color: data.type === 'star' ? 0xff3300 : 0x00aaff,
+                transparent: true,
+                opacity: 0.25
+            }));
             if (data.orbit.inclination) orbit.rotation.x = THREE.MathUtils.degToRad(data.orbit.inclination);
             orbit.userData = { parentName };
             container.add(orbit);
@@ -155,7 +196,7 @@ export function createInterstellarSystems(scene, manager) {
                 const p = allEntities.find(e => e.userData.name === ad.parentName);
                 if (p) {
                     ad.mesh.position.copy(p.position);
-                    ad.mesh.rotation.z += 0.02 * simSpeed;
+                    ad.mesh.rotation.z += 0.05 * simSpeed * delta * 5; // Rotation effect
                 }
             });
 
@@ -168,7 +209,8 @@ export function createInterstellarSystems(scene, manager) {
                     gs.mesh.position.copy(tip);
                     gs.mesh.lookAt(t.position);
                     gs.mesh.scale.z = tip.distanceTo(t.position);
-                    gs.mesh.material.opacity = 0.4 + Math.sin(Date.now() * 0.005) * 0.2;
+                    // Pulsing effect
+                    gs.mesh.material.opacity = 0.5 + Math.sin(Date.now() * 0.008) * 0.2;
                 }
             });
 
@@ -178,8 +220,6 @@ export function createInterstellarSystems(scene, manager) {
             });
         },
         getStarMeshes: () => selectable,
-        setVisible: (s, p, b, k) => {
-            orbitLines.forEach(l => l.visible = s);
-        }
+        setVisible: (s, p) => { orbitLines.forEach(l => l.visible = s); }
     };
 }
