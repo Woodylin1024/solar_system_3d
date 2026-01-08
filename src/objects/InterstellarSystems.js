@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v22.0.0 - "Universal Plasma Cloud"
- * CRITICAL BUG FIXES:
- * - Frustum Culling Fix: Set frustumCulled = false to prevent stream disappearing at odd angles.
- * - De-Ribboning: Replaced smooth sine waves with 100% irregular "disk-style" particle fluttering.
- * - Pointcloud Aesthetic: Increased particle scatter and size; removed the "smooth ribbon" look.
- * - Gaseous Cohesion: Ensured stream and disk use the same visual noise language.
+ * InterstellarSystems v23.0.0 - "Volumetric Particle Plume"
+ * RESTORING IMAGE 4 AESTHETIC:
+ * - Volumetric Scatter: Increased radial jitter significantly to create a thick, 3D gaseous plume instead of a flat ribbon.
+ * - Isotropic Randomness: Ensured particle offsets are truly 3D (X, Y, Z) to prevent "flatness" from all angles.
+ * - Frustum Stability: Explicitly set a massive Bounding Sphere and disabled culling to ensure visibility at all perspectives.
+ * - Particle Density: Boosted count to 5000+ for that "Image 4" cloud richness.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -30,12 +30,13 @@ export function createInterstellarSystems(scene, manager) {
         const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
         if (type === 'disk') {
             grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            grad.addColorStop(0.25, 'rgba(180, 245, 255, 1)');
-            grad.addColorStop(0.5, 'rgba(80, 200, 255, 0.9)');
+            grad.addColorStop(0.2, 'rgba(180, 245, 255, 1)');
+            grad.addColorStop(0.5, 'rgba(80, 200, 255, 0.8)');
             grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         } else {
+            // Softer, cloudier texture for the stream (Image 4 style)
             grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
+            grad.addColorStop(0.4, 'rgba(255, 255, 255, 0.6)');
             grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         }
         ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
@@ -75,24 +76,24 @@ export function createInterstellarSystems(scene, manager) {
             const jetGroup = new THREE.Group();
             const jetLen = baseScale * 1100;
             const jetGeo = new THREE.CylinderGeometry(baseScale * 0.1, baseScale * 4.5, jetLen, 32, 1, true);
-            const jetMat = new THREE.MeshBasicMaterial({ color: 0x99f7ff, map: hqPlumeTex, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false });
+            const jetMat = new THREE.MeshBasicMaterial({ color: 0xbbf5ff, map: hqPlumeTex, transparent: true, opacity: 0.65, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false });
             const jN = new THREE.Mesh(jetGeo, jetMat); jN.position.y = jetLen / 2;
             const jS = new THREE.Mesh(jetGeo, jetMat.clone()); jS.position.y = -jetLen / 2; jS.rotation.z = Math.PI;
             jetGroup.add(jN, jS); container.add(jetGroup); relativisticJets.push({ group: jetGroup, parentName: data.name });
         }
 
         if (data.hasAccretionDisk) {
-            const count = 9000;
+            const count = 9500;
             const diskSize = data.diskRadius || (baseScale * 25);
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             const colors = new Float32Array(count * 3);
-            const colorObj = new THREE.Color(0xbbf5ff);
+            const colorObj = new THREE.Color(0xccf5ff);
             for (let i = 0; i < count; i++) {
                 const r = Math.pow(Math.random(), 0.6) * diskSize + baseScale * 0.4;
                 const theta = Math.random() * Math.PI * 2;
                 positions[i * 3] = Math.cos(theta) * r;
-                positions[i * 3 + 1] = (Math.random() - 0.5) * diskSize * 0.35;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * diskSize * 0.4;
                 positions[i * 3 + 2] = Math.sin(theta) * r;
                 const brightness = 0.9 + Math.random() * 0.1;
                 colors[i * 3] = colorObj.r * brightness;
@@ -102,7 +103,7 @@ export function createInterstellarSystems(scene, manager) {
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             const material = new THREE.PointsMaterial({
-                size: baseScale * 4.5, map: hqDiskTex, transparent: true, opacity: 1.0,
+                size: baseScale * 4.8, map: hqDiskTex, transparent: true, opacity: 1.0,
                 vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
             });
             const points = new THREE.Points(geometry, material);
@@ -110,7 +111,7 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.hasGasStream) {
-            const count = 4500;
+            const count = 5500; // Boosted count for "Image 4" richness
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             const colors = new Float32Array(count * 3);
@@ -122,8 +123,10 @@ export function createInterstellarSystems(scene, manager) {
             });
             const points = new THREE.Points(geometry, material);
 
-            // v22 Fix: Disable culling for dynamic gas streams to prevent disappearing
+            // v23 Fix: Extreme visibility stability
             points.frustumCulled = false;
+            // Create a massive conceptual bounding sphere to keep it rendering from any angle
+            geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 5000);
 
             const tArray = new Float32Array(count);
             const seedArray = new Float32Array(count);
@@ -176,10 +179,10 @@ export function createInterstellarSystems(scene, manager) {
                 const p = allEntities.find(e => e.userData.name === ad.parentName);
                 if (p) {
                     ad.points.position.copy(p.position);
-                    ad.points.rotation.y += 0.4 * simSpeed * delta;
+                    ad.points.rotation.y += 0.45 * simSpeed * delta;
                     const posSet = ad.points.geometry.attributes.position;
                     for (let i = 0; i < posSet.count; i++) {
-                        if (Math.random() > 0.85) posSet.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.6);
+                        if (Math.random() > 0.82) posSet.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.7);
                     }
                     posSet.needsUpdate = true;
                 }
@@ -195,39 +198,45 @@ export function createInterstellarSystems(scene, manager) {
 
                     const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
                     const p1 = s.position.clone().add(dirToTarget.clone().multiplyScalar(scaledZ));
-                    const pMid = s.position.clone().add(dirToTarget.clone().multiplyScalar(dist * 0.55)).add(tangent.clone().multiplyScalar(disk.outerRadius * 1.3));
-                    const pEnd = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius * 0.65)); // Merge deep
+                    const pMid = s.position.clone().add(dirToTarget.clone().multiplyScalar(dist * 0.55)).add(tangent.clone().multiplyScalar(disk.outerRadius * 1.4));
+                    const pEnd = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius * 0.6));
 
-                    const curve = new THREE.CatmullRomCurve3([p1, pMid, pEnd], false, 'centripetal', 0.15);
+                    const curve = new THREE.CatmullRomCurve3([p1, pMid, pEnd], false, 'centripetal', 0.2);
                     const { points } = gs, { tArray, seedArray, count } = points.userData;
                     const posAttr = points.geometry.attributes.position, colAttr = points.geometry.attributes.color;
                     const cCool = new THREE.Color(0xffaa22), cHot = new THREE.Color(0xbbf5ff);
 
                     for (let i = 0; i < count; i++) {
-                        tArray[i] = (tArray[i] + 0.25 * delta * simSpeed * (0.8 + seedArray[i] * 0.2)) % 1.0;
+                        tArray[i] = (tArray[i] + 0.26 * delta * simSpeed * (0.8 + seedArray[i] * 0.2)) % 1.0;
                         const tVal = tArray[i], seed = seedArray[i], curvePos = curve.getPoint(tVal);
 
-                        // v22: NO SINE WAVES. Using 100% irregular pops for true particle aesthetic.
-                        const spread = s.userData.visualScale * (0.6 + seed * 1.5) * (1.1 - tVal * 0.7);
-                        // Static offset + High frequency irregular pop
-                        let randX = (seed - 0.5) * spread * 2.0;
-                        let randY = (Math.random() - 0.5) * spread * 3.0; // Dynamic pop
-                        let randZ = (Math.random() - 0.5) * spread * 3.0;
+                        // v23: VOLUMETRIC SCATTER - Restoring that thick gaseous look from Image 4
+                        const baseSpread = s.userData.visualScale * 3.5; // Massive wide base
+                        const spreadFactor = (0.5 + seed * 2.5) * (1.2 - tVal * 0.75);
 
-                        // Only "jump" occasionally like the disk
-                        if (Math.random() < 0.95) {
-                            randY *= 0.1; randZ *= 0.1; // Stay calm usually
+                        // 3D Isotropic Jitter (X, Y, Z) to ensure it's not a ribbon from any angle
+                        // Use seed-based fixed offsets + high-frequency irregular pops
+                        const offsetX = (Math.sin(seed * 100) * baseSpread * spreadFactor);
+                        const offsetY = (Math.cos(seed * 200) * baseSpread * spreadFactor);
+                        const offsetZ = (Math.sin(seed * 300) * baseSpread * spreadFactor);
+
+                        // Disk-style irregular popup logic
+                        let popX = 0, popY = 0, popZ = 0;
+                        if (Math.random() > 0.96) {
+                            popX = (Math.random() - 0.5) * baseSpread * 4.0;
+                            popY = (Math.random() - 0.5) * baseSpread * 4.0;
+                            popZ = (Math.random() - 0.5) * baseSpread * 4.0;
                         }
 
-                        posAttr.setXYZ(i, curvePos.x + randX, curvePos.y + randY, curvePos.z + randZ);
+                        posAttr.setXYZ(i, curvePos.x + offsetX + popX, curvePos.y + offsetY + popY, curvePos.z + offsetZ + popZ);
 
-                        const col = cCool.clone().lerp(cHot, Math.pow(tVal, 1.6));
-                        const flicker = 1.0 + (Math.random() - 0.5) * 0.8; // Random brightness pop
-                        const alpha = Math.sin(tVal * Math.PI) * 4.5 * flicker;
+                        const col = cCool.clone().lerp(cHot, Math.pow(tVal, 1.5));
+                        const flicker = 1.0 + (Math.random() - 0.5) * 0.9;
+                        const alpha = Math.sin(tVal * Math.PI) * 4.8 * flicker;
                         colAttr.setXYZ(i, col.r * alpha, col.g * alpha, col.b * alpha);
                     }
                     posAttr.needsUpdate = true; colAttr.needsUpdate = true;
-                    points.material.size = s.userData.visualScale * 14.0; // Max cloud pop
+                    points.material.size = s.userData.visualScale * 18.0; // Huge gaseous particles for cloud look
                 }
             });
 
