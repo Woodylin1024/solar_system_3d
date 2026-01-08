@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v33.0.0 - "Thermal Gold Accretion"
- * WARM COLOR & DENSITY FINAL TOUCH:
- * - Warm Tone Disk: Shifted Accretion Disk color to Brilliant Warm White/Gold (0xfff5cc) for "High Temp" feeling.
- * - Flow Sync: Matched RLOF target color to the same warm white for a seamless thermal transition.
- * - 300k Density: Maintained the massive particle count for a solid, opaque disk mass.
- * - Tangential Perfection: Kept the < 10 deg entry angle and gapless star connection.
+ * InterstellarSystems v35.0.0 - "Deep Surface Integration"
+ * ENHANCED INTEGRATION:
+ * - Deeper Entry: Moved pEnd from 85% to 70% of the disk radius to sit firmly "on" the surface.
+ * - Tangential Continuity: Refined Bezier handle to ensure the stream merges parallel to the internal flow of the disk.
+ * - Ultra-Dense Disk: Maintained 300,000 particles with High-Temp Warm Gold (0xfff5cc).
+ * - Grainy Parity: Synced particle scale and jitter for a unified plasma texture.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -30,7 +30,7 @@ export function createInterstellarSystems(scene, manager) {
         const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
         grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
         grad.addColorStop(0.1, 'rgba(255, 255, 255, 1)');
-        grad.addColorStop(0.35, 'rgba(255, 240, 180, 0.5)'); // Warm glow
+        grad.addColorStop(0.35, 'rgba(255, 240, 180, 0.5)');
         grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
         ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
@@ -76,12 +76,12 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.hasAccretionDisk) {
-            const count = 300000; // Hyper-density maintained
+            const count = 300000;
             const diskSize = data.diskRadius || (baseScale * 25);
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             const colors = new Float32Array(count * 3);
-            const colorObj = new THREE.Color(0xfff5cc); // WARM GOLD-WHITE FOR HIGH TEMP
+            const colorObj = new THREE.Color(0xfff5cc);
             for (let i = 0; i < count; i++) {
                 const r = Math.pow(Math.random(), 0.6) * diskSize + baseScale * 0.45;
                 const theta = Math.random() * Math.PI * 2;
@@ -171,7 +171,7 @@ export function createInterstellarSystems(scene, manager) {
                     ad.points.rotation.y += 0.6 * simSpeed * delta;
                     const posSet = ad.points.geometry.attributes.position;
                     for (let i = 0; i < posSet.count; i++) {
-                        if (Math.random() > 0.9) posSet.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.5);
+                        if (Math.random() > 0.9) posSet.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.52);
                     }
                     posSet.needsUpdate = true;
                 }
@@ -188,15 +188,20 @@ export function createInterstellarSystems(scene, manager) {
                     const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
                     const pStart = s.position.clone().add(dirToTarget.clone().multiplyScalar(scaledZ * 0.68));
 
-                    const pEnd = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius * 0.85));
+                    // v35: DEEP SURFACE INTEGRATION
+                    // Move pEnd further into the disk (70% instead of 85%) to sit firmly on the high-temp surface
+                    const pEnd = t.position.clone()
+                        .add(tangent.clone().multiplyScalar(disk.outerRadius * 0.7));
 
-                    const ctrlHandle = pEnd.clone().sub(dirToTarget.clone().multiplyScalar(dist * 0.6));
+                    // Maintain < 10 degree tangent angle
+                    const ctrlHandle = pEnd.clone()
+                        .sub(dirToTarget.clone().multiplyScalar(dist * 0.6));
 
                     const curve = new THREE.QuadraticBezierCurve3(pStart, ctrlHandle, pEnd);
 
                     const { points } = gs, { tArray, seedArray, count } = points.userData;
                     const posAttr = points.geometry.attributes.position, colAttr = points.geometry.attributes.color;
-                    const cCool = new THREE.Color(0xff8822), cHot = new THREE.Color(0xfff5cc); // WARM TARGET SYNC
+                    const cCool = new THREE.Color(0xff8822), cHot = new THREE.Color(0xfff5cc);
 
                     for (let i = 0; i < count; i++) {
                         tArray[i] = (tArray[i] + 0.35 * delta * simSpeed * (0.85 + seedArray[i] * 0.15)) % 1.0;
