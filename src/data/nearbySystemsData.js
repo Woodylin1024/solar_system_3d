@@ -271,5 +271,32 @@ export const nearbyStarSystemsData = [
                 }
             }
         ]
+    },
+    {
+        name: "Ross 154",
+        nameCH: "羅斯 154",
+        distanceFromSun: 611800, // 9.68 Light years in units
+        position: { x: -300000, y: -450000, z: -314000 },
+        stars: [
+            {
+                name: "Ross 154",
+                nameCH: "羅斯 154",
+                type: "star",
+                radius: 0.24, // Solar radii
+                color: 0xff3d00, // Red dwarf
+                texture: "ross154.png",
+                emissiveIntensity: 0.8,
+                position: { x: 0, y: 0, z: 0 },
+                description: "羅斯 154（Ross 154）是一顆位於人馬座的紅矮星，距離地球約 9.68 光年。它是一顆活躍的閃焰星，旋轉速度相對較快。",
+                details: {
+                    "質量": "0.17 太陽質量",
+                    "直徑": "0.24 太陽直徑",
+                    "表面溫度": "3,340 K",
+                    "光度": "0.0038 太陽光度",
+                    "光譜類型": "M3.5Ve",
+                    "距離": "9.68 光年"
+                }
+            }
+        ]
     }
 ];
