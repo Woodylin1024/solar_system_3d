@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v38.0.0 - "Nebulous Turbulent Disk"
- * DE-GEOMETRIZATION & FLUID DYNAMICS:
- * - Azimuthal Turbulence: Applied multi-octave sine waves to the Y-axis based on angle (theta) for irregular "wavy" surfaces.
- * - Radial Flaring: Disk height increases with radius to create an organic, funnel-like profile.
- * - Non-Linear Falloff: Used a triangular density distribution for Y-coordinates to remove sharp vertical cutoffs.
- * - 450k Particles: Maintained hyper-density with "boiling" vertical jitter for a nebulous gas look.
+ * InterstellarSystems v39.0.0 - "Performance & Clarity Balance"
+ * OPTIMIZATION UPDATE:
+ * - 50% Density Reduction: Accretion disk count reduced to 225,000 for smoother performance.
+ * - 20% Size Boost: Increased particle size to 1.8x for better coverage and visibility despite lower density.
+ * - Nebulous Turbulence: Maintained the wavy, flared, and organic gas cloud morphology.
+ * - Grainy Parity: Synced RLOF and disk particle sizes at 1.8x for unified visual texture.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -76,7 +76,7 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.hasAccretionDisk) {
-            const count = 450000;
+            const count = 225000; // Optimized: 50% Reduction (450k -> 225k)
             const diskSize = data.diskRadius || (baseScale * 25);
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
@@ -87,13 +87,10 @@ export function createInterstellarSystems(scene, manager) {
                 const theta = Math.random() * Math.PI * 2;
                 positions[i * 3] = Math.cos(theta) * r;
 
-                // v38: Irregular boundary logic (Azimuthal Turbulence + Radial Flaring)
                 const rNorm = r / diskSize;
-                const flareHeight = diskSize * (0.12 + rNorm * 0.48); // Disk flares (gets thicker) towards the edge
-                const wavyTurbulence = 0.85 + 0.3 * (Math.sin(theta * 3.1) * Math.cos(theta * 5.7) + Math.sin(theta * 11.3) * 0.2); // Organic wavy profile
+                const flareHeight = diskSize * (0.12 + rNorm * 0.48);
+                const wavyTurbulence = 0.85 + 0.3 * (Math.sin(theta * 3.1) * Math.cos(theta * 5.7) + Math.sin(theta * 11.3) * 0.2);
 
-                // Non-linear vertical falloff: creates density core at plane and nebulous edges
-                // (Math.random() + Math.random() - 1.0) creates a triangular distribution
                 const vDist = (Math.random() + Math.random() - 1.0) * (Math.random() > 0.85 ? 1.4 : 1.0);
                 positions[i * 3 + 1] = vDist * flareHeight * wavyTurbulence;
 
@@ -107,7 +104,8 @@ export function createInterstellarSystems(scene, manager) {
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             const material = new THREE.PointsMaterial({
-                size: baseScale * 1.5, map: unifiedSparkTex, transparent: true, opacity: 1.0,
+                size: baseScale * 1.8, // Boosted: 20% Increase (1.5 -> 1.8) for better coverage
+                map: unifiedSparkTex, transparent: true, opacity: 1.0,
                 vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
             });
             const points = new THREE.Points(geometry, material);
@@ -181,7 +179,6 @@ export function createInterstellarSystems(scene, manager) {
                     ad.points.position.copy(p.position);
                     ad.points.rotation.y += 0.6 * simSpeed * delta;
                     const posSet = ad.points.geometry.attributes.position;
-                    // v38: Turbulent vertical "boiling" move
                     for (let i = 0; i < posSet.count; i++) {
                         if (Math.random() > 0.98) {
                             let y = posSet.getY(i);
@@ -237,7 +234,8 @@ export function createInterstellarSystems(scene, manager) {
                         colAttr.setXYZ(i, col.r * lumMultiplier * flicker, col.g * lumMultiplier * flicker, col.b * lumMultiplier * flicker);
                     }
                     posAttr.needsUpdate = true; colAttr.needsUpdate = true;
-                    points.material.size = s.userData.visualScale * 1.5;
+                    // v39 Sync size at 1.8x
+                    points.material.size = s.userData.visualScale * 1.8;
                 }
             });
 
