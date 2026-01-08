@@ -1019,9 +1019,13 @@ function animate() {
 
         if (isInter) {
           currentRadius = selectedTarget.userData.maxVisualRadius || selectedTarget.userData.visualScale;
+          // v42: Account for Accretion Disk in Mobile scale to prevent washout
+          if (selectedTarget.userData.hasAccretionDisk && selectedTarget.userData.diskRadius) {
+            currentRadius = Math.max(currentRadius, selectedTarget.userData.diskRadius * 0.5);
+          }
         }
 
-        const multiplier = isPhone ? 25 : 15; // Increased slightly for safety
+        const multiplier = isInter ? 60 : (isPhone ? 25 : 15);
         const zoomDist = currentRadius * multiplier;
 
         if (isLandscape) {
