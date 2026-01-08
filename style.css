@@ -364,21 +364,44 @@ button:active {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 10px;
+  background: #000;
+  border-radius: 50%;
+  /* Perfect sphere */
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  box-shadow:
+    inset -4px -4px 8px rgba(0, 0, 0, 0.8),
+    /* Shading to simulate 3D volume */
+    0 0 10px rgba(255, 204, 0, 0.2);
+  /* Subtle outer glow */
+}
+
+.system-icon::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
+  pointer-events: none;
 }
 
 .system-icon img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s;
+  transition: transform 0.4s;
 }
 
 .system-menu-item:hover .system-icon img {
-  transform: scale(1.1);
+  transform: scale(1.15) rotate(5deg);
+}
+
+.system-menu-item.active .system-icon {
+  border-color: #00d2ff;
+  box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
 }
 
 .system-info {
