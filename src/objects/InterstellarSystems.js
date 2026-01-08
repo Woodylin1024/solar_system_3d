@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v4.1.1 - Corrected Accretion Scaling
+ * InterstellarSystems v4.1.2 - Proportional Scale Fix
  * Features:
- * - Fixed: Accretion disk now properly scaled to fit inside the binary orbit.
- * - Matter streams and tidal distortion for high-energy systems.
- * - Hierarchical orbital mechanics.
+ * - Fixed Accretion Disk scale inheritance (moved to container-level syncing).
+ * - Corrected Neutron Star orbital behavior.
+ * - Dynamic matter stream between binary pairs.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -36,7 +36,6 @@ export function createInterstellarSystems(scene, manager) {
             const baseScale = data.radius * scaleFactor;
 
             if (isDistorted && data.distortionAxes) {
-                // Pointing along Z-axis for lookAt orientation
                 mesh.scale.set(
                     baseScale * (data.distortionAxes.x || 1.0),
                     baseScale * (data.distortionAxes.y || 1.0),
@@ -57,23 +56,22 @@ export function createInterstellarSystems(scene, manager) {
                 angle: data.orbit?.startAngle ?? Math.random() * Math.PI * 2
             };
 
-            // Accretion Disk - Fixed Scaling
+            // Accretion Disk - FIXED: No longer added as child to avoid scale inheritance
             if (data.hasAccretionDisk) {
-                // Disk should be related to the system's size, not just a huge multiplier
-                const innerR = baseScale * 1.5;
-                const outerR = data.diskRadius || (baseScale * 150);
+                const innerR = baseScale * 2;
+                const outerR = data.diskRadius || (baseScale * 20);
                 const diskGeo = new THREE.RingGeometry(innerR, outerR, 128);
                 const diskMat = new THREE.MeshBasicMaterial({
                     color: data.diskColor || 0x00ccff,
                     transparent: true,
-                    opacity: 0.6,
+                    opacity: 0.5,
                     side: THREE.DoubleSide,
                     blending: THREE.AdditiveBlending
                 });
-                const disk = new THREE.Mesh(diskGeo, diskMat);
-                disk.rotation.x = Math.PI / 2;
-                mesh.add(disk);
-                accretionDisks.push({ mesh: disk, speed: 1.5 });
+                const diskMesh = new THREE.Mesh(diskGeo, diskMat);
+                diskMesh.rotation.x = Math.PI / 2;
+                container.add(diskMesh); // Add to container directly
+                accretionDisks.push({ mesh: diskMesh, parentName: data.name, speed: 1.5 });
             }
 
             // Gas Stream
@@ -100,14 +98,13 @@ export function createInterstellarSystems(scene, manager) {
         allEntities.push(mesh);
         container.add(mesh);
 
+        // Orbit creation
         if (data.orbit) {
             const orbitPts = [];
             const segments = 512;
             for (let j = 0; j <= segments; j++) {
                 const angle = (j / segments) * Math.PI * 2;
-                const x = data.orbit.radius * Math.cos(angle);
-                const z = data.orbit.radius * Math.sin(angle);
-                orbitPts.push(new THREE.Vector3(x, 0, z));
+                orbitPts.push(new THREE.Vector3(data.orbit.radius * Math.cos(angle), 0, data.orbit.radius * Math.sin(angle)));
             }
             const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPts);
             const isStar = data.type === 'star';
@@ -116,11 +113,7 @@ export function createInterstellarSystems(scene, manager) {
                 transparent: true,
                 opacity: isStar ? 0.4 : 0.2
             }));
-
-            if (data.orbit.inclination) {
-                orbitLine.rotation.x = THREE.MathUtils.degToRad(data.orbit.inclination);
-            }
-
+            if (data.orbit.inclination) orbitLine.rotation.x = THREE.MathUtils.degToRad(data.orbit.inclination);
             orbitLine.userData = { parentName: parentName, type: isStar ? 'star_orbit' : 'planet_orbit' };
             container.add(orbitLine);
             orbitLines.push(orbitLine);
@@ -155,17 +148,22 @@ export function createInterstellarSystems(scene, manager) {
                     const r = d.orbit.radius;
                     const x = r * Math.cos(d.angle);
                     const z = r * Math.sin(d.angle);
-
                     if (d.orbit.inclination) {
                         const t = THREE.MathUtils.degToRad(d.orbit.inclination);
                         mesh.position.set(pPos.x + x, pPos.y - z * Math.sin(t), pPos.z + z * Math.cos(t));
                     } else {
                         mesh.position.set(pPos.x + x, pPos.y, pPos.z + z);
                     }
+                    if (d.isDistorted) mesh.lookAt(pPos);
+                }
+            });
 
-                    if (d.isDistorted) {
-                        mesh.lookAt(pPos);
-                    }
+            // Sync Accretion Disks (now world-space sync to avoid scaling issues)
+            accretionDisks.forEach(disk => {
+                const parent = allEntities.find(e => e.userData.name === disk.parentName);
+                if (parent) {
+                    disk.mesh.position.copy(parent.position);
+                    disk.mesh.rotation.z += disk.speed * simSpeed * delta * 1.5;
                 }
             });
 
@@ -176,11 +174,10 @@ export function createInterstellarSystems(scene, manager) {
                     stream.mesh.position.copy(sMesh.position);
                     stream.mesh.lookAt(tMesh.position);
                     stream.mesh.scale.z = sMesh.position.distanceTo(tMesh.position);
-                    stream.mesh.material.opacity = 0.5 + Math.sin(Date.now() * 0.005) * 0.3;
+                    stream.mesh.material.opacity = 0.4 + Math.sin(Date.now() * 0.005) * 0.2;
                 }
             });
 
-            accretionDisks.forEach(disk => { disk.mesh.rotation.z += disk.speed * simSpeed * delta * 1.5; });
             orbitLines.forEach(l => {
                 const p = allEntities.find(e => e.userData.name === l.userData.parentName);
                 if (p) l.position.copy(p.position);
