@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v37.0.0 - "Dense Matter Saturation"
- * DENSITY BOOST & REFINEMENT:
- * - 450k Particles: Increased accretion disk density by 50% (300k -> 450k) for a massive, semi-opaque fluid appearance.
- * - Grazing Edge: Maintained the 95% radius entry point for perfect orbital alignment.
- * - Warm Gold Temp: Persistent high-energy aesthetic across the entire plasma system.
- * - Grainy Parity: Synced micro-spark texture and 1.5x scaling for universal consistency.
+ * InterstellarSystems v38.0.0 - "Nebulous Turbulent Disk"
+ * DE-GEOMETRIZATION & FLUID DYNAMICS:
+ * - Azimuthal Turbulence: Applied multi-octave sine waves to the Y-axis based on angle (theta) for irregular "wavy" surfaces.
+ * - Radial Flaring: Disk height increases with radius to create an organic, funnel-like profile.
+ * - Non-Linear Falloff: Used a triangular density distribution for Y-coordinates to remove sharp vertical cutoffs.
+ * - 450k Particles: Maintained hyper-density with "boiling" vertical jitter for a nebulous gas look.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -76,18 +76,29 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.hasAccretionDisk) {
-            const count = 450000; // BOOSTED DENSITY (+50%): 300k -> 450k
+            const count = 450000;
             const diskSize = data.diskRadius || (baseScale * 25);
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             const colors = new Float32Array(count * 3);
-            const colorObj = new THREE.Color(0xfff5cc); // Thermal warm gold
+            const colorObj = new THREE.Color(0xfff5cc);
             for (let i = 0; i < count; i++) {
                 const r = Math.pow(Math.random(), 0.6) * diskSize + baseScale * 0.45;
                 const theta = Math.random() * Math.PI * 2;
                 positions[i * 3] = Math.cos(theta) * r;
-                positions[i * 3 + 1] = (Math.random() - 0.5) * diskSize * 0.58;
+
+                // v38: Irregular boundary logic (Azimuthal Turbulence + Radial Flaring)
+                const rNorm = r / diskSize;
+                const flareHeight = diskSize * (0.12 + rNorm * 0.48); // Disk flares (gets thicker) towards the edge
+                const wavyTurbulence = 0.85 + 0.3 * (Math.sin(theta * 3.1) * Math.cos(theta * 5.7) + Math.sin(theta * 11.3) * 0.2); // Organic wavy profile
+
+                // Non-linear vertical falloff: creates density core at plane and nebulous edges
+                // (Math.random() + Math.random() - 1.0) creates a triangular distribution
+                const vDist = (Math.random() + Math.random() - 1.0) * (Math.random() > 0.85 ? 1.4 : 1.0);
+                positions[i * 3 + 1] = vDist * flareHeight * wavyTurbulence;
+
                 positions[i * 3 + 2] = Math.sin(theta) * r;
+
                 const brightness = 0.92 + Math.random() * 0.08;
                 colors[i * 3] = colorObj.r * brightness;
                 colors[i * 3 + 1] = colorObj.g * brightness;
@@ -130,7 +141,7 @@ export function createInterstellarSystems(scene, manager) {
 
         if (data.orbit) {
             const pts = []; for (let i = 0; i <= 128; i++) { const a = (i / 128) * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * data.orbit.radius, 0, Math.sin(a) * data.orbit.radius)); }
-            const o = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.2 }));
+            const o = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.18 }));
             if (data.orbit.inclination) o.rotation.x = THREE.MathUtils.degToRad(data.orbit.inclination);
             o.userData = { parentName }; container.add(o); orbitLines.push(o);
         }
@@ -170,8 +181,13 @@ export function createInterstellarSystems(scene, manager) {
                     ad.points.position.copy(p.position);
                     ad.points.rotation.y += 0.6 * simSpeed * delta;
                     const posSet = ad.points.geometry.attributes.position;
+                    // v38: Turbulent vertical "boiling" move
                     for (let i = 0; i < posSet.count; i++) {
-                        if (Math.random() > 0.9) posSet.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.52);
+                        if (Math.random() > 0.98) {
+                            let y = posSet.getY(i);
+                            y += (Math.random() - 0.5) * ad.outerRadius * 0.04 * simSpeed * delta;
+                            posSet.setY(i, y);
+                        }
                     }
                     posSet.needsUpdate = true;
                 }
@@ -188,7 +204,6 @@ export function createInterstellarSystems(scene, manager) {
                     const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
                     const pStart = s.position.clone().add(dirToTarget.clone().multiplyScalar(scaledZ * 0.68));
 
-                    // v37: GRAZING EDGE INTEGRATION (95% Radius)
                     const pEnd = t.position.clone()
                         .add(tangent.clone().multiplyScalar(disk.outerRadius * 0.95));
 
