@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v15.0.0 - "High-Lumen Plasma"
- * VISUAL RESCUE:
- * - High Brightness: Boosted particle size and color weight for high visibility.
- * - Parabolic Pathing: Ultra-smooth, large-radius centrifugal arc to match User's yellow line.
- * - 6000-Particle Disk: High-density accretion disk with clear boundaries and fluttering logic.
- * - Zero Geometry: 100% point-cloud gaseous physics.
+ * InterstellarSystems v16.0.0 - "Early-Turn Gravity"
+ * PHYSICS REFINEMENT based on User Feedback:
+ * - 6-Point Spline: Replaced 3-point logic with a 6-point progressive steering system for max smoothness.
+ * - Early Curvature: Shifted the first turn control point much closer to the source star (V818).
+ * - Tangential Injection: Particles exit with orbital inertia, starting the turn immediately.
+ * - Slender & Bright: Maintained high-lumen particle cloud but with narrow, elegant pathing.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -20,7 +20,6 @@ export function createInterstellarSystems(scene, manager) {
 
     const textureLoader = manager ? new THREE.TextureLoader(manager) : new THREE.TextureLoader();
 
-    // High-Resolution Nebula Particle Textures
     const createNebulaTexture = (type = 'disk') => {
         const size = 512;
         const canvas = document.createElement('canvas');
@@ -36,10 +35,9 @@ export function createInterstellarSystems(scene, manager) {
             grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
             ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
         } else {
-            // "Gas Plume Particle": Strong core for visibility
             const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
             grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
+            grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.5)');
             grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
             ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
         }
@@ -86,20 +84,18 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.hasAccretionDisk) {
-            const count = 6000; // Boosted density
+            const count = 6500;
             const diskSize = data.diskRadius || (baseScale * 20);
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             const colors = new Float32Array(count * 3);
-
-            const colorObj = new THREE.Color(0x88e5ff); // Brighter blue
+            const colorObj = new THREE.Color(0x99eaff);
             for (let i = 0; i < count; i++) {
                 const r = Math.pow(Math.random(), 0.6) * diskSize + baseScale * 0.4;
                 const theta = Math.random() * Math.PI * 2;
                 positions[i * 3] = Math.cos(theta) * r;
-                positions[i * 3 + 1] = (Math.random() - 0.5) * diskSize * 0.15;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * diskSize * 0.18;
                 positions[i * 3 + 2] = Math.sin(theta) * r;
-
                 const brightness = 0.7 + Math.random() * 0.3;
                 colors[i * 3] = colorObj.r * brightness;
                 colors[i * 3 + 1] = colorObj.g * brightness;
@@ -107,9 +103,8 @@ export function createInterstellarSystems(scene, manager) {
             }
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
             const material = new THREE.PointsMaterial({
-                size: baseScale * 2.2, map: hqDiskTex, transparent: true, opacity: 0.9,
+                size: baseScale * 2.5, map: hqDiskTex, transparent: true, opacity: 0.9,
                 vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
             });
             const points = new THREE.Points(geometry, material);
@@ -117,13 +112,12 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.hasGasStream) {
-            const count = 2500; // More particles for visibility
+            const count = 2800;
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             const colors = new Float32Array(count * 3);
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
             const material = new THREE.PointsMaterial({
                 size: 1.0, map: hqPlumeTex, transparent: true, opacity: 1.0,
                 vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
@@ -180,13 +174,10 @@ export function createInterstellarSystems(scene, manager) {
                 const p = allEntities.find(e => e.userData.name === ad.parentName);
                 if (p) {
                     ad.points.position.copy(p.position);
-                    ad.points.rotation.y += 0.12 * simSpeed * delta;
-                    // Fluttering effect: Irregular particle motion
+                    ad.points.rotation.y += 0.15 * simSpeed * delta;
                     const pos = ad.points.geometry.attributes.position;
                     for (let i = 0; i < pos.count; i++) {
-                        if (Math.random() > 0.96) {
-                            pos.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.2);
-                        }
+                        if (Math.random() > 0.95) pos.setY(i, (Math.random() - 0.5) * ad.outerRadius * 0.25);
                     }
                     pos.needsUpdate = true;
                 }
@@ -202,34 +193,34 @@ export function createInterstellarSystems(scene, manager) {
                     const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
                     const pStart = s.position.clone().add(dirOut.clone().multiplyScalar(-scaledZ));
 
-                    // ULTRA-SMOOTH PARABOLIC PATH: Wide centrifugal arc
-                    const pMid = t.position.clone().add(dirOut.clone().multiplyScalar(dist * 0.45)).add(tangent.clone().multiplyScalar(disk.outerRadius * 3.5)); // High Centrifugal logic
-                    const pEnd = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius * 0.9)); // Perfect tangential entry
+                    // v16 EARLY-TURN 6-POINT SMOOTH PATH:
+                    // We start steering almost immediately after leaving the tip.
+                    const p1 = pStart;
+                    const p2 = pStart.clone().add(tangent.clone().multiplyScalar(dist * 0.1)).add(dirOut.clone().multiplyScalar(dist * 0.05)); // Immediate turn
+                    const p3 = t.position.clone().add(dirOut.clone().multiplyScalar(dist * 0.4)).add(tangent.clone().multiplyScalar(disk.outerRadius * 2.8));
+                    const p4 = t.position.clone().add(dirOut.clone().multiplyScalar(dist * 0.1)).add(tangent.clone().multiplyScalar(disk.outerRadius * 1.5));
+                    const p5 = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius)).sub(dirOut.clone().multiplyScalar(disk.outerRadius * 0.2));
+                    const p6 = t.position.clone().add(tangent.clone().multiplyScalar(disk.outerRadius * 0.7)); // Wrap into disk
 
-                    const curve = new THREE.CatmullRomCurve3([pStart, pMid, pEnd], false, 'centripetal', 0.05); // low tension for max smoothness
-
+                    const curve = new THREE.CatmullRomCurve3([p1, p2, p3, p4, p5, p6], false, 'centripetal', 0.1);
                     const { points } = gs, { tArray, seedArray, count } = points.userData;
                     const posAttr = points.geometry.attributes.position, colAttr = points.geometry.attributes.color;
-                    const cS = new THREE.Color(0xffaa44), cT = new THREE.Color(0xaaffff); // Brighter spectrum
+                    const cS = new THREE.Color(0xffaa44), cT = new THREE.Color(0xaaffff);
 
                     for (let i = 0; i < count; i++) {
                         tArray[i] = (tArray[i] + 0.18 * delta * simSpeed * (0.8 + seedArray[i] * 0.2)) % 1.0;
                         const tVal = tArray[i], seed = seedArray[i], curvePos = curve.getPoint(tVal);
-
-                        // Spread of the plume
-                        const spread = s.userData.visualScale * (0.8 + seed * 1.5) * (1.1 - tVal * 0.7);
-                        const jitterX = (Math.sin(time * 3.0 + seed * 40) * 0.5 + (seed - 0.5)) * spread;
-                        const jitterY = (Math.cos(time * 3.5 + seed * 50) * 0.5 + (seed - 0.5)) * spread;
-                        const jitterZ = (Math.sin(time * 4.0 + seed * 60) * 0.5 + (seed - 0.5)) * spread;
-
+                        const spread = s.userData.visualScale * (0.6 + seed * 1.2) * (1.1 - tVal * 0.7);
+                        const jitterX = (Math.sin(time * 2.8 + seed * 40) * 0.5 + (seed - 0.5)) * spread;
+                        const jitterY = (Math.cos(time * 3.3 + seed * 50) * 0.5 + (seed - 0.5)) * spread;
+                        const jitterZ = (Math.sin(time * 3.8 + seed * 60) * 0.5 + (seed - 0.5)) * spread;
                         posAttr.setXYZ(i, curvePos.x + jitterX, curvePos.y + jitterY, curvePos.z + jitterZ);
                         const col = cS.clone().lerp(cT, Math.pow(tVal, 1.3));
-                        // High Lumen Alpha
-                        const alpha = Math.sin(tVal * Math.PI) * 1.5;
+                        const alpha = Math.sin(tVal * Math.PI) * 1.6;
                         colAttr.setXYZ(i, col.r * alpha, col.g * alpha, col.b * alpha);
                     }
                     posAttr.needsUpdate = true; colAttr.needsUpdate = true;
-                    points.material.size = s.userData.visualScale * 5.0; // LARGER PARTICLES FOR BRIGHTNESS
+                    points.material.size = s.userData.visualScale * 5.5;
                 }
             });
 
