@@ -973,6 +973,10 @@ function animate() {
       // If interstellar, account for the visualScale or maxVisualRadius
       if (isInter) {
         currentRadius = selectedTarget.userData.maxVisualRadius || selectedTarget.userData.visualScale;
+        // v41: If target has an accretion disk, zoom based on the disk scale for a better "system view"
+        if (selectedTarget.userData.hasAccretionDisk && selectedTarget.userData.diskRadius) {
+          currentRadius = Math.max(currentRadius, selectedTarget.userData.diskRadius * 0.45);
+        }
       }
 
       const multiplier = isInter ? 45 : (window.innerWidth <= 480 ? 18 : (window.innerWidth <= 1100 ? 12 : 6));
