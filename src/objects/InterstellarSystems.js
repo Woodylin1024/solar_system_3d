@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v5.8.0 - Near-field Stability & High Vis Orbit
- * Fixes:
- * - Removed Sphere Haze to eliminate "Black Circle" when camera is inside.
- * - Replaced with Layered Ring Stack for safe volumetric glow at any distance.
- * - Boosted Orbit line visibility.
- * - Enhanced Neutron Star emission.
+ * InterstellarSystems v6.0.0 - "Nebula Silk" Plasma Overhaul
+ * Features:
+ * - Multi-Filament Flow: Replaces solid pipes with 10 intertwined gas strands.
+ * - Dynamic Turbulence: Strands have randomized offsets for a natural, wispy look.
+ * - Seamless Nebula Integration: Uses shared noise algorithms for stream and disk.
+ * - High-Energy Color Lerps: Photophysically accurate spectral transitions.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -20,7 +20,7 @@ export function createInterstellarSystems(scene, manager) {
 
     const textureLoader = manager ? new THREE.TextureLoader(manager) : new THREE.TextureLoader();
 
-    // High-resolution Volumetric Gas Texture
+    // High-Resolution Nebula Noise
     const createNebulaTexture = (type = 'disk') => {
         const size = 1024;
         const canvas = document.createElement('canvas');
@@ -31,25 +31,29 @@ export function createInterstellarSystems(scene, manager) {
         if (type === 'disk') {
             const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
             grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            grad.addColorStop(0.1, 'rgba(100, 245, 255, 0.9)');
-            grad.addColorStop(0.3, 'rgba(0, 140, 255, 0.4)');
-            grad.addColorStop(0.6, 'rgba(0, 40, 120, 0.1)');
+            grad.addColorStop(0.1, 'rgba(120, 240, 255, 0.9)');
+            grad.addColorStop(0.3, 'rgba(30, 160, 255, 0.4)');
+            grad.addColorStop(0.6, 'rgba(0, 50, 150, 0.1)');
             grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, size, size);
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
             ctx.globalCompositeOperation = 'lighter';
-            for (let i = 0; i < 3000; i++) {
+            for (let i = 0; i < 4000; i++) {
                 const a = Math.random() * Math.PI * 2, r = Math.pow(Math.random(), 0.6) * size / 2;
-                ctx.fillStyle = `rgba(180, 240, 255, ${Math.random() * 0.05})`;
+                ctx.fillStyle = `rgba(200, 245, 255, ${Math.random() * 0.06})`;
                 ctx.beginPath(); ctx.arc(size / 2 + Math.cos(a) * r, size / 2 + Math.sin(a) * r, Math.random() * 2 + 1, 0, Math.PI * 2); ctx.fill();
             }
         } else {
+            // "Silk" Stream Texture: Fine longitudinal wisps
             const grad = ctx.createLinearGradient(0, 0, 0, size);
             grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
-            grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.6)');
+            grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.8)');
             grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, size, size);
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
+            ctx.globalCompositeOperation = 'lighter';
+            for (let i = 0; i < 800; i++) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.05})`;
+                ctx.fillRect(Math.random() * size, Math.random() * size, Math.random() * 150 + 50, 1);
+            }
         }
         const tex = new THREE.CanvasTexture(canvas);
         tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
@@ -71,7 +75,7 @@ export function createInterstellarSystems(scene, manager) {
             const material = new THREE.MeshStandardMaterial({
                 color: data.color || 0xffffff,
                 emissive: data.color || 0xffffff,
-                emissiveIntensity: data.isDistorted ? 4.5 : 5.0 // Neutron star must be white-hot
+                emissiveIntensity: data.isDistorted ? 4.5 : 5.0
             });
             if (data.texture) material.map = textureLoader.load(`textures/${data.texture}`);
             mesh = new THREE.Mesh(geometry, material);
@@ -107,37 +111,28 @@ export function createInterstellarSystems(scene, manager) {
         if (data.hasAccretionDisk) {
             const diskSize = data.diskRadius || (baseScale * 20);
             const dg = new THREE.Group();
-
-            // FIX: Layered Ring Stack instead of Sphere Haze (Safe for camera focus)
-            const stackCount = 3;
-            for (let i = 0; i < stackCount; i++) {
-                const ringSize = diskSize * (1.0 + i * 0.1);
-                const ring = new THREE.Mesh(
-                    new THREE.RingGeometry(baseScale * 0.1, ringSize, 128),
-                    new THREE.MeshBasicMaterial({
-                        map: hqDiskTex, transparent: true, opacity: 0.7 - i * 0.2,
-                        blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false
-                    })
-                );
-                ring.rotation.x = -Math.PI / 2;
-                ring.position.y = (i - 1) * (diskSize * 0.05); // Tiny vertical stack
-                dg.add(ring);
+            for (let i = 0; i < 3; i++) {
+                const rs = diskSize * (1.0 + i * 0.12);
+                const r = new THREE.Mesh(new THREE.RingGeometry(baseScale * 0.1, rs, 128), new THREE.MeshBasicMaterial({ map: hqDiskTex, transparent: true, opacity: 0.7 - i * 0.2, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false }));
+                r.rotation.x = -Math.PI / 2; r.position.y = (i - 1) * (diskSize * 0.03); dg.add(r);
             }
             container.add(dg); accretionDisks.push({ group: dg, parentName: data.name, outerRadius: diskSize });
         }
 
         if (data.hasGasStream) {
             const sg = new THREE.Group();
-            for (let i = 0; i < 3; i++) {
-                const mat = new THREE.MeshBasicMaterial({ map: hqStreamTex, vertexColors: true, transparent: true, opacity: 0.7 - (i * 0.15), blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false });
-                const m = new THREE.Mesh(new THREE.BufferGeometry(), mat); sg.add(m);
+            // REPLACEMENT: 10 Thin Strands instead of 1 Thick Pipe
+            for (let i = 0; i < 10; i++) {
+                const mat = new THREE.MeshBasicMaterial({ map: hqStreamTex, vertexColors: true, transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false });
+                const m = new THREE.Mesh(new THREE.BufferGeometry(), mat);
+                m.userData = { strandIndex: i, jitter: Math.random() };
+                sg.add(m);
             }
             container.add(sg); gasStreams.push({ group: sg, source: data.name, target: parentName });
         }
 
         if (data.orbit) {
             const pts = []; for (let i = 0; i <= 128; i++) { const a = (i / 128) * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * data.orbit.radius, 0, Math.sin(a) * data.orbit.radius)); }
-            // FIX: High-Visibility Orbit lines
             const o = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xff4433, transparent: true, opacity: 0.3 }));
             if (data.orbit.inclination) o.rotation.x = THREE.MathUtils.degToRad(data.orbit.inclination);
             o.userData = { parentName }; container.add(o); orbitLines.push(o);
@@ -191,26 +186,33 @@ export function createInterstellarSystems(scene, manager) {
                     const perp = new THREE.Vector3(-dir.z, 0, dir.x).normalize();
                     const dist = s.position.distanceTo(t.position), scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8), tip = s.position.clone().add(dir.clone().multiplyScalar(scaledZ));
 
-                    const p1 = tip;
-                    const p2 = s.position.clone().add(dir.clone().multiplyScalar(dist * 0.45)).add(perp.clone().multiplyScalar(disk.outerRadius * 1.5));
-                    const p3 = t.position.clone().add(dir.clone().multiplyScalar(-disk.outerRadius * 0.7)).add(perp.clone().multiplyScalar(disk.outerRadius * 0.6));
-                    const curve = new THREE.CatmullRomCurve3([p1, p2, p3]);
+                    const time = Date.now() * 0.001;
 
                     gs.group.children.forEach((mesh, idx) => {
-                        const thickness = s.userData.visualScale * (1.2 - idx * 0.3);
-                        const pipeGeo = new THREE.TubeGeometry(curve, 64, thickness, 8, false);
+                        const jitter = mesh.userData.jitter;
+                        const offset = (jitter - 0.5) * disk.outerRadius * 0.4;
+                        const spiral = Math.sin(time * 0.5 + jitter * 10) * disk.outerRadius * 0.3;
+
+                        const p1 = tip.clone().add(perp.clone().multiplyScalar(offset * 0.1));
+                        const p2 = s.position.clone().add(dir.clone().multiplyScalar(dist * 0.45)).add(perp.clone().multiplyScalar(disk.outerRadius * 1.5 + spiral));
+                        const p3 = t.position.clone().add(dir.clone().multiplyScalar(-disk.outerRadius * 0.7)).add(perp.clone().multiplyScalar(disk.outerRadius * 0.6 + offset));
+
+                        const curve = new THREE.CatmullRomCurve3([p1, p2, p3]);
+                        const thickness = s.userData.visualScale * (0.3 + jitter * 0.4);
+                        const pipeGeo = new THREE.TubeGeometry(curve, 48, thickness, 6, false);
+
                         const colors = [];
-                        const cS = new THREE.Color(0xff9944), cT = new THREE.Color(0x44ccff);
+                        const cS = new THREE.Color(0xffaa44), cT = new THREE.Color(0x2288ff);
                         const count = pipeGeo.attributes.position.count;
                         for (let i = 0; i < count; i++) {
-                            const tVal = i / count, c = cS.clone().lerp(cT, tVal);
+                            const tVal = i / count, c = cS.clone().lerp(cT, Math.pow(tVal, 1.2));
                             colors.push(c.r, c.g, c.b);
                         }
                         pipeGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
                         if (mesh.geometry) mesh.geometry.dispose();
                         mesh.geometry = pipeGeo;
-                        mesh.material.map.offset.y -= (1.6 + idx * 0.4) * simSpeed * delta;
-                        mesh.material.opacity = (0.6 - idx * 0.2) + Math.sin(Date.now() * 0.005 + idx) * 0.1;
+                        mesh.material.map.offset.y -= (1.2 + idx * 0.2) * simSpeed * delta;
+                        mesh.material.opacity = (0.2 + Math.sin(time * 2 + jitter * 5) * 0.1);
                     });
                 }
             });
