@@ -2,13 +2,12 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v36.0.0 - "Grazing Edge Integration"
- * CORRECTED PATHING:
- * - Edge Entry: Moved pEnd from 70% to 95% of the disk radius as per user request to graze the edge.
- * - Tangential Continuity: Maintained the < 10 degree entry angle for a smooth "kissing" effect at the boundary.
- * - Ultra-Dense Disk: Maintained 300,000 particles with High-Temp Warm Gold (0xfff5cc).
- * - Grainy Parity: Synced particle scale and jitter for a unified plasma texture.
- * - Gapless Connection: Maintained deep star-tip (V818) starting point.
+ * InterstellarSystems v37.0.0 - "Dense Matter Saturation"
+ * DENSITY BOOST & REFINEMENT:
+ * - 450k Particles: Increased accretion disk density by 50% (300k -> 450k) for a massive, semi-opaque fluid appearance.
+ * - Grazing Edge: Maintained the 95% radius entry point for perfect orbital alignment.
+ * - Warm Gold Temp: Persistent high-energy aesthetic across the entire plasma system.
+ * - Grainy Parity: Synced micro-spark texture and 1.5x scaling for universal consistency.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -31,7 +30,7 @@ export function createInterstellarSystems(scene, manager) {
         const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
         grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
         grad.addColorStop(0.1, 'rgba(255, 255, 255, 1)');
-        grad.addColorStop(0.35, 'rgba(255, 240, 180, 0.5)');
+        grad.addColorStop(0.35, 'rgba(255, 242, 190, 0.5)');
         grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
         ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
@@ -77,12 +76,12 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.hasAccretionDisk) {
-            const count = 300000;
+            const count = 450000; // BOOSTED DENSITY (+50%): 300k -> 450k
             const diskSize = data.diskRadius || (baseScale * 25);
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             const colors = new Float32Array(count * 3);
-            const colorObj = new THREE.Color(0xfff5cc);
+            const colorObj = new THREE.Color(0xfff5cc); // Thermal warm gold
             for (let i = 0; i < count; i++) {
                 const r = Math.pow(Math.random(), 0.6) * diskSize + baseScale * 0.45;
                 const theta = Math.random() * Math.PI * 2;
@@ -189,12 +188,10 @@ export function createInterstellarSystems(scene, manager) {
                     const scaledZ = s.userData.visualScale * (s.userData.distortionAxes?.z || 1.8);
                     const pStart = s.position.clone().add(dirToTarget.clone().multiplyScalar(scaledZ * 0.68));
 
-                    // v36: GRAZING EDGE INTEGRATION (95% Radius)
-                    // Move pEnd out to the very edge of the disk as requested
+                    // v37: GRAZING EDGE INTEGRATION (95% Radius)
                     const pEnd = t.position.clone()
                         .add(tangent.clone().multiplyScalar(disk.outerRadius * 0.95));
 
-                    // Maintain < 10 degree tangent angle for a smooth "kiss" entry
                     const ctrlHandle = pEnd.clone()
                         .sub(dirToTarget.clone().multiplyScalar(dist * 0.6));
 
