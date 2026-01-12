@@ -366,7 +366,7 @@ function showInfo(data) {
   infoDetails.innerHTML = '';
 
   // Standardized order of detail fields
-  const labels = ["質量", "體積", "直徑", "光度", "核心溫度", "表面溫度", "光譜類型"];
+  const labels = ["質量", "體積", "直徑", "光度", "視星等", "絕對星等", "核心溫度", "表面溫度", "光譜類型"];
 
   labels.forEach(label => {
     const value = (data.details && data.details[label]) ? data.details[label] : "N/A";
@@ -747,127 +747,92 @@ clearSearchBtn.addEventListener('click', (e) => {
   searchResults.classList.add('hidden');
 });
 
+// --- Dynamic System Menu Implementation v43.9.0 ---
 const systemMenu = document.getElementById('system-menu');
+
+const renderSystemMenu = () => {
+  // Combine Sun + Neighbors
+  const systems = [
+    {
+      id: 'solar',
+      name: 'Sun',
+      nameCH: '太陽系',
+      distance: 0,
+      status: '當前所在',
+      icon: 'textures/sun.jpg'
+    },
+    ...nearbyStarSystemsData.map(sys => ({
+      id: sys.name,
+      name: sys.name,
+      nameCH: sys.nameCH,
+      distance: sys.distanceFromSun,
+      status: `距離 ${(sys.distanceFromSun / 63241).toFixed(2)} 光年`,
+      icon: sys.menuIcon || 'textures/star_placeholder.png'
+    }))
+  ];
+
+  // Auto-Sort by Distance (Principle update)
+  systems.sort((a, b) => a.distance - b.distance);
+
+  const menuHTML = systems.map(s => {
+    let iconHTML = `<img src="${s.icon}" alt="${s.name}">`;
+    if (s.icon.startsWith('gradient:')) {
+      const gType = s.icon.split(':')[1];
+      const color = gType === 'scorpius' ? '#00ccff' : '#88ccff';
+      const shape = gType === 'scorpius' ? 'width: 80%; height: 80%;' : 'width: 70%; height: 30%; transform: rotate(-20deg);';
+      iconHTML = `<div style="background: radial-gradient(circle, ${color}, #000); display: flex; align-items: center; justify-content: center; width:100%; height:100%;">
+                    <div style="${shape} border: 1px solid ${color}; border-radius: 50%; box-shadow: 0 0 10px ${color};"></div>
+                  </div>`;
+    }
+
+    return `
+      <div class="system-menu-item ${s.id === 'solar' ? 'active' : ''}" data-id="${s.id}">
+        <div class="system-icon">${iconHTML}</div>
+        <div class="system-info">
+          <div class="system-name">${s.nameCH || s.name}</div>
+          <div class="system-status">${s.status}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  systemMenu.innerHTML = `<div class="menu-label">選擇恆星系</div>${menuHTML}`;
+};
+
+renderSystemMenu();
+
+// Use event delegation for dynamic menu clicks
+systemMenu.addEventListener('click', (e) => {
+  const item = e.target.closest('.system-menu-item');
+  if (!item) return;
+
+  const systemId = item.getAttribute('data-id');
+  systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
+  item.classList.add('active');
+
+  if (systemId === 'solar') {
+    const sun = solarSystem.getBodies().find(b => b.data.name === 'Sun');
+    if (sun) selectBody(sun.mesh);
+  } else {
+    const starMeshes = interstellarSystems.getStarMeshes();
+    // Logic to find representative star for jump
+    let jumpTarget;
+    if (systemId === 'Castor') jumpTarget = starMeshes.find(m => m.userData.name === 'Castor A1 (Aa)');
+    else if (systemId === 'Scorpius X-1') jumpTarget = starMeshes.find(m => m.userData.name === 'Scorpius X-1 (Neutron Star)');
+    else if (systemId === 'Beta Lyrae') jumpTarget = starMeshes.find(m => m.userData.name === 'Beta Lyrae B (Accretor)');
+    else jumpTarget = starMeshes.find(m => m.userData.parentSystem === systemId || m.userData.name.includes(systemId));
+
+    if (jumpTarget) selectBody(jumpTarget);
+  }
+
+  systemMenu.classList.add('hidden');
+});
 
 resetToSunBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   systemMenu.classList.toggle('hidden');
-  // Close other menus
   subMenu.classList.add('hidden');
   searchResults.classList.add('hidden');
-});
-
-// System Menu Items Logic
-systemMenu.querySelectorAll('.system-menu-item').forEach(item => {
-  item.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const systemId = item.getAttribute('data-id');
-
-    if (systemId === 'solar') {
-      const bodies = solarSystem.getBodies();
-      const sunBody = bodies.find(b => b.data.name === 'Sun');
-      if (sunBody) selectBody(sunBody.mesh);
-
-      // Update UI state
-      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    } else if (systemId === 'alpha-centauri') {
-      const alphaMeshes = interstellarSystems.getStarMeshes();
-      const alphaA = alphaMeshes.find(m => m.userData.name === 'Alpha Centauri A');
-      if (alphaA) selectBody(alphaA);
-
-      // Update UI state
-      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    } else if (systemId === 'barnards') {
-      const starMeshes = interstellarSystems.getStarMeshes();
-      const barnard = starMeshes.find(m => m.userData.name === "Barnard's Star");
-      if (barnard) selectBody(barnard);
-
-      // Update UI state
-      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    } else if (systemId === 'wolf359') {
-      const starMeshes = interstellarSystems.getStarMeshes();
-      const wolf = starMeshes.find(m => m.userData.name === "Wolf 359");
-      if (wolf) selectBody(wolf);
-
-      // Update UI state
-      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    } else if (systemId === 'lalande') {
-      const starMeshes = interstellarSystems.getStarMeshes();
-      const lalande = starMeshes.find(m => m.userData.name === "Lalande 21185");
-      if (lalande) selectBody(lalande);
-
-      // Update UI state
-      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    } else if (systemId === 'sirius') {
-      const starMeshes = interstellarSystems.getStarMeshes();
-      const siriusA = starMeshes.find(m => m.userData.name === "Sirius A");
-      if (siriusA) selectBody(siriusA);
-
-      // Update UI state
-      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    } else if (systemId === 'luyten') {
-      const starMeshes = interstellarSystems.getStarMeshes();
-      const blCeti = starMeshes.find(m => m.userData.name === "BL Ceti");
-      if (blCeti) selectBody(blCeti);
-
-      // Update UI state
-      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    } else if (systemId === 'ross154') {
-      const starMeshes = interstellarSystems.getStarMeshes();
-      const ross = starMeshes.find(m => m.userData.name === "Ross 154");
-      if (ross) selectBody(ross);
-
-      // Update UI state
-      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    } else if (systemId === 'ross248') {
-      const starMeshes = interstellarSystems.getStarMeshes();
-      const ross = starMeshes.find(m => m.userData.name === "Ross 248");
-      if (ross) selectBody(ross);
-
-      // Update UI state
-      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    } else if (systemId === 'epsilon') {
-      const starMeshes = interstellarSystems.getStarMeshes();
-      const epsilon = starMeshes.find(m => m.userData.name === "Epsilon Eridani");
-      if (epsilon) selectBody(epsilon);
-
-      // Update UI state
-      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    } else if (systemId === 'lacaille') {
-      const starMeshes = interstellarSystems.getStarMeshes();
-      const lacaille = starMeshes.find(m => m.userData.name === "Lacaille 9352");
-      if (lacaille) selectBody(lacaille);
-
-      // Update UI state
-      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    } else if (systemId === 'castor') {
-      const starMeshes = interstellarSystems.getStarMeshes();
-      const castorA = starMeshes.find(m => m.userData.name === "Castor A1 (Aa)");
-      if (castorA) selectBody(castorA);
-
-    } else if (systemId === 'scorpius') {
-      const starMeshes = interstellarSystems.getStarMeshes();
-      const x1 = starMeshes.find(m => m.userData.name === "Scorpius X-1 (Neutron Star)");
-      if (x1) selectBody(x1);
-
-      // Update UI state
-      systemMenu.querySelectorAll('.system-menu-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    }
-
-    systemMenu.classList.add('hidden');
-  });
 });
 
 // Close search if clicking elsewhere
