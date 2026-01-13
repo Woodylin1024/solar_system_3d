@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v45.19.1 - "S2 Temperature Calibration"
- * - Data Update: Refined S2 surface temperature based on high-precision spectral data.
- * - S2: Set surface temperature to 25,000 K – 30,000 K.
+ * InterstellarSystems v45.19.2 - "Planetary Visibility Restore"
+ * - Fix: Restored material visibility for planets (non-stars).
+ * - Logic: Stars remain self-luminous via emissive (color 0x000000); planets use standard color + moderate emissive.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -64,9 +64,9 @@ export function createInterstellarSystems(scene, manager) {
                 });
             } else {
                 material = new THREE.MeshStandardMaterial({
-                    color: 0x000000,
-                    emissive: isStar ? (data.color || 0xbbccff) : 0x000000,
-                    emissiveIntensity: data.emissiveIntensity ?? (isStar ? 6.0 : 0.8),
+                    color: isStar ? 0x000000 : (data.color || 0xffffff),
+                    emissive: data.color || (isStar ? 0xbbccff : 0xffffff),
+                    emissiveIntensity: data.emissiveIntensity ?? (isStar ? 6.0 : 1.2),
                     side: THREE.DoubleSide,
                     transparent: false,
                     depthWrite: true
@@ -76,11 +76,9 @@ export function createInterstellarSystems(scene, manager) {
             if (data.texture) {
                 const tex = textureLoader.load(`textures/${data.texture}?v=${Date.now()}`);
                 material.map = tex;
-                if (isStar && !isBlackHole) {
+                if (!isBlackHole) {
                     material.emissiveMap = tex;
-                    // Reset emissive color to white to allow texture to shine through, 
-                    // or keep data.color as a tint.
-                    if (data.color) material.emissive.set(data.color);
+                    if (isStar && data.color) material.emissive.set(data.color);
                 }
             }
             mesh = new THREE.Mesh(geometry, material);
