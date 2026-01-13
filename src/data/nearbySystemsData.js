@@ -649,5 +649,151 @@ export const nearbyStarSystemsData = [
                 ]
             }
         ]
+    },
+    {
+        name: "Gaia BH1",
+        nameCH: "蓋亞 BH1",
+        distanceFromSun: 98656116,
+        menuIcon: "textures/sun.jpg",
+        position: { x: -25400000, y: -95300000, z: 0 },
+        stars: [
+            {
+                name: "Gaia BH1 Barycenter",
+                nameCH: "蓋亞 BH1 質心",
+                type: "star",
+                radius: 0,
+                planets: [
+                    {
+                        name: "Gaia BH1 Star",
+                        nameCH: "蓋亞 BH1 伴星",
+                        type: "star",
+                        radius: 0.99,
+                        color: 0xfff4e1,
+                        texture: "sun.jpg",
+                        orbit: { radius: 1200, speed: 0.25, inclination: 0 },
+                        description: "一顆與太陽極其相似的 G 型主序星，與黑洞以 185.59 天的週期互繞。",
+                        details: {
+                            "類型": "G型主序星",
+                            "質量": "0.93 太陽質量",
+                            "半徑": "0.99 太陽半徑",
+                            "表面溫度": "5,850 K",
+                            "公轉週期": "185.59 天"
+                        }
+                    },
+                    {
+                        name: "Gaia BH1 Black Hole",
+                        nameCH: "蓋亞 BH1 黑洞",
+                        type: "star",
+                        isBlackHole: true,
+                        radius: 0.15,
+                        color: 0x000000,
+                        texture: null,
+                        emissiveIntensity: 0,
+                        orbit: { radius: 1200, speed: 0.25, inclination: 0, startAngle: Math.PI },
+                        description: "目前已知距離地球最近的黑洞（約 1,560 光年）。這是一個處於休眠狀態的恆星級黑洞，不具備明顯的吸積盤。",
+                        details: {
+                            "類型": "恆星黑洞",
+                            "質量": "9.62 太陽質量",
+                            "史瓦西半徑": "28 km",
+                            "離心率": "0.45",
+                            "狀態": "休眠 (Quiescent)"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        name: "Sagittarius A*",
+        nameCH: "人馬座 A*",
+        distanceFromSun: 1644268600,
+        menuIcon: "gradient:galactic-center",
+        position: { x: 50000000, y: -120000000, z: -80000000 },
+        stars: [
+            {
+                name: "Sagittarius A*",
+                nameCH: "人馬座 A*",
+                type: "star",
+                isBlackHole: true,
+                hasAccretionDisk: true,
+                diskColor: 0xffaa33,
+                diskRadius: 3500,
+                radius: 17.2,
+                color: 0x000000,
+                texture: null,
+                emissiveIntensity: 0,
+                description: "位於銀河系中心的超大質量黑洞。它是銀河系的引力核心，所有的恆星都圍繞著它運行。其強大的引力能扭曲時空，使周圍吸積盤的光線發生劇烈彎曲。",
+                details: {
+                    "類型": "超大質量黑洞",
+                    "質量": "~410 萬 太陽質量",
+                    "史瓦西半徑": "1,200 萬 km",
+                    "距離地球": "約 2.6 萬 光年",
+                    "位置": "銀河系中心"
+                },
+                planets: [
+                    {
+                        name: "S0-102",
+                        nameCH: "S0-102",
+                        type: "star",
+                        radius: 5.0,
+                        color: 0xbbccff,
+                        texture: "sirius_a_real.png",
+                        emissiveIntensity: 3.5,
+                        orbit: {
+                            radius: 12000,
+                            eccentricity: 0.7209,
+                            inclination: 150.1,
+                            argumentOfPeriapsis: 331.5,
+                            longitudeOfAscendingNode: 325.5,
+                            speed: 0.15
+                        },
+                        description: "目前已知距離人馬座 A* 最近的恆星之一，軌道週期約為 11.5 年。它是研究黑洞引力與廣義相對論的重要觀測對象。",
+                        details: {
+                            "類型": "B型主序星",
+                            "質量": "~15 太陽質量",
+                            "半徑": "~5 太陽半徑",
+                            "直徑": "~10 太陽直徑",
+                            "公轉週期": "11.52 年",
+                            "離心率": "0.7209",
+                            "軌道傾角": "150.1°",
+                            "光譜類型": "B0-B3 V",
+                            "表面溫度": "約 20,000 K",
+                            "位置": "銀河系中心 (S星團)"
+                        }
+                    },
+                    {
+                        name: "S2",
+                        nameCH: "S2",
+                        type: "star",
+                        radius: 8.0,
+                        color: 0xaaccff,
+                        texture: "sirius_a_real.png",
+                        emissiveIntensity: 4.5,
+                        orbit: {
+                            radius: 15500,
+                            eccentricity: 0.88466,
+                            inclination: 133.818,
+                            argumentOfPeriapsis: 66.13,
+                            longitudeOfAscendingNode: 227.85,
+                            speed: 0.11
+                        },
+                        description: "銀河中心最著名的恆星之一，軌道極其靠近人馬座 A*。2018 年觀測到其近日點通過時產生的引力紅移，完美驗證了廣義相對論。",
+                        details: {
+                            "類型": "B型主序星",
+                            "質量": "~14 太陽質量",
+                            "半徑": "~8 太陽半徑",
+                            "直徑": "~16 太陽直徑",
+                            "公轉週期": "16.05 年",
+                            "離心率": "0.88466",
+                            "軌道傾角": "133.8°",
+                            "光譜類型": "B0-B2.5 V",
+                            "表面溫度": "25,000 K – 30,000 K",
+                            "近日點距離": "120 AU (~17 小時光程)",
+                            "近日點速率": "7650 km/s"
+                        }
+                    }
+                ]
+            }
+        ]
     }
 ];

@@ -1274,13 +1274,15 @@ export const solarSystemData = [
         distance: 0,
         speed: 0.002,
         pathPoints: [
-            [-1200, 800, -1200],  // Far Deep Space (Direction of Lyra/Vega)
-            [-400, 280, -400],    // Entering Inner System
-            [-50, 40, -50],       // Close to planets
-            [10, 5, 0],           // Perihelion (~0.25 AU)
-            [60, -10, 80],        // Swing around sun
-            [500, -150, 700],     // Leaving System
-            [1500, -500, 2000]    // Towards Pegasus
+            [-45000, 30000, -45000], // Deep Interstellar space (Direction of Lyra/Vega)
+            [-15000, 10000, -15000], // Entering Oort Cloud
+            [-400, 280, -400],       // Entering Inner System
+            [-50, 40, -50],          // Close to planets
+            [10, 5, 0],              // Perihelion (~0.25 AU)
+            [60, -10, 80],           // Swing around sun
+            [500, -150, 700],        // Leaving System
+            [15000, -4000, 18000],   // Exiting Oort Cloud
+            [40000, -12000, 55000]   // Deep Space (Towards Pegasus)
         ],
         description: "人類觀察到的首個太陽系外星際天體。它的形狀極端，呈現雪茄狀或盤狀，並在離開太陽系時表現出非引力加速度。",
         details: {
@@ -1301,13 +1303,15 @@ export const solarSystemData = [
         distance: 0,
         speed: 0.00015,
         pathPoints: [
-            [1500, 1000, 500],    // Far Deep Space (Direction of Cassiopeia)
-            [600, 450, 250],      // Entering System
-            [100, 80, 50],        // Approach
-            [40, 30, 0],          // Perihelion (~2.0 AU)
-            [100, -40, -200],     // Leaving
-            [700, -300, -1000],   // Distant
-            [1800, -800, -2500]   // Towards Telescopium
+            [45000, 32000, 18000],    // Deep Interstellar (Direction of Cassiopeia)
+            [18000, 12000, 6000],     // Entering Oort Cloud
+            [600, 450, 250],          // Middle System
+            [100, 80, 50],            // Approach
+            [40, 30, 0],              // Perihelion (~2.0 AU)
+            [100, -40, -200],         // Leaving
+            [700, -300, -1000],       // Trans-Neptunian
+            [12000, -6000, -20000],   // Exiting Oort Cloud
+            [48000, -25000, -75000]   // Outer Interstellar (Towards Telescopium)
         ],
         description: "史上發現的第二個星際天體，也是第一顆星際彗星。它來自太陽系外，攜帶著異星系的冰與塵。當它接近太陽時，展現出了與太陽系彗星相似的噴發特徵。",
         details: {
@@ -1331,13 +1335,15 @@ export const solarSystemData = [
         distance: 0,
         speed: 0.0018,
         pathPoints: [
-            [-2000, 200, 800],    // Deep Outer System
-            [-800, 100, 300],
-            [-150, 10, 40],       // Approach
-            [-10, 5, 0],          // Perihelion (~0.25 AU)
-            [100, 30, -150],      // Fragmented path
-            [900, 300, -1500],    // Receding
-            [2500, 800, -3500]    // Far Outbound
+            [-50000, 5000, 20000],    // Deep Interstellar space
+            [-18000, 1800, 7000],     // Outer Oort Cloud boundary
+            [-2000, 200, 800],        // Kuiper Belt Outer
+            [-150, 10, 40],           // Outer Planets
+            [-10, 5, 0],              // Perihelion (~0.25 AU)
+            [100, 30, -150],          // Post-perihelion
+            [900, 300, -1500],        // Neptune orbit scale
+            [15000, 5000, -25000],    // Exiting Oort Cloud
+            [55000, 20000, -80000]    // Deep Outbound
         ],
         description: "一顆在接近太陽時碎裂的彗星，曾被預期將成為極亮的天體。它的軌道與 1844 年大彗星非常相似。",
         details: {

@@ -2,11 +2,9 @@ import * as THREE from 'three';
 import { nearbyStarSystemsData } from '../data/nearbySystemsData.js';
 
 /**
- * InterstellarSystems v40.3.0 - "Total Visibility"
- * RENDER ROBUSTNESS UPDATE:
- * - Depth Overhaul: Disabled depthTest for gas streams and jets to ensure visibility at any angle/zoom.
- * - 3D Vectors: Improved perpendicular tangent logic to support all orbital inclinations.
- * - Balanced Scaling: Synced stream particle size with accretor scale for visual consistency.
+ * InterstellarSystems v45.19.1 - "S2 Temperature Calibration"
+ * - Data Update: Refined S2 surface temperature based on high-precision spectral data.
+ * - S2: Set surface temperature to 25,000 K – 30,000 K.
  */
 export function createInterstellarSystems(scene, manager) {
     const systemsGroup = new THREE.Group();
@@ -17,6 +15,9 @@ export function createInterstellarSystems(scene, manager) {
     const gasStreams = [];
     const relativisticJets = [];
     const interstellarBelts = [];
+
+    // Reusable vectors for performance
+    const _v1 = new THREE.Vector3();
 
     const textureLoader = manager ? new THREE.TextureLoader(manager) : new THREE.TextureLoader();
 
@@ -49,19 +50,38 @@ export function createInterstellarSystems(scene, manager) {
         if (radius > 0) {
             const geometry = data.isDistorted ? new THREE.SphereGeometry(1, 64, 64) : new THREE.SphereGeometry(1, 48, 48);
             const isStar = data.type === 'star';
-            const material = new THREE.MeshStandardMaterial({
-                color: data.color || 0xffffff,
-                emissive: isStar ? (data.color || 0xffffff) : 0xffffff,
-                emissiveIntensity: data.emissiveIntensity ?? (isStar ? (data.texture ? 2.5 : 8.0) : 0.8),
-                side: THREE.DoubleSide,
-                transparent: false,
-                depthWrite: true
-            });
+            const isBlackHole = data.isBlackHole;
+
+            let material;
+            if (isBlackHole) {
+                // For Black Holes, we create a transparent hit-box mesh 
+                // to avoid blocking the custom shader proxy.
+                material = new THREE.MeshBasicMaterial({
+                    color: 0x000000,
+                    transparent: true,
+                    opacity: 0.0,
+                    depthWrite: false
+                });
+            } else {
+                material = new THREE.MeshStandardMaterial({
+                    color: 0x000000,
+                    emissive: isStar ? (data.color || 0xbbccff) : 0x000000,
+                    emissiveIntensity: data.emissiveIntensity ?? (isStar ? 6.0 : 0.8),
+                    side: THREE.DoubleSide,
+                    transparent: false,
+                    depthWrite: true
+                });
+            }
+
             if (data.texture) {
                 const tex = textureLoader.load(`textures/${data.texture}?v=${Date.now()}`);
                 material.map = tex;
-                material.emissiveMap = tex; // Both stars and planets use map as emissive source
-                if (isStar) material.emissive = new THREE.Color(0xffffff); // Let texture define the color
+                if (isStar && !isBlackHole) {
+                    material.emissiveMap = tex;
+                    // Reset emissive color to white to allow texture to shine through, 
+                    // or keep data.color as a tint.
+                    if (data.color) material.emissive.set(data.color);
+                }
             }
             mesh = new THREE.Mesh(geometry, material);
             if (data.isDistorted && data.distortionAxes) {
@@ -134,13 +154,181 @@ export function createInterstellarSystems(scene, manager) {
             }
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-            const material = new THREE.PointsMaterial({
-                size: baseScale * 2.7, // v40.1 Boosted by 50% (1.8 -> 2.7)
-                map: unifiedSparkTex, transparent: true, opacity: 1.0,
-                vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
-            });
-            const points = new THREE.Points(geometry, material);
-            container.add(points); accretionDisks.push({ points: points, parentName: data.name, outerRadius: diskSize });
+            if (data.isBlackHole) {
+                // v45.11.0: Pure Shader Black Hole (Interstellar Style)
+                // This replaces the particle system with a single high-performance shader sphere
+                const proxyGeo = new THREE.SphereGeometry(1, 64, 64);
+                const uniforms = {
+                    uTime: { value: 0 },
+                    uColor: { value: new THREE.Color(data.diskColor || 0xffaa33) },
+                    uHorizonRadius: { value: baseScale },
+                    uDiskRadius: { value: diskSize || baseScale * 25 },
+                    uCamPos: { value: new THREE.Vector3() },
+                    uSingularityPos: { value: new THREE.Vector3() },
+                    uLocalCamPos: { value: new THREE.Vector3() },
+                    uDiskScale: { value: 1.0 }
+                };
+
+                const material = new THREE.ShaderMaterial({
+                    uniforms: uniforms,
+                    transparent: true,
+                    side: THREE.DoubleSide,
+                    depthWrite: false,
+                    depthTest: true,
+                    blending: THREE.NormalBlending, // Switch back to normal but with high emissive output
+                    vertexShader: `
+                        varying vec3 vWorldPos;
+                        varying vec3 vLocalPos;
+void main() {
+    vLocalPos = position;
+                            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+    vWorldPos = worldPos.xyz;
+    gl_Position = projectionMatrix * viewMatrix * worldPos;
+}
+`,
+                    fragmentShader: `
+                        uniform float uTime;
+                        uniform vec3 uColor;
+                        uniform float uHorizonRadius;
+                        uniform float uDiskRadius;
+                        uniform vec3 uCamPos;
+                        uniform vec3 uSingularityPos;
+                        uniform vec3 uLocalCamPos;
+                        uniform float uDiskScale;
+                        
+                        varying vec3 vWorldPos;
+                        varying vec3 vLocalPos;
+
+                        // Simplex Noise
+                        float hash(float n) { return fract(sin(n) * 43758.5453123); }
+                        float noise(vec3 x) {
+                            vec3 p = floor(x); vec3 f = fract(x);
+    f = f * f * (3.0 - 2.0 * f);
+                            float n = p.x + p.y * 57.0 + 113.0 * p.z;
+    return mix(mix(mix(hash(n + 0.0), hash(n + 1.0), f.x), mix(hash(n + 57.0), hash(n + 58.0), f.x), f.y),
+        mix(mix(hash(n + 113.0), hash(n + 114.0), f.x), mix(hash(n + 57.0), hash(n + 58.0), f.x), f.y), f.z);
+}
+
+                        float fbm(vec3 p) {
+                            float v = 0.0;
+                            float a = 0.5;
+    for (int i = 0; i < 6; i++) {
+        v += a * noise(p);
+        p = p * 2.2;
+        a *= 0.55;
+    }
+    return v;
+}
+
+void main() {
+                            // Corrected Math (v45.15.0):
+                            // uLocalCamPos is already in units where 1.0 = Event Horizon
+                            vec3 rayOrigin = uLocalCamPos; 
+                            float hRelScale = uDiskScale / uHorizonRadius;
+                            vec3 localFragPos = vLocalPos * hRelScale; 
+                            vec3 rayDir = normalize(localFragPos - rayOrigin);
+                            
+                            float closestDist = length(cross(rayDir, rayOrigin));
+
+                            // 1. Ultra-Dense Starfield
+                            vec3 starField = vec3(pow(noise(rayDir * 250.0), 20.0) * 2.5);
+
+                            // 2. Accretion Disk - Thin Horizontal Plane
+                            vec3 diskColor = vec3(0.0);
+                            float diskOpacity = 0.0;
+                            float dLimit = uDiskRadius / uHorizonRadius;
+
+    // Ray-plane intersection for Y=0
+    if (abs(rayDir.y) > 0.0001) {
+                                float t = -rayOrigin.y / rayDir.y;
+        if (t > 0.0) {
+                                    vec3 p = rayOrigin + rayDir * t;
+                                    float d = length(p);
+            if (d > 1.25 && d < dLimit) {
+                                        float shift = uTime * 0.8;
+                                        float swirl = atan(p.z, p.x) + (3.0 / d) + shift;
+                                        vec3 samplePos = vec3(cos(swirl) * d, 0.0, sin(swirl) * d) * 0.6;
+                                        
+                                        float n = fbm(samplePos + vec3(0.0, 0.0, uTime * 0.15));
+                                        // High-contrast turbulent wisps
+                                        float wisp = pow(n, 2.2) * 1.5;
+
+                                        // Gargantua Palette: Burnt Orange, Fiery Amber, Deep Red
+                                        vec3 inner = vec3(1.0, 0.7, 0.2); // Amber
+                                        vec3 mid = vec3(0.9, 0.35, 0.05);  // Burnt Orange
+                                        vec3 outer = vec3(0.6, 0.05, 0.01); // Deep Red
+                                        
+                                        float grad = smoothstep(1.3, dLimit, d);
+                                        vec3 col = mix(inner, mid, grad * 1.5);
+                col = mix(col, outer, smoothstep(0.4, 1.0, grad));
+
+                diskColor = col * 12.0 * wisp;
+                diskOpacity = smoothstep(dLimit, dLimit * 0.7, d) * smoothstep(1.25, 2.0, d) * 0.95;
+            }
+        }
+    }
+
+                            // 3. Gravitational Lensing (Double-Ring Warp)
+                            // We boost the warping for that iconic 'circular' look around the shadow
+                            float alignment = dot(normalize(rayOrigin), rayDir);
+    if (alignment < -0.1) {
+                                float warpStrength = 4.5 / (closestDist + 0.1);
+                                float warpFactor = pow(1.0 - abs(alignment), 4.5) * warpStrength;
+        if (warpFactor > 0.01) {
+                                    vec3 warpCol = vec3(1.0, 0.4, 0.05) * warpFactor * 10.0;
+            diskColor += warpCol;
+            diskOpacity = max(diskOpacity, warpFactor * 0.8);
+        }
+    }
+
+    // 4. Final Luminance Assembly
+    if (closestDist < 0.98) {
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // Absolute Singularity Shadow
+    } else {
+                                // Sharper Fiery Einstein Ring
+                                float ring = pow(smoothstep(1.4, 0.98, closestDist), 12.0);
+                                vec3 ringColor = vec3(1.0, 0.6, 0.1) * ring * 25.0;
+                                
+                                float glow = exp(-3.8 * (closestDist - 1.2));
+                                vec3 glowColor = vec3(0.7, 0.2, 0.0) * glow * 6.0;
+                                
+                                vec3 finalRGB = starField + diskColor + ringColor + glowColor;
+                                float finalA = clamp(diskOpacity + ring + glow * 0.5, 0.0, 1.0);
+        gl_FragColor = vec4(finalRGB, finalA);
+    }
+}
+`
+                });
+
+                const finalDiskRadius = diskSize || baseScale * 25;
+                const bhProxy = new THREE.Mesh(proxyGeo, material);
+                bhProxy.scale.setScalar(finalDiskRadius * 1.2 / baseScale); // Relative to Star Mesh scale
+                bhProxy.userData.isBlackHoleProxy = true;
+                uniforms.uDiskScale.value = finalDiskRadius * 1.2;
+                mesh.add(bhProxy); // Child of Star Mesh for perfect sync
+
+                // Add ONE internal opaque core at the exact horizon size
+                const coreGeo = new THREE.SphereGeometry(1, 32, 32);
+                const coreMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                const core = new THREE.Mesh(coreGeo, coreMat);
+                core.scale.setScalar(1.0); // Exactly the baseScale since it's child of 'mesh'
+                mesh.add(core);
+
+                // Use bhProxy for selection logic
+                mesh.userData.proxy = bhProxy;
+                selectable.push(bhProxy);
+
+                accretionDisks.push({ points: bhProxy, isProcedural: true, parentName: data.name, uniforms: uniforms, outerRadius: finalDiskRadius, starMesh: mesh });
+            } else {
+                // Particle disk for non-black holes
+                const material = new THREE.PointsMaterial({
+                    size: baseScale * 2.7,
+                    map: unifiedSparkTex, transparent: true, opacity: 1.0,
+                    vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
+                });
+                const points = new THREE.Points(geometry, material);
+                container.add(points); accretionDisks.push({ points: points, parentName: data.name, outerRadius: diskSize });
+            }
         }
 
         if (data.hasGasStream) {
@@ -173,11 +361,33 @@ export function createInterstellarSystems(scene, manager) {
         }
 
         if (data.orbit) {
-            const pts = []; for (let i = 0; i <= 128; i++) { const a = (i / 128) * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * data.orbit.radius, 0, Math.sin(a) * data.orbit.radius)); }
-            const orbitColor = data.type === 'planet' ? 0x00d2ff : 0xff3300;
-            const o = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: orbitColor, transparent: true, opacity: 0.18 }));
-            if (data.orbit.inclination) o.rotation.x = THREE.MathUtils.degToRad(data.orbit.inclination);
-            o.userData = { parentName }; container.add(o); orbitLines.push(o);
+            const pts = [];
+            const sma = data.orbit.radius;
+            const ecc = data.orbit.eccentricity || 0;
+            const argP = THREE.MathUtils.degToRad(data.orbit.argumentOfPeriapsis || 0);
+            const inc = THREE.MathUtils.degToRad(data.orbit.inclination || 0);
+            const lonA = THREE.MathUtils.degToRad(data.orbit.longitudeOfAscendingNode || 0);
+
+            for (let i = 0; i <= 256; i++) {
+                const m = (i / 256) * Math.PI * 2;
+                // Solve Kepler (Approx for line drawing)
+                let E = m;
+                for (let k = 0; k < 3; k++) E = E - (E - ecc * Math.sin(E) - m) / (1 - ecc * Math.cos(E));
+
+                const x_orb = sma * (Math.cos(E) - ecc);
+                const z_orb = sma * Math.sqrt(1.0 - ecc * ecc) * Math.sin(E);
+
+                const v = new THREE.Vector3(x_orb, 0, z_orb);
+                v.applyAxisAngle(new THREE.Vector3(0, 1, 0), argP);
+                v.applyAxisAngle(new THREE.Vector3(1, 0, 0), inc);
+                v.applyAxisAngle(new THREE.Vector3(0, 1, 0), lonA);
+                pts.push(v);
+            }
+            const orbitColor = data.type === 'planet' ? 0x00d2ff : 0xff5500;
+            const o = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: orbitColor, transparent: true, opacity: 0.25 }));
+            o.userData = { parentName };
+            container.add(o);
+            orbitLines.push(o);
         }
 
         if (data.belts) {
@@ -235,29 +445,68 @@ export function createInterstellarSystems(scene, manager) {
                 const d = e.userData; if (!d.orbit) return;
                 const p = d.parentName ? allEntities.find(parent => parent.userData.name === d.parentName) : null;
                 if (!p) return;
-                d.angle += (d.orbit.speed || 0.1) * simSpeed * delta * 0.1;
-                const r = d.orbit.radius, x = Math.cos(d.angle) * r, z = Math.sin(d.angle) * r;
-                if (d.orbit.inclination) {
-                    const inc = THREE.MathUtils.degToRad(d.orbit.inclination);
-                    e.position.set(p.position.x + x, p.position.y - z * Math.sin(inc), p.position.z + z * Math.cos(inc));
-                } else { e.position.set(p.position.x + x, p.position.y, p.position.z + z); }
+
+                // Orbit Calculation (Full Keplerian)
+                d.angle += (d.orbit.speed || 0.1) * simSpeed * delta * 0.1; // d.angle acts as Mean Anomaly (M)
+                const sma = d.orbit.radius;
+                const ecc = d.orbit.eccentricity || 0;
+
+                // Solve Kepler's Equation: M = E - e*sin(E) for Eccentric Anomaly (E)
+                let eccentricAnomaly = d.angle;
+                if (ecc > 0) {
+                    // Newton-Raphson iteration
+                    for (let i = 0; i < 4; i++) {
+                        eccentricAnomaly = eccentricAnomaly - (eccentricAnomaly - ecc * Math.sin(eccentricAnomaly) - d.angle) / (1 - ecc * Math.cos(eccentricAnomaly));
+                    }
+                }
+
+                // Position in orbital plane (XZ plane, focused on one focus at origin)
+                const x_orb = sma * (Math.cos(eccentricAnomaly) - ecc);
+                const z_orb = sma * Math.sqrt(1.0 - ecc * ecc) * Math.sin(eccentricAnomaly);
+
+                _v1.set(x_orb, 0, z_orb);
+
+                if (d.orbit.inclination || d.orbit.argumentOfPeriapsis || d.orbit.longitudeOfAscendingNode) {
+                    const argP = THREE.MathUtils.degToRad(d.orbit.argumentOfPeriapsis || 0);
+                    const inc = THREE.MathUtils.degToRad(d.orbit.inclination || 0);
+                    const lonA = THREE.MathUtils.degToRad(d.orbit.longitudeOfAscendingNode || 0);
+
+                    // Sequence: Arg of Periapsis -> Inclination -> Longitude of Ascending Node
+                    _v1.applyAxisAngle(new THREE.Vector3(0, 1, 0), argP);
+                    _v1.applyAxisAngle(new THREE.Vector3(1, 0, 0), inc);
+                    _v1.applyAxisAngle(new THREE.Vector3(0, 1, 0), lonA);
+                }
+
+                e.position.addVectors(p.position, _v1);
+
                 if (d.isDistorted) { e.lookAt(p.position); }
+            });
+
+            orbitLines.forEach(o => {
+                const p = allEntities.find(parent => parent.userData.name === o.userData.parentName);
+                if (p) o.position.copy(p.position);
             });
 
             accretionDisks.forEach(ad => {
                 const p = allEntities.find(e => e.userData.name === ad.parentName);
                 if (p) {
-                    ad.points.position.copy(p.position);
-                    ad.points.rotation.y += 0.6 * simSpeed * delta;
-                    const posSet = ad.points.geometry.attributes.position;
-                    for (let i = 0; i < posSet.count; i++) {
-                        if (Math.random() > 0.98) {
-                            let y = posSet.getY(i);
-                            y += (Math.random() - 0.5) * ad.outerRadius * 0.04 * simSpeed * delta;
-                            posSet.setY(i, y);
+                    if (ad.isProcedural) {
+                        // Position sync is handled by parenting now
+                        if (ad.uniforms) {
+                            ad.uniforms.uTime.value += delta * simSpeed;
+                            ad.uniforms.uCamPos.value.copy(scene.userData.camera?.position || new THREE.Vector3());
+                            ad.uniforms.uSingularityPos.value.copy(p.position);
+
+                            // Calculate camera in local space of the black hole
+                            p.updateMatrixWorld(true);
+                            _v1.copy(scene.userData.camera.position);
+                            p.worldToLocal(_v1);
+                            ad.uniforms.uLocalCamPos.value.copy(_v1);
                         }
+                    } else {
+                        ad.points.position.copy(p.position);
+                        ad.points.rotation.y += 0.6 * simSpeed * delta;
                     }
-                    posSet.needsUpdate = true;
                 }
             });
 
@@ -277,8 +526,9 @@ export function createInterstellarSystems(scene, manager) {
                     // v40.3: Start point further out (1.1x) to ensure clear separation
                     const pStart = s.position.clone().add(dirToTarget.clone().multiplyScalar(scaledZ * 1.1));
 
+                    const diskRadius = disk.outerRadius || (disk.uniforms ? disk.uniforms.uDiskRadius.value : 100);
                     const pEnd = t.position.clone()
-                        .add(tangent.clone().multiplyScalar(disk.outerRadius * 0.95));
+                        .add(tangent.clone().multiplyScalar(diskRadius * 0.95));
 
                     const ctrlHandle = pEnd.clone()
                         .sub(dirToTarget.clone().multiplyScalar(dist * 0.6));

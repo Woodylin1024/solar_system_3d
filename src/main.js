@@ -26,6 +26,9 @@ renderer.toneMappingExposure = 0.8;
 camera.position.set(0, 60, 450); // Improved initial angle
 camera.lookAt(0, 0, 0);
 
+// v45.13.0: Restoring standard rendering to fix blackout issue
+scene.userData.camera = camera;
+
 // Loading Manager implementation
 const loadingScreen = document.getElementById('loading-screen');
 const loadingBar = document.getElementById('loading-bar');
@@ -365,8 +368,8 @@ function showInfo(data) {
 
   infoDetails.innerHTML = '';
 
-  // Standardized order of detail fields
-  const labels = ["質量", "體積", "直徑", "光度", "視星等", "絕對星等", "核心溫度", "表面溫度", "光譜類型"];
+  // Standardized order of detail fields for stars, planets, and black holes
+  const labels = ["類型", "質量", "體積", "直徑", "史瓦西半徑", "光度", "視星等", "絕對星等", "核心溫度", "表面溫度", "光譜類型", "狀態", "位置"];
 
   labels.forEach(label => {
     const value = (data.details && data.details[label]) ? data.details[label] : "N/A";
@@ -890,6 +893,9 @@ function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
   const cappedDelta = Math.min(delta, 0.1); // Prevent huge jumps during tab switch
+
+  // Sync camera reference to scene for shader access
+  scene.userData.camera = camera;
 
   // 1. Move all celestial bodies (Planets then Satellites)
   if (solarSystem) {
