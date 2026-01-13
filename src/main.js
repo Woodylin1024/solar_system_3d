@@ -384,7 +384,7 @@ function showInfo(data) {
   infoDetails.innerHTML = '';
 
   // Standardized order of detail fields for stars, planets, and black holes
-  const labels = ["類型", "質量", "體積", "直徑", "史瓦西半徑", "光度", "視星等", "絕對星等", "核心溫度", "表面溫度", "光譜類型", "狀態", "位置"];
+  const labels = ["類型", "質量", "體積", "直徑", "史瓦西半徑", "光度", "視星等", "絕對星等", "核心溫度", "表面溫度", "光譜類型"];
 
   labels.forEach(label => {
     const value = (data.details && data.details[label]) ? data.details[label] : "N/A";
