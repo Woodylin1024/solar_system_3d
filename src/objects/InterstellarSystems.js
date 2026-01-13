@@ -314,7 +314,6 @@ void main() {
 
                 // Use bhProxy for selection logic
                 mesh.userData.proxy = bhProxy;
-                selectable.push(bhProxy);
 
                 accretionDisks.push({ points: bhProxy, isProcedural: true, parentName: data.name, uniforms: uniforms, outerRadius: finalDiskRadius, starMesh: mesh });
             } else {

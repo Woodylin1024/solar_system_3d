@@ -694,8 +694,10 @@ searchInput.addEventListener('input', () => {
   }
 
   const matches = allTargets.filter(t =>
-    t.data.name.toLowerCase().includes(query) ||
-    (t.data.nameCH && t.data.nameCH.includes(query))
+    t.data && t.data.name && (
+      t.data.name.toLowerCase().includes(query) ||
+      (t.data.nameCH && t.data.nameCH.includes(query))
+    )
   );
 
   if (matches.length > 0) {
