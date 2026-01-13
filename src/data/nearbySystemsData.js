@@ -717,7 +717,7 @@ export const nearbyStarSystemsData = [
                 isBlackHole: true,
                 hasAccretionDisk: true,
                 diskColor: 0xffaa33,
-                diskRadius: 3500,
+                diskRadius: 2000,
                 radius: 17.2,
                 color: 0x000000,
                 texture: null,
@@ -740,7 +740,7 @@ export const nearbyStarSystemsData = [
                         texture: "sirius_a_real.png",
                         emissiveIntensity: 3.5,
                         orbit: {
-                            radius: 12000,
+                            radius: 25000,
                             eccentricity: 0.7209,
                             inclination: 150.1,
                             argumentOfPeriapsis: 331.5,
@@ -770,7 +770,7 @@ export const nearbyStarSystemsData = [
                         texture: "sirius_a_real.png",
                         emissiveIntensity: 4.5,
                         orbit: {
-                            radius: 15500,
+                            radius: 38000,
                             eccentricity: 0.88466,
                             inclination: 133.818,
                             argumentOfPeriapsis: 66.13,
