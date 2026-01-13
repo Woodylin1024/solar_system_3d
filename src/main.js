@@ -798,10 +798,24 @@ const renderSystemMenu = () => {
     let iconHTML = `<img src="${s.icon}" alt="${s.name}">`;
     if (s.icon.startsWith('gradient:')) {
       const gType = s.icon.split(':')[1];
-      const color = gType === 'scorpius' ? '#00ccff' : '#88ccff';
-      const shape = gType === 'scorpius' ? 'width: 80%; height: 80%;' : 'width: 70%; height: 30%; transform: rotate(-20deg);';
-      iconHTML = `<div style="background: radial-gradient(circle, ${color}, #000); display: flex; align-items: center; justify-content: center; width:100%; height:100%;">
-                    <div style="${shape} border: 1px solid ${color}; border-radius: 50%; box-shadow: 0 0 10px ${color};"></div>
+      let color, shape, innerHTML = '';
+
+      if (gType === 'scorpius') {
+        color = '#00ccff';
+        shape = 'width: 80%; height: 80%;';
+      } else if (gType === 'galactic-center') {
+        color = '#ffaa33';
+        shape = 'width: 75%; height: 75%; border: 2.5px solid #ffcc00; box-shadow: 0 0 15px #ff6600, inset 0 0 10px #ff3300;';
+        innerHTML = `<div style="width: 40%; height: 40%; background: #000; border-radius: 50%; box-shadow: 0 0 5px #000;"></div>`;
+      } else {
+        color = '#88ccff';
+        shape = 'width: 70%; height: 30%; transform: rotate(-20deg);';
+      }
+
+      iconHTML = `<div style="background: radial-gradient(circle, ${color}33, #000); display: flex; align-items: center; justify-content: center; width:100%; height:100%;">
+                    <div style="${shape} border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative;">
+                      ${innerHTML}
+                    </div>
                   </div>`;
     }
 
