@@ -41,12 +41,27 @@ const textureToNameMap = {
 };
 
 const buildMap = (dataArray) => {
+  if (!dataArray) return;
   dataArray.forEach(item => {
-    if (item.texture) textureToNameMap[item.texture] = item.nameCH || item.name;
+    if (item.texture) {
+      // Ensure we map the raw filename to the display name
+      const fileName = item.texture.split('/').pop();
+      textureToNameMap[fileName] = item.nameCH || item.name;
+    }
+    // Also map menu icons if present
+    if (item.menuIcon) {
+      const iconName = item.menuIcon.split('/').pop();
+      textureToNameMap[iconName] = (item.nameCH || item.name) + ' 圖標';
+    }
+
+    // Recurse through all potential child arrays
     if (item.satellites) buildMap(item.satellites);
+    if (item.stars) buildMap(item.stars);
+    if (item.planets) buildMap(item.planets);
   });
 };
 buildMap(solarSystemData);
+buildMap(nearbyStarSystemsData);
 
 const loadingManager = new THREE.LoadingManager();
 
