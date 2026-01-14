@@ -628,8 +628,9 @@ export const nearbyStarSystemsData = [
                 radius: 0.1,
                 color: 0xe0ffff,
                 hasAccretionDisk: true,
-                diskColor: 0xffffcc,
-                diskRadius: 667,
+                useProceduralDisk: true,
+                diskColor: 0x88ccff, // Hotter blue-white disk for Neutron Star
+                diskRadius: 1500,
                 hasRelativisticJets: true,
                 jetColor: 0xe0ffff,
                 description: "由中子星吸取伴星物質形成吸積盤。",

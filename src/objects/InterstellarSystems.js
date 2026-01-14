@@ -152,7 +152,7 @@ export function createInterstellarSystems(scene, manager) {
             }
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-            if (data.isBlackHole) {
+            if (data.isBlackHole || data.useProceduralDisk) {
                 // v45.11.0: Pure Shader Black Hole (Interstellar Style)
                 // This replaces the particle system with a single high-performance shader sphere
                 const proxyGeo = new THREE.SphereGeometry(1, 64, 64);
@@ -164,7 +164,8 @@ export function createInterstellarSystems(scene, manager) {
                     uCamPos: { value: new THREE.Vector3() },
                     uSingularityPos: { value: new THREE.Vector3() },
                     uLocalCamPos: { value: new THREE.Vector3() },
-                    uDiskScale: { value: 1.0 }
+                    uDiskScale: { value: 1.0 },
+                    uIsBlackHole: { value: data.isBlackHole ? 1.0 : 0.0 }
                 };
 
                 const material = new THREE.ShaderMaterial({
@@ -193,6 +194,7 @@ void main() {
                         uniform vec3 uSingularityPos;
                         uniform vec3 uLocalCamPos;
                         uniform float uDiskScale;
+                        uniform float uIsBlackHole;
                         
                         varying vec3 vWorldPos;
                         varying vec3 vLocalPos;
@@ -281,7 +283,11 @@ void main() {
 
     // 4. Final Luminance Assembly
     if (closestDist < 0.98) {
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // Absolute Singularity Shadow
+        if (uIsBlackHole > 0.5) {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // Absolute Singularity Shadow
+        } else {
+            discard; // Let the underlying neutron star/star mesh show through
+        }
     } else {
                                 // Sharper Fiery Einstein Ring
                                 float ring = pow(smoothstep(1.4, 0.98, closestDist), 12.0);
@@ -305,12 +311,14 @@ void main() {
                 uniforms.uDiskScale.value = finalDiskRadius * 1.2;
                 mesh.add(bhProxy); // Child of Star Mesh for perfect sync
 
-                // Add ONE internal opaque core at the exact horizon size
-                const coreGeo = new THREE.SphereGeometry(1, 32, 32);
-                const coreMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-                const core = new THREE.Mesh(coreGeo, coreMat);
-                core.scale.setScalar(1.0); // Exactly the baseScale since it's child of 'mesh'
-                mesh.add(core);
+                // Add ONE internal opaque core ONLY if it's a black hole
+                if (data.isBlackHole) {
+                    const coreGeo = new THREE.SphereGeometry(1, 32, 32);
+                    const coreMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                    const core = new THREE.Mesh(coreGeo, coreMat);
+                    core.scale.setScalar(1.0); // Exactly the baseScale since it's child of 'mesh'
+                    mesh.add(core);
+                }
 
                 // Use bhProxy for selection logic
                 mesh.userData.proxy = bhProxy;
