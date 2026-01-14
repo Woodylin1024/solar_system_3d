@@ -165,7 +165,8 @@ export function createInterstellarSystems(scene, manager) {
                     uSingularityPos: { value: new THREE.Vector3() },
                     uLocalCamPos: { value: new THREE.Vector3() },
                     uDiskScale: { value: 1.0 },
-                    uIsBlackHole: { value: data.isBlackHole ? 1.0 : 0.0 }
+                    uIsBlackHole: { value: data.isBlackHole ? 1.0 : 0.0 },
+                    uDiskHeight: { value: data.diskHeight || 0.12 }
                 };
 
                 const material = new THREE.ShaderMaterial({
@@ -195,6 +196,7 @@ void main() {
                         uniform vec3 uLocalCamPos;
                         uniform float uDiskScale;
                         uniform float uIsBlackHole;
+                        uniform float uDiskHeight;
                         
                         varying vec3 vWorldPos;
                         varying vec3 vLocalPos;
@@ -233,37 +235,40 @@ void main() {
                             // 1. Ultra-Dense Starfield
                             vec3 starField = vec3(pow(noise(rayDir * 250.0), 20.0) * 2.5);
 
-                            // 2. Accretion Disk - Thin Horizontal Plane
-                            vec3 diskColor = vec3(0.0);
-                            float diskOpacity = 0.0;
-                            float dLimit = uDiskRadius / uHorizonRadius;
+    // 2. Accretion Disk - Volumetric Approximation
+    vec3 diskColor = vec4(0.0).rgb;
+    float diskOpacity = 0.0;
+    float dLimit = uDiskRadius / uHorizonRadius;
 
-    // Ray-plane intersection for Y=0
+    // Ray-plane intersection for Y=0 (Enhanced for Volume v45.20.2)
     if (abs(rayDir.y) > 0.0001) {
-                                float t = -rayOrigin.y / rayDir.y;
+        float t = -rayOrigin.y / rayDir.y;
         if (t > 0.0) {
-                                    vec3 p = rayOrigin + rayDir * t;
-                                    float d = length(p);
+            vec3 p = rayOrigin + rayDir * t;
+            float d = length(p);
             if (d > 1.25 && d < dLimit) {
-                                        float shift = uTime * 0.8;
-                                        float swirl = atan(p.z, p.x) + (3.0 / d) + shift;
-                                        vec3 samplePos = vec3(cos(swirl) * d, 0.0, sin(swirl) * d) * 0.6;
-                                        
-                                        float n = fbm(samplePos + vec3(0.0, 0.0, uTime * 0.15));
-                                        // High-contrast turbulent wisps
-                                        float wisp = pow(n, 2.2) * 1.5;
+                // Approximate volumetric path length
+                float pathLen = uDiskHeight / max(abs(rayDir.y), 0.15);
+                
+                float shift = uTime * 0.8;
+                float swirl = atan(p.z, p.x) + (3.0 / d) + shift;
+                vec3 samplePos = vec3(cos(swirl) * d, 0.0, sin(swirl) * d) * 0.6;
+                
+                float n = fbm(samplePos + vec3(0.0, 0.0, uTime * 0.15));
+                float wisp = pow(n, 2.2) * 1.5;
 
-                                        // Gargantua Palette: Burnt Orange, Fiery Amber, Deep Red
-                                        vec3 inner = vec3(1.0, 0.7, 0.2); // Amber
-                                        vec3 mid = vec3(0.9, 0.35, 0.05);  // Burnt Orange
-                                        vec3 outer = vec3(0.6, 0.05, 0.01); // Deep Red
-                                        
-                                        float grad = smoothstep(1.3, dLimit, d);
-                                        vec3 col = mix(inner, mid, grad * 1.5);
+                vec3 inner = vec3(1.0, 0.7, 0.2); 
+                vec3 mid = vec3(0.9, 0.35, 0.05);  
+                vec3 outer = vec3(0.6, 0.05, 0.01); 
+                
+                float grad = smoothstep(1.3, dLimit, d);
+                vec3 col = mix(inner, mid, grad * 1.5);
                 col = mix(col, outer, smoothstep(0.4, 1.0, grad));
 
-                diskColor = col * 12.0 * wisp;
-                diskOpacity = smoothstep(dLimit, dLimit * 0.7, d) * smoothstep(1.25, 2.0, d) * 0.95;
+                // Amplify brightness and opacity based on path length for "thickness" effect
+                diskColor = col * 12.0 * wisp * (1.0 + pathLen * 0.5);
+                diskOpacity = smoothstep(dLimit, dLimit * 0.7, d) * smoothstep(1.25, 2.0, d);
+                diskOpacity = clamp(diskOpacity * (0.8 + pathLen * 1.2), 0.0, 0.98);
             }
         }
     }
