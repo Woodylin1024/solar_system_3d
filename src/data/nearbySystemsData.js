@@ -630,7 +630,7 @@ export const nearbyStarSystemsData = [
                 hasAccretionDisk: true,
                 useProceduralDisk: true,
                 diskColor: 0x88ccff, // Hotter blue-white disk for Neutron Star
-                diskRadius: 1500,
+                diskRadius: 1200,
                 hasRelativisticJets: true,
                 jetColor: 0xe0ffff,
                 description: "由中子星吸取伴星物質形成吸積盤。",
@@ -644,7 +644,7 @@ export const nearbyStarSystemsData = [
                         isDistorted: true,
                         distortionAxes: { x: 1.0, y: 1.0, z: 2.2 },
                         hasGasStream: true,
-                        orbit: { radius: 1500, speed: 1.5, inclination: 30 },
+                        orbit: { radius: 3000, speed: 1.5, inclination: 30 },
                         description: "潮汐畸變的淚滴狀供體星。"
                     }
                 ]
