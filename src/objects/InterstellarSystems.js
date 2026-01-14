@@ -542,7 +542,10 @@ void main() {
 
                     const { points } = gs, { tArray, seedArray, count } = points.userData;
                     const posAttr = points.geometry.attributes.position, colAttr = points.geometry.attributes.color;
-                    const cCool = new THREE.Color(0xff8822), cHot = new THREE.Color(0xfff5cc);
+                    const starColor = s.userData.color ? new THREE.Color(s.userData.color) : new THREE.Color(0xfff5cc);
+                    const diskEdgeColor = (t.userData.isBlackHole || t.userData.useProceduralDisk)
+                        ? new THREE.Color(0xff6600) // Match the fiery orange of the Gargantua-style disk
+                        : (t.userData.diskColor ? new THREE.Color(t.userData.diskColor) : new THREE.Color(0xfff5cc));
 
                     for (let i = 0; i < count; i++) {
                         tArray[i] = (tArray[i] + 0.35 * delta * simSpeed * (0.85 + seedArray[i] * 0.15)) % 1.0;
@@ -557,7 +560,7 @@ void main() {
 
                         posAttr.setXYZ(i, curvePos.x + randX, curvePos.y + randY, curvePos.z + randZ);
 
-                        const col = cCool.clone().lerp(cHot, Math.pow(tVal, 1.3));
+                        const col = starColor.clone().lerp(diskEdgeColor, Math.pow(tVal, 1.3));
                         let lumMultiplier = 15.0;
                         if (tVal > 0.9) lumMultiplier *= (1.0 - (tVal - 0.9) * 10);
 
