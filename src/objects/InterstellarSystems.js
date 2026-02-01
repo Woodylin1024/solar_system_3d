@@ -316,18 +316,8 @@ void main() {
                 uniforms.uDiskScale.value = finalDiskRadius * 1.2;
                 mesh.add(bhProxy); // Child of Star Mesh for perfect sync
 
-                // Add ONE internal opaque core ONLY if it's a black hole
-                if (data.isBlackHole) {
-                    const coreGeo = new THREE.SphereGeometry(1, 32, 32);
-                    const coreMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-                    const core = new THREE.Mesh(coreGeo, coreMat);
-                    core.scale.setScalar(1.0); // Exactly the baseScale since it's child of 'mesh'
-                    mesh.add(core);
-                }
-
                 // Use bhProxy for selection logic
                 mesh.userData.proxy = bhProxy;
-
                 accretionDisks.push({ points: bhProxy, isProcedural: true, parentName: data.name, uniforms: uniforms, outerRadius: finalDiskRadius, starMesh: mesh });
             } else {
                 // Particle disk for non-black holes
@@ -338,6 +328,19 @@ void main() {
                 });
                 const points = new THREE.Points(geometry, material);
                 container.add(points); accretionDisks.push({ points: points, parentName: data.name, outerRadius: diskSize });
+            }
+        }
+
+        // Add ONE internal opaque core for ALL black holes (even quiescent ones)
+        if (data.isBlackHole) {
+            const coreGeo = new THREE.SphereGeometry(1, 48, 48);
+            const coreMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            const core = new THREE.Mesh(coreGeo, coreMat);
+            core.scale.setScalar(1.0); // Exactly the baseScale since it's child of 'mesh'
+            mesh.add(core);
+            // v45.20.3: Quiescent BH lensing (simplified hit proxy if no disk)
+            if (!data.hasAccretionDisk) {
+                mesh.userData.visualScale = baseScale; // Ensure correct selection radius
             }
         }
 

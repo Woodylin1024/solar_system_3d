@@ -660,10 +660,21 @@ export const nearbyStarSystemsData = [
         position: { x: -25400000, y: -95300000, z: 0 },
         stars: [
             {
-                name: "Gaia BH1 Barycenter",
-                nameCH: "蓋亞 BH1 質心",
+                name: "Gaia BH1 Black Hole",
+                nameCH: "蓋亞 BH1 黑洞",
                 type: "star",
-                radius: 0,
+                isBlackHole: true,
+                radius: 0.15,
+                color: 0x000000,
+                texture: null,
+                emissiveIntensity: 0,
+                description: "目前已知距離地球最近的黑洞（約 1,560 光年）。這是一個處於休眠狀態的恆星級黑洞，不具備吸積盤。",
+                details: {
+                    "類型": "恆星黑洞",
+                    "質量": "9.62 太陽質量",
+                    "史瓦西半徑": "28 km",
+                    "離心率": "0.45"
+                },
                 planets: [
                     {
                         name: "Gaia BH1 Star",
@@ -672,33 +683,14 @@ export const nearbyStarSystemsData = [
                         radius: 0.99,
                         color: 0xfff4e1,
                         texture: "sun.jpg",
-                        orbit: { radius: 1200, speed: 0.25, inclination: 0 },
-                        description: "一顆與太陽極其相似的 G 型主序星，與黑洞以 185.59 天的週期互繞。",
+                        orbit: { radius: 1800, speed: 0.25, inclination: 0, eccentricity: 0.05 },
+                        description: "一顆與太陽極其相似的 G 型主序星，圍繞黑洞公轉，週期約 185.59 天。",
                         details: {
                             "類型": "G型主序星",
                             "質量": "0.93 太陽質量",
                             "半徑": "0.99 太陽半徑",
                             "表面溫度": "5,850 K",
                             "公轉週期": "185.59 天"
-                        }
-                    },
-                    {
-                        name: "Gaia BH1 Black Hole",
-                        nameCH: "蓋亞 BH1 黑洞",
-                        type: "star",
-                        isBlackHole: true,
-                        radius: 0.15,
-                        color: 0x000000,
-                        texture: null,
-                        emissiveIntensity: 0,
-                        orbit: { radius: 1200, speed: 0.25, inclination: 0, startAngle: Math.PI },
-                        description: "目前已知距離地球最近的黑洞（約 1,560 光年）。這是一個處於休眠狀態的恆星級黑洞，不具備明顯的吸積盤。",
-                        details: {
-                            "類型": "恆星黑洞",
-                            "質量": "9.62 太陽質量",
-                            "史瓦西半徑": "28 km",
-                            "離心率": "0.45",
-                            "狀態": "休眠 (Quiescent)"
                         }
                     }
                 ]
